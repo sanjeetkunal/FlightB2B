@@ -25,9 +25,9 @@ export default function HomeHero() {
       <div className="mx-auto mb-3">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div className="space-y-8">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl text-black leading-tight">
-              Let's Travel The
-              <span className="block">World with us</span>
+            <h1 className="text-3xl sm:text-5xl lg:text-5xl text-black leading-tight font-semibold">
+              Let's <span className="text-black not-italic">Travel</span> The
+              <span className="block"><span className="text-amber-500  font-bold not-italic">World</span> with us</span>
             </h1>
           </div>
 

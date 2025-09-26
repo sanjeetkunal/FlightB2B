@@ -2,7 +2,7 @@ export default function FieldShell({ label, children }) {
   return (
     <div className="relative">
       <span className="absolute -top-2 left-3 text-[11px] px-2 py-[2px] rounded-full
-                       bg-blue-100 text-blue-700 border border-bg-gray-500 shadow-sm select-none">
+                        border border-gray-400  shadow-sm select-none bg-white">
         {label}
       </span>
 

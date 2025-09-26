@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import logo from "../assets/media/logo.png"
 
 export default function Header() {
   const [active, setActive] = useState("flights");
@@ -71,7 +72,7 @@ export default function Header() {
           {/* Left: Logo + product tabs */}
           <div className="flex items-center gap-6 min-w-0">
             <div className="flex items-center gap-3">
-              <div className="text-2xl font-extrabold text-orange-500 tracking-tight">V2A</div>
+              <div className="text-2xl font-extrabold text-orange-500 tracking-tight"><img src={logo} className="w-[125px]"/></div>
               <div className="hidden sm:block w-px h-6 bg-gray-200" />
               <span className="hidden sm:block text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
                 B2B Partner Portal

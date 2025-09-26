@@ -98,7 +98,7 @@ export default function FromToBar({ onSearch }) {
         {/* SEARCH */}
         <button
           onClick={handleSearch}
-          className="w-full md:w-[170px] h-[56px] rounded-xl bg-orange-500 hover:bg-orange-600
+          className="w-full md:w-[170px] h-[56px] rounded-xl bg-amber-500 hover:bg-amber-600
                      text-white font-semibold flex items-center justify-center gap-2"
         >
           Search <span className="text-xl leading-none">›</span>
