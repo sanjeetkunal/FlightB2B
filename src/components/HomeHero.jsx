@@ -20,7 +20,7 @@ export default function HomeHero() {
           <img src="assets/media/icons/location-blue.png" alt="" />
         </div>
       </div> */}
-      <div className="mx-auto">
+      <div className="mx-auto mb-3">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div className="space-y-8">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl text-black leading-tight">
