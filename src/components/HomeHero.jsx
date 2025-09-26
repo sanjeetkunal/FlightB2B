@@ -31,9 +31,9 @@ export default function HomeHero() {
 
           <div className="relative">
             <div className="lg:block">
-              <img src="http://html.0effortthemes.com/go/images/banner-animation/cloud.png"  className="w-full h-full object-contain absolute z-[-1]"/>
+              <img src="src/assets/media/cloud.png"  className="w-full h-full object-contain absolute z-[-1]"/>
               <img
-                src="http://html.0effortthemes.com/go/images/banner-animation/flight.png"
+                src="src/assets/media/flight.png"
                 alt="world landmarks collage"
                 className="w-full h-full object-cover"
               />
