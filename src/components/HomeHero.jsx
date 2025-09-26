@@ -1,4 +1,6 @@
 import FromToBar from "./FromToBar";
+import flightImg from '../assets/media/flight.png'
+import cloudImg from '../assets/media/cloud.png'
 
 export default function HomeHero() {
   const onSearch = (payload) => {
@@ -31,9 +33,9 @@ export default function HomeHero() {
 
           <div className="relative">
             <div className="lg:block">
-              <img src="src/assets/media/cloud.png"  className="w-full h-full object-contain absolute z-[-1]"/>
+              <img src={cloudImg}  className="w-full h-full object-contain absolute z-[-1]"/>
               <img
-                src="src/assets/media/flight.png"
+                src={flightImg}
                 alt="world landmarks collage"
                 className="w-full h-full object-cover transform transition-transform duration-300 ease-out hover:scale-105"
               />
