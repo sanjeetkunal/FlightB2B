@@ -10,7 +10,16 @@ export default function HomeHero() {
 
   return (
     <section className="max-w-[90rem] mx-auto px-4 py-7">
+      {/* <div class="vector-image absolute mx-auto max-w-[60rem]">
+        <svg xmlns="http://www.w3.org/2000/svg" width="1414" height="319" viewBox="0 0 1414 319" fill="none">
+          <path class="path" d="M-0.5 215C62.4302 220.095 287 228 373 143.5C444.974 72.7818 368.5 -3.73136 320.5 1.99997C269.5 8.08952 231.721 43.5 253.5 119C275.279 194.5 367 248.212 541.5 207.325C675.76 175.867 795.5 82.7122 913 76.7122C967.429 73.9328 1072.05 88.6813 1085 207.325C1100 344.712 882 340.212 922.5 207.325C964.415 69.7967 1354 151.5 1479 183.5" stroke="#ECECF2" stroke-width="6" stroke-linecap="round" stroke-dasharray="round"></path>
 
+          <path class="dashed" d="M-0.5 215C62.4302 220.095 287 228 373 143.5C444.974 72.7818 368.5 -3.73136 320.5 1.99997C269.5 8.08952 231.721 43.5 253.5 119C275.279 194.5 367 248.212 541.5 207.325C675.76 175.867 795.5 82.7122 913 76.7122C967.429 73.9328 1072.05 88.6813 1085 207.325C1100 344.712 882 340.212 922.5 207.325C964.415 69.7967 1354 151.5 1479 183.5" stroke="#212627" stroke-width="6" stroke-linecap="round" stroke-dasharray="22 22"></path>
+        </svg>
+        <div class="location-image">
+          <img src="assets/media/icons/location-blue.png" alt="" />
+        </div>
+      </div> */}
       <div className="mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div className="space-y-8">
@@ -22,8 +31,9 @@ export default function HomeHero() {
 
           <div className="relative">
             <div className="lg:block">
+              <img src="http://html.0effortthemes.com/go/images/banner-animation/cloud.png"  className="w-full h-full object-contain absolute z-[-1]"/>
               <img
-                src="https://uiparadox.co.uk/templates/flynow/assets/media/banner/plane.png"
+                src="http://html.0effortthemes.com/go/images/banner-animation/flight.png"
                 alt="world landmarks collage"
                 className="w-full h-full object-cover"
               />
