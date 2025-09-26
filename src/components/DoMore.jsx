@@ -13,7 +13,7 @@ export default function DoMore() {
   return (
     <section className="max-w-[90rem] mx-auto px-4 pb-10">
       <h3 className="text-lg font-semibold mb-3">Do More With V2A</h3>
-      <div className="bg-white  rounded-[22px] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.25)] p-4">
+      <div className="bg-white  rounded-[22px] border border-gray-200 p-4">
         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8">
           {items.map((it, i) => (
             <div

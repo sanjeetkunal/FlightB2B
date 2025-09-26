@@ -35,19 +35,19 @@ export default function HomeHero() {
               <img
                 src="src/assets/media/flight.png"
                 alt="world landmarks collage"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transform transition-transform duration-300 ease-out hover:scale-105"
               />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="rounded-[22px] shadow-[0_20px_50px_-5px_rgba(0,0,0,0.25)] p-4 bg-white">
+      <div className="rounded-[22px] border border-gray-200 p-4 bg-white">
         <FromToBar onSearch={onSearch} />
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <span className="text-sm font-medium">Special Fares (Optional):</span>
           {["Student", "Senior Citizen", "Armed Forces"].map(x => (
-            <button key={x} className="chip shadow-[0_20px_50px_-5px_rgba(0,0,0,0.25)] border-gray-200">{x}</button>
+            <button key={x} className="chip border-gray-200">{x}</button>
           ))}
           <span className="ml-auto hidden md:flex items-center gap-2 muted">
             <span className="pill bg-emerald-50 text-emerald-700">Hassle-Free Bookings</span>

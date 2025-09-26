@@ -32,7 +32,7 @@ export default function Header() {
   const wallet = { balance: 45230.0, currency: "₹", creditLimit: 200000 };
 
   return (
-    <header className="bg-white shadow-[0_20px_50px_-12px_rgba(0,0,0,0.25)] sticky top-0 z-30">
+    <header className="bg-white border border-gray-200 sticky top-0 z-30">
       {/* TOP BAR */}
       <div className="bg-black text-white">
   <div className="max-w-[90rem] mx-auto px-4">
@@ -273,7 +273,7 @@ function MenuLink({ children, danger }) {
 function Avatar() {
   return (
     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-blue-500 text-white grid place-items-center text-sm font-bold">
-      AG
+      SK
     </div>
   );
 }
