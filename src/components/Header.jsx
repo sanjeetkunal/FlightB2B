@@ -35,35 +35,35 @@ export default function Header() {
   return (
     <header className="bg-white border border-gray-200 sticky top-0 z-30">
       {/* TOP BAR */}
-      <div className="bg-black text-white">
-  <div className="max-w-[90rem] mx-auto px-4">
-    <div className="h-11 flex items-center justify-between gap-3">
-      {/* Contact Info */}
-      <div className="flex items-center gap-6 text-sm">
-        <span>📞 +91-9876543210</span>
-        <span>✉️ support@yourdomain.com</span>
+      <div className="hidden sm:block bg-black text-white">
+        <div className="max-w-[90rem] mx-auto px-4">
+          <div className="h-11 flex items-center justify-between gap-3">
+            {/* Contact Info */}
+            <div className="flex items-center gap-6 text-sm">
+              <span>📞 +91-9876543210</span>
+              <span>✉️ support@yourdomain.com</span>
+            </div>
+
+            {/* Quick links */}
+            <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+              {["Manage", "Reports", "Support", "Help"].map((l) => (
+                <a
+                  key={l}
+                  href="#"
+                  className="hover:text-blue-400 transition-colors"
+                >
+                  {l}
+                </a>
+              ))}
+            </nav>
+
+            {/* Mobile chip */}
+            <button className="md:hidden h-8 px-3 rounded-full border border-white text-xs font-semibold">
+              Menu
+            </button>
+          </div>
+        </div>
       </div>
-
-      {/* Quick links */}
-      <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-        {["Manage", "Reports", "Support", "Help"].map((l) => (
-          <a
-            key={l}
-            href="#"
-            className="hover:text-blue-400 transition-colors"
-          >
-            {l}
-          </a>
-        ))}
-      </nav>
-
-      {/* Mobile chip */}
-      <button className="md:hidden h-8 px-3 rounded-full border border-white text-xs font-semibold">
-        Menu
-      </button>
-    </div>
-  </div>
-</div>
 
 
       {/* BOTTOM BAR */}
@@ -72,7 +72,7 @@ export default function Header() {
           {/* Left: Logo + product tabs */}
           <div className="flex items-center gap-6 min-w-0">
             <div className="flex items-center gap-3">
-              <div className="text-2xl font-extrabold text-orange-500 tracking-tight"><img src={logo} className="w-[125px]"/></div>
+              <div className="text-2xl font-extrabold text-orange-500 tracking-tight hidden sm:block"><img src={logo} className="w-[125px]" /></div>
               <div className="hidden sm:block w-px h-6 bg-gray-200" />
               <span className="hidden sm:block text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
                 B2B Partner Portal
@@ -90,7 +90,7 @@ export default function Header() {
                     className={[
                       "relative px-3 h-9 inline-flex items-center gap-2 rounded-full border text-sm font-semibold",
                       isActive
-                        ? "border-blue-600 text-blue-700 bg-blue-50"
+                        ? "border-gray-400 text-gray-400 bg-blue-50"
                         : "border-transparent text-gray-700 hover:bg-gray-50",
                     ].join(" ")}
                   >
@@ -124,7 +124,7 @@ export default function Header() {
                 <span className="text-[10px] text-gray-500 hidden sm:inline">Wallet</span>
               </button>
               {walletOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-2xl shadow-xl p-3">
+                <div className="absolute left-0  sm:right-0 sm:left-0  mt-2 w-80 bg-white border border-gray-200 rounded-2xl shadow-xl p-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-xs text-gray-500">Available Balance</div>
@@ -160,7 +160,9 @@ export default function Header() {
                 <BellIcon className="w-4 h-4" />
               </button>
               {notifOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-2xl shadow-xl p-2">
+                <div className="absolute mt-2 w-80 left-1/2 -translate-x-1/2 
+            sm:right-0 sm:left-auto sm:translate-x-0
+            bg-white border border-gray-200 rounded-2xl shadow-xl p-3">
                   <div className="px-2 py-1 text-sm font-semibold">Notifications</div>
                   <div className="divide-y max-h-80 overflow-auto">
                     <NotifItem title="PNR AD4K9Q ticketed" meta="Just now" />
@@ -177,14 +179,14 @@ export default function Header() {
                 onClick={() => setProfileOpen((v) => !v)}
                 className="h-10 px-3 inline-flex items-center gap-3 rounded-xl bg-white hover:bg-gray-50 cursor-pointer"
               >
-                 <Avatar />
+                <Avatar />
                 <div className="text-left">
                   <div className="text-sm font-semibold leading-tight truncate max-w-[10rem]">
                     {agency.name}
                   </div>
                   <div className="text-[11px] text-gray-500 leading-tight">ID: {agency.agentId}</div>
                 </div>
-               
+
               </button>
               {profileOpen && (
                 <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-xl p-2">
@@ -280,13 +282,13 @@ function Avatar() {
 }
 
 /* icons */
-function AirplaneIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M21 16v2l-8-2-3 5h-2l2-6-6-1v-2l6-1-2-6h2l3 5 8-2v2l-6 2 6 2z"/></svg>; }
-function HotelIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M3 21v-9a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v9h-2v-4H5v4H3Zm4-8h10a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2Z"/></svg>; }
-function TrainIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M8 3h8a4 4 0 0 1 4 4v7a4 4 0 0 1-4 4l2 2h-2l-2-2h-4l-2 2H6l2-2a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4Zm8 9H8v2h8v-2Zm0-4H8v2h8V8Z"/></svg>; }
-function BusIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M6 3h12a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3v2h-2v-2H8v2H6v-2a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3Zm0 4h12V6H6v1Zm0 6h5V9H6v4Zm7 0h5V9h-5v4Zm-6 3h2v2H7v-2Zm8 0h2v2h-2v-2Z"/></svg>; }
-function WalletIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M3 7a3 3 0 0 1 3-3h12v2H6a1 1 0 0 0-1 1v1h15a2 2 0 0 1 2 2v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7Zm18 5h-5v4h5a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1Z"/></svg>; }
-function BellIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M12 2a6 6 0 0 0-6 6v3.3l-1.3 2.6A1 1 0 0 0 5.6 16h12.8a1 1 0 0 0 .9-1.5L18 11.3V8a6 6 0 0 0-6-6Zm0 20a3 3 0 0 0 3-3H9a3 3 0 0 0 3 3Z"/></svg>; }
-function SearchIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M10 2a8 8 0 1 1-5.3 13.9l-2.4 2.4 1.4 1.4 2.4-2.4A8 8 0 0 1 10 2Zm0 2a6 6 0 1 0 0 12A6 6 0 0 0 10 4Z"/></svg>; }
+function AirplaneIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M21 16v2l-8-2-3 5h-2l2-6-6-1v-2l6-1-2-6h2l3 5 8-2v2l-6 2 6 2z" /></svg>; }
+function HotelIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M3 21v-9a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v9h-2v-4H5v4H3Zm4-8h10a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2Z" /></svg>; }
+function TrainIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M8 3h8a4 4 0 0 1 4 4v7a4 4 0 0 1-4 4l2 2h-2l-2-2h-4l-2 2H6l2-2a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4Zm8 9H8v2h8v-2Zm0-4H8v2h8V8Z" /></svg>; }
+function BusIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M6 3h12a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3v2h-2v-2H8v2H6v-2a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3Zm0 4h12V6H6v1Zm0 6h5V9H6v4Zm7 0h5V9h-5v4Zm-6 3h2v2H7v-2Zm8 0h2v2h-2v-2Z" /></svg>; }
+function WalletIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M3 7a3 3 0 0 1 3-3h12v2H6a1 1 0 0 0-1 1v1h15a2 2 0 0 1 2 2v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7Zm18 5h-5v4h5a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1Z" /></svg>; }
+function BellIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M12 2a6 6 0 0 0-6 6v3.3l-1.3 2.6A1 1 0 0 0 5.6 16h12.8a1 1 0 0 0 .9-1.5L18 11.3V8a6 6 0 0 0-6-6Zm0 20a3 3 0 0 0 3-3H9a3 3 0 0 0 3 3Z" /></svg>; }
+function SearchIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M10 2a8 8 0 1 1-5.3 13.9l-2.4 2.4 1.4 1.4 2.4-2.4A8 8 0 0 1 10 2Zm0 2a6 6 0 1 0 0 12A6 6 0 0 0 10 4Z" /></svg>; }
 
 function formatMoney(n) {
   return n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
