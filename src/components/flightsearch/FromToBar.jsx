@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
-import { AIRPORTS } from "../data/airports";
-import AirportSelect from "./AirportSelect";
-import DateField from "./DateField";
-import TravellersField from "./TravellersField";
-import TravellerClassPicker from "./TravellerClassPicker"; // 👈 import add kiya
+import { AIRPORTS } from "../../data/airports";
+import AirportSelect from "../flightsearch/AirportSelect";
+import DateField from "../flightsearch/DateField";
+import TravellersField from "../flightsearch/TravellersField";
+import TravellerClassPicker from "../flightsearch/TravellerClassPicker"; // 👈 import add kiya
+
+
 
 export default function FromToBar({ onSearch }) {
   const [trip, setTrip] = useState("oneway");

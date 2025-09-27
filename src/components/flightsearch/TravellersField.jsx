@@ -1,4 +1,4 @@
-import FieldShell from "./FieldShell";
+import FieldShell from "../flightsearch/FieldShell";
 
 export default function TravellersField({ label, text, onClick }) {
   return (

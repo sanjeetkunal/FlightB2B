@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
-import FieldShell from "./FieldShell";
-import MultiMonthDatePicker from "./MultiMonthDatePicker";
+import FieldShell from "../flightsearch/FieldShell";
+import MultiMonthDatePicker from "../flightsearch/MultiMonthDatePicker";
 
 export default function DateField({ label, value, onChange, disabled }) {
   const [open, setOpen] = useState(false);

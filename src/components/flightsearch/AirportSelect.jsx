@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AIRPORTS } from "../data/airports";
-import FieldShell from "./FieldShell";
+import { AIRPORTS } from '../../data/airports';
+import FieldShell from "../flightsearch/FieldShell"
+
 
 export default function AirportSelect({ label, value, onChange }) {
   const [open, setOpen] = useState(false);

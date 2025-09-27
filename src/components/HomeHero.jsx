@@ -1,4 +1,4 @@
-import FromToBar from "./FromToBar";
+import FromToBar from "./flightsearch/FromToBar";
 import flightImg from '../assets/media/flight.png'
 import cloudImg from '../assets/media/cloud.png'
 import ifs from "../assets/media/ifs.webp";
