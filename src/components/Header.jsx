@@ -33,7 +33,7 @@ export default function Header() {
   const wallet = { balance: 45230.0, currency: "₹", creditLimit: 200000 };
 
   return (
-    <header className="bg-white border border-gray-200 sticky top-0 z-30">
+    <header className="bg-white  sticky top-0 z-30">
       {/* TOP BAR */}
       <div className="hidden sm:block bg-black text-white">
         <div className="max-w-[90rem] mx-auto px-4">
@@ -67,6 +67,7 @@ export default function Header() {
 
 
       {/* BOTTOM BAR */}
+      <div className="border border-gray-200">
       <div className="max-w-[90rem] mx-auto px-4">
         <div className="h-16 flex items-center justify-between">
           {/* Left: Logo + product tabs */}
@@ -234,6 +235,7 @@ export default function Header() {
             );
           })}
         </div>
+      </div>
       </div>
     </header>
   );
