@@ -95,7 +95,7 @@ export default function Header() {
                         : "border-transparent text-gray-700 hover:bg-gray-50",
                     ].join(" ")}
                   >
-                    <Icon className="w-4 h-4" />
+                    {/* <Icon className="w-4 h-4" /> */}
                     <span className="whitespace-nowrap">{t.label}</span>
                     {t.badge && (
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-600 text-white">
@@ -284,10 +284,10 @@ function Avatar() {
 }
 
 /* icons */
-function AirplaneIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M21 16v2l-8-2-3 5h-2l2-6-6-1v-2l6-1-2-6h2l3 5 8-2v2l-6 2 6 2z" /></svg>; }
-function HotelIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M3 21v-9a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v9h-2v-4H5v4H3Zm4-8h10a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2Z" /></svg>; }
-function TrainIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M8 3h8a4 4 0 0 1 4 4v7a4 4 0 0 1-4 4l2 2h-2l-2-2h-4l-2 2H6l2-2a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4Zm8 9H8v2h8v-2Zm0-4H8v2h8V8Z" /></svg>; }
-function BusIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M6 3h12a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3v2h-2v-2H8v2H6v-2a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3Zm0 4h12V6H6v1Zm0 6h5V9H6v4Zm7 0h5V9h-5v4Zm-6 3h2v2H7v-2Zm8 0h2v2h-2v-2Z" /></svg>; }
+function AirplaneIcon({ className }) { return <img src="https://cdn-icons-png.flaticon.com/128/6789/6789671.png" class="w-[35px]"/>; }
+function HotelIcon({ className }) { return <img src="https://cdn-icons-png.flaticon.com/128/10472/10472597.png" class="w-[35px]"/>; }
+function TrainIcon({ className }) { return <img src="https://cdn-icons-png.flaticon.com/128/8713/8713890.png" class="w-[35px]"/>; }
+function BusIcon({ className }) { return <img src="https://cdn-icons-png.flaticon.com/128/4707/4707853.png" class="w-[35px]"/>; }
 function WalletIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M3 7a3 3 0 0 1 3-3h12v2H6a1 1 0 0 0-1 1v1h15a2 2 0 0 1 2 2v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7Zm18 5h-5v4h5a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1Z" /></svg>; }
 function BellIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M12 2a6 6 0 0 0-6 6v3.3l-1.3 2.6A1 1 0 0 0 5.6 16h12.8a1 1 0 0 0 .9-1.5L18 11.3V8a6 6 0 0 0-6-6Zm0 20a3 3 0 0 0 3-3H9a3 3 0 0 0 3 3Z" /></svg>; }
 function SearchIcon({ className }) { return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M10 2a8 8 0 1 1-5.3 13.9l-2.4 2.4 1.4 1.4 2.4-2.4A8 8 0 0 1 10 2Zm0 2a6 6 0 1 0 0 12A6 6 0 0 0 10 4Z" /></svg>; }

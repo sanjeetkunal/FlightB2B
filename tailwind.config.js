@@ -10,6 +10,9 @@ module.exports = {
   content: ["./index.html", "./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      fontFamily: {
+        hammersmith: ["'Hammersmith One'", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
       keyframes: {
         fly: {
           '0%':   { transform: 'translateX(-20%) translateY(0) rotate(-6deg)' },

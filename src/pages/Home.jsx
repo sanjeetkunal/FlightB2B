@@ -6,10 +6,10 @@ export default function Home() {
   return (
     <>
       <HomeHero />
-<DoMore />
+      <DoMore />
       <HolidayDeals />
 
-      
+
     </>
   );
 }

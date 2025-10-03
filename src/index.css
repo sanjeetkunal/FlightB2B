@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Hammersmith+One&display=swap');
 
 @layer components {
   /* base button */
@@ -16,4 +17,13 @@
   .chip        { @apply rounded-full border px-3 py-1.5 text-sm hover:bg-gray-50; }
   .muted       { @apply text-gray-500; }
   .pill        { @apply text-xs font-semibold rounded-full px-2.5 py-1; }
+  
+}
+
+@font-face {
+  font-family: 'Hammersmith One';
+  src: url('https://fonts.googleapis.com/css2?family=Hammersmith+One&display=swap') format('woff2') !important;
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
