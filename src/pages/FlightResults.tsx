@@ -430,7 +430,7 @@ function FareOneLine({
 
       {fare ? (
         <div className="flex min-w-0 items-center gap-2">
-          <span className="whitespace-nowrap text-[17px] font-bold text-gray-900"><Money v={fare.price} /></span>
+          <span className="whitespace-nowrap text-[14px] font-bold text-gray-900"><Money v={fare.price} /></span>
           <span className="relative">
             <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-700">i</span>
             <div className="pointer-events-none absolute left-1/2 z-30 mt-2 w-72 -translate-x-1/2 rounded-lg border border-gray-200 bg-white p-3 text-xs text-gray-700 opacity-0 shadow-2xl transition hover:opacity-100">
@@ -646,7 +646,7 @@ function B2BRow({
           {/* Details next to Book Now */}
           <button
             onClick={onToggle}
-            className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-800 hover:bg-gray-50"
+            className="inline-flex items-center gap-1 rounded-sm border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-800 hover:bg-gray-50"
           >
             Details
             <svg viewBox="0 0 24 24" className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`}>
@@ -657,7 +657,7 @@ function B2BRow({
           <button
             onClick={onBook}
             disabled={!selectedFare}
-            className={`rounded-lg px-3 py-1.5 text-sm font-semibold text-white shadow
+            className={`rounded-sm px-3 py-1.5 text-sm font-semibold text-white shadow text-xs
               ${selectedFare ? "bg-gray-900 hover:opacity-95" : "bg-gray-400 cursor-not-allowed opacity-60"}`}
             title={selectedFare ? "Proceed to booking" : "Select a fare to continue"}
           >
@@ -672,11 +672,11 @@ function B2BRow({
           <DetailsHeader airline={r.airline} logoBg={r.logoBg} flightNos={r.flightNos} />
 
           {/* If a fare is selected, show its compact panel at top */}
-          {selectedFare && (
+          {/* {selectedFare && (
             <div className="mb-3">
               <SelectedFarePanel fare={selectedFare} />
             </div>
-          )}
+          )} */}
 
           <div className="mb-2">
             <RowTabs active={tab} onChange={setTab} />
@@ -780,10 +780,10 @@ export default function B2BFlightListExact() {
       <div className="mx-auto max-w-[90rem] px-3 py-4">
         {/* header */}
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <div className="text-[20px] font-semibold text-gray-900">
+          {/* <div className="text-[20px] font-semibold text-gray-900">
             <span className="text-rose-700">{rows.length} Available Flights</span>{" "}
             <span className="text-gray-600">from {uniqueAirlines} Airlines</span>
-          </div>
+          </div> */}
 
           <div className="flex items-center gap-2">
             <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)}
