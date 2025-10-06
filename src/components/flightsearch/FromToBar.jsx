@@ -101,7 +101,7 @@ export default function FromToBar({ onSearch }) {
         <button
           // onClick={handleSearch}  
          onClick={() => navigate(`/flights/`)}
-          className="w-full md:w-[80px] h-[56px] rounded-xl text-blue-900 hover:bg-amber-600
+          className="w-full md:w-[80px] h-[56px] rounded-xl bg-blue-900 hover:bg-amber-600
                      text-white font-semibold flex items-center justify-center gap-2"
         >
           <span className="text-xl leading-none">›</span>
