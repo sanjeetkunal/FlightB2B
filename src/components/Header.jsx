@@ -56,6 +56,7 @@ export default function Header({ variant = "private" }) {
   return (
     <header className="bg-white sticky top-0 z-30">
       {/* TOP BAR */}
+      {!isPublic && (
       <div className="hidden sm:block bg-black text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="h-11 flex items-center justify-between gap-3">
@@ -81,6 +82,7 @@ export default function Header({ variant = "private" }) {
           </div>
         </div>
       </div>
+      )}
 
       {/* BOTTOM BAR */}
       <div className="border border-gray-200">

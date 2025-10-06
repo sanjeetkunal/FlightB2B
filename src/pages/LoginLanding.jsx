@@ -80,10 +80,25 @@ export default function LoginLandingPro() {
     { k: "99.96%", v: "Uptime (SLA)" },
   ];
 
-  const partners = useMemo(
-    () => ["Amadeus", "Sabre", "Galileo", "IndiGo", "Air India", "Vistara", "SpiceJet", "Emirates", "Qatar Airways", "MakeMyTrip B2B", "Booking.com", "IRCTC"],
-    []
-  );
+// inside your page component (top-level of the component body)
+const partnerLogos = useMemo(
+  () => [
+    { name: "Amadeus",       src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Amadeus_%28CRS%29_Logo.svg/1200px-Amadeus_%28CRS%29_Logo.svg.png",       w: 96,  h: 24 },
+    { name: "Sabre",         src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Sabre_Corporation_logo.svg/2560px-Sabre_Corporation_logo.svg.png",         w: 84,  h: 24 },
+    { name: "Galileo",       src: "https://i0.wp.com/www.opendestinations.com/wp-content/uploads/2018/03/logo-travelport.png?fit=799%2C250&ssl=1",       w: 96,  h: 24 },
+    { name: "IndiGo",        src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/IndiGo_Airlines_logo.svg/2560px-IndiGo_Airlines_logo.svg.png",        w: 80,  h: 24 },
+    { name: "Air India",     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Air_India_2023.svg/1200px-Air_India_2023.svg.png",      w: 96,  h: 24 },
+    { name: "Vistara",       src: "https://airhex.com/images/airline-logos/alt/vistara.png",       w: 96,  h: 24 },
+    { name: "SpiceJet",      src: "https://airhex.com/images/airline-logos/alt/spicejet.png",      w: 96,  h: 24 },
+    { name: "Emirates",      src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtm7QhtMWlUdJws_oU4ukSp3ECOutKmgz_Z68u4MMlIM5uqJ-l_aipzC_ZfpXLR_H57Q&usqp=CAU",      w: 96,  h: 24 },
+    { name: "Qatar Airways", src: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Qatar_Airways_logo.svg/1200px-Qatar_Airways_logo.svg.png",         w: 110, h: 24 },
+    { name: "MakeMyTrip",    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Makemytrip_logo.svg/1558px-Makemytrip_logo.svg.png",       w: 110, h: 24 },
+    { name: "Booking.com",   src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Booking.com_logo.svg/2560px-Booking.com_logo.svg.png",       w: 110, h: 24 },
+    { name: "IRCTC",         src: "https://logos-world.net/wp-content/uploads/2022/06/IRCTC-Symbol.png",         w: 84,  h: 24 },
+  ],
+  []
+);
+
 
   return (
     <>
@@ -100,7 +115,7 @@ export default function LoginLandingPro() {
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 sm:px-6 lg:px-8 pt-10 pb-16">
           <div className="grid lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-            <div className="lg:col-span-7">
+            <div className="lg:col-span-8">
               <p className="inline-flex items-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-3 py-1">
                 <SparklesIcon className="w-4 h-4" /> Premium B2B Travel OS
               </p>
@@ -125,13 +140,13 @@ export default function LoginLandingPro() {
               {/* Trust strip */}
               <div className="mt-8">
                 <p className="text-xs text-slate-500">Trusted by leading suppliers & aggregators</p>
-                <PartnerMarquee items={partners} />
+                <PartnerMarquee items={partnerLogos} />
               </div>
             </div>
 
             {/* Login card */}
-            <div className="relative lg:col-span-5">
-              <div className="relative bg-white/80 backdrop-blur border border-slate-200 shadow-sm rounded-3xl p-6 sm:p-8">
+            <div className="relative lg:col-span-4">
+              <div className="relative bg-white/80 backdrop-blur border border-slate-200 rounded-2xl p-6 sm:p-8">
                 <div className="flex items-center justify-between gap-3">
                   <h2 className="text-xl font-semibold text-slate-900">Agent Login</h2>
                   <span className="text-xs text-slate-500">Demo access available</span>
@@ -167,7 +182,7 @@ export default function LoginLandingPro() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="agent@v2a.com"
-                      className="mt-1 w-full rounded-xl border-slate-300 focus:none border border-gray-50 px-3 py-2.5 outline-none"
+                      className="mt-1 w-full rounded-sm border-slate-300 focus:none border border-gray-50 px-3 py-2.5 outline-none"
                       required
                     />
                   </div>
@@ -181,7 +196,7 @@ export default function LoginLandingPro() {
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           placeholder="Password123"
-                          className="w-full rounded-xl border-slate-300 border border-gray-50 focus:none px-3 py-2.5 pr-10 outline-none"
+                          className="w-full rounded-sm border-slate-300 border border-gray-50 focus:none px-3 py-2.5 pr-10 outline-none"
                           required
                         />
                         <button
@@ -341,21 +356,44 @@ export default function LoginLandingPro() {
   );
 }
 
-/* ==================== Small Components ==================== */
-function PartnerMarquee({ items }) {
+function PartnerMarquee({ items = [] }) {
+  const logos = items; // <-- no external variable reference
+
   return (
-    <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      <div className="flex gap-10 animate-[marquee_28s_linear_infinite] py-3 px-4 will-change-transform">
-        {[...items, ...items].map((n, i) => (
-          <span key={i} className="text-slate-500 text-xs sm:text-sm whitespace-nowrap inline-flex items-center gap-2">
-            <Dot className="w-1.5 h-1.5" /> {n}
-          </span>
+    <div className="mt-3 overflow-hidden rounded-2xl bg-white relative">
+      {/* fade edges */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white to-transparent" />
+
+      <div
+        className="flex items-center gap-10 py-3 px-4 will-change-transform"
+        style={{ animation: "marquee 28s linear infinite", width: "max-content" }}
+      >
+        {[...logos, ...logos].map((l, i) => (
+          <div key={i} className="shrink-0 inline-flex items-center">
+            <img
+              src={l.src}
+              width={l.w}
+              height={l.h}
+              alt={l.name}
+              loading="lazy"
+              className="h-6 w-auto object-contain opacity-80 hover:opacity-100 transition"
+              onError={(e) => { e.currentTarget.replaceWith(document.createTextNode(l.name)); }}
+            />
+          </div>
         ))}
       </div>
-      <style>{`@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}`}</style>
+
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
     </div>
   );
 }
+
 
 function FaqItem({ q, a }) {
   const [open, setOpen] = useState(false);
