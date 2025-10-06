@@ -99,13 +99,13 @@ export default function LoginLandingPro() {
         </div>
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 sm:px-6 lg:px-8 pt-10 pb-16">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
-            <div>
+          <div className="grid lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+            <div className="lg:col-span-7">
               <p className="inline-flex items-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-3 py-1">
                 <SparklesIcon className="w-4 h-4" /> Premium B2B Travel OS
               </p>
               <h1 className="mt-4 text-4xl sm:text-5xl font-semibold leading-tight text-slate-900">
-                All your <span className="text-amber-600">travel products</span> in one powerful dashboard
+                All your <span className="text-blue-900">travel products</span> in one powerful dashboard
               </h1>
               <p className="mt-3 text-slate-600 max-w-2xl">
                 Book Flights, Hotels, Train, Bus & Visa with live markups, commission engine, GST invoicing,
@@ -115,7 +115,7 @@ export default function LoginLandingPro() {
               {/* Stats */}
               <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {stats.map((s) => (
-                  <div key={s.k} className="rounded-2xl border bg-white/80 backdrop-blur px-4 py-3 text-center">
+                  <div key={s.k} className="rounded-2xl border border-slate-200 bg-white/80 backdrop-blur px-4 py-3 text-center">
                     <div className="text-xl font-semibold text-slate-900">{s.k}</div>
                     <div className="text-[11px] uppercase tracking-wide text-slate-500">{s.v}</div>
                   </div>
@@ -130,15 +130,15 @@ export default function LoginLandingPro() {
             </div>
 
             {/* Login card */}
-            <div className="relative">
-              <div className="relative bg-white/80 backdrop-blur border shadow-sm rounded-3xl p-6 sm:p-8">
+            <div className="relative lg:col-span-5">
+              <div className="relative bg-white/80 backdrop-blur border border-slate-200 shadow-sm rounded-3xl p-6 sm:p-8">
                 <div className="flex items-center justify-between gap-3">
                   <h2 className="text-xl font-semibold text-slate-900">Agent Login</h2>
                   <span className="text-xs text-slate-500">Demo access available</span>
                 </div>
 
                 {/* Tabs */}
-                <div className="mt-4 grid grid-cols-2 rounded-full border p-1 bg-slate-50">
+                <div className="mt-4 grid grid-cols-2 rounded-full border border-gray-50 p-1 bg-slate-50">
                   <button
                     onClick={() => setTab("password")}
                     className={`text-sm rounded-full py-2 transition ${
@@ -167,7 +167,7 @@ export default function LoginLandingPro() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="agent@v2a.com"
-                      className="mt-1 w-full rounded-xl border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 px-3 py-2.5 outline-none"
+                      className="mt-1 w-full rounded-xl border-slate-300 focus:none border border-gray-50 px-3 py-2.5 outline-none"
                       required
                     />
                   </div>
@@ -181,7 +181,7 @@ export default function LoginLandingPro() {
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           placeholder="Password123"
-                          className="w-full rounded-xl border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 px-3 py-2.5 pr-10 outline-none"
+                          className="w-full rounded-xl border-slate-300 border border-gray-50 focus:none px-3 py-2.5 pr-10 outline-none"
                           required
                         />
                         <button
@@ -218,20 +218,12 @@ export default function LoginLandingPro() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 font-medium disabled:opacity-60"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-blue-900 hover:bg-amber-600 text-white px-5 py-2.5 font-medium disabled:opacity-60"
                   >
                     {loading ? "Signing in…" : "Sign in"}
                   </button>
 
-                  {/* SSO demo */}
-                  <div className="text-center">
-                    <p className="text-[11px] uppercase tracking-wide text-slate-400">or sign in with</p>
-                    <div className="mt-2 flex items-center justify-center gap-3">
-                      <SSOButton label="Google" />
-                      <SSOButton label="IRCTC" />
-                      <SSOButton label="O365" />
-                    </div>
-                  </div>
+                
 
                   <p className="text-xs text-slate-500 text-center">
                     Demo credentials: <span className="font-medium">agent@v2a.com / Password123</span>
@@ -239,17 +231,14 @@ export default function LoginLandingPro() {
                 </form>
               </div>
 
-              {/* floating badge */}
-              <div className="absolute -top-4 -right-4 bg-amber-500 text-white text-xs font-semibold rounded-full px-3 py-1 shadow">
-                24×7 Partner Support
-              </div>
+     
             </div>
           </div>
         </div>
       </section>
 
       {/* Product Suite */}
-      <section className="bg-white border-t">
+      <section className="bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 sm:px-6 lg:px-8 py-12">
           <div className="flex items-end justify-between gap-6">
             <div>
@@ -263,7 +252,7 @@ export default function LoginLandingPro() {
 
           <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {products.map((p) => (
-              <div key={p.k} className="group relative rounded-2xl border bg-gradient-to-b from-white to-slate-50/60 p-5 hover:shadow-md transition">
+              <div key={p.k} className="group relative rounded-2xl border border-slate-200 bg-gradient-to-b from-white to-slate-50/60 p-5 hover:shadow-md transition">
                 <div className="flex items-center gap-3">
                   <div className="rounded-2xl border bg-white p-2"><p.icon className="w-5 h-5" /></div>
                   <h4 className="text-lg font-semibold text-slate-900">{p.k}</h4>
@@ -280,7 +269,7 @@ export default function LoginLandingPro() {
       </section>
 
       {/* Feature Highlights */}
-      <section className="bg-slate-50 border-t">
+      <section className="bg-slate-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
             <h3 className="text-2xl font-semibold text-slate-900">Built for B2B at Scale</h3>
@@ -289,7 +278,7 @@ export default function LoginLandingPro() {
 
           <div className="mt-8 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {features.map((f) => (
-              <div key={f.t} className="rounded-2xl border bg-white p-5">
+              <div key={f.t} className="rounded-2xl border border-slate-200 bg-white p-5">
                 <div className="flex items-center gap-3">
                   <div className="rounded-xl border bg-amber-50 text-amber-700 p-2"><f.icon className="w-5 h-5" /></div>
                   <h4 className="text-base font-semibold text-slate-900">{f.t}</h4>
@@ -302,7 +291,7 @@ export default function LoginLandingPro() {
       </section>
 
       {/* FAQ */}
-      <section className="bg-white border-t">
+      <section className="bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 sm:px-6 lg:px-8 py-12">
           <div className="grid lg:grid-cols-2 gap-10 items-start">
             <div>
@@ -315,7 +304,7 @@ export default function LoginLandingPro() {
               </div>
             </div>
 
-            <div className="rounded-3xl border bg-gradient-to-b from-slate-50 to-white p-6">
+            <div className="rounded-3xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-6">
               <h4 className="text-lg font-semibold text-slate-900">Need an enterprise rollout?</h4>
               <p className="text-sm text-slate-600 mt-1">We provide white-labeling, SSO, custom roles, and data residency options.</p>
               <ul className="mt-4 grid sm:grid-cols-2 gap-3 text-sm">
@@ -324,7 +313,7 @@ export default function LoginLandingPro() {
                 <li className="inline-flex items-center gap-2"><ShieldIcon className="w-4 h-4" /> Audit Logs</li>
                 <li className="inline-flex items-center gap-2"><ShieldIcon className="w-4 h-4" /> Data Residency</li>
               </ul>
-              <div className="mt-6 inline-flex items-center gap-2 text-sm rounded-full border px-3 py-1.5">
+              <div className="mt-6 inline-flex items-center gap-2 text-sm rounded-full border border-slate-200 px-3 py-1.5">
                 Talk to Sales <ArrowRightIcon className="w-4 h-4" />
               </div>
             </div>
@@ -340,7 +329,7 @@ export default function LoginLandingPro() {
             <p className="text-slate-400 text-sm mt-1">Onboard in minutes. Add sub‑agents. Start issuing GST invoices today.</p>
           </div>
           <div className="flex md:justify-end">
-            <a href="#" className="inline-flex items-center gap-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 font-medium">
+            <a href="#" className="inline-flex items-center gap-2 rounded-full bg-blue-900 hover:bg-amber-600 text-white px-5 py-2.5 font-medium">
               Create Agency Account <ArrowRightIcon className="w-4 h-4" />
             </a>
           </div>
@@ -355,7 +344,7 @@ export default function LoginLandingPro() {
 /* ==================== Small Components ==================== */
 function PartnerMarquee({ items }) {
   return (
-    <div className="mt-3 overflow-hidden rounded-2xl border bg-white">
+    <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <div className="flex gap-10 animate-[marquee_28s_linear_infinite] py-3 px-4 will-change-transform">
         {[...items, ...items].map((n, i) => (
           <span key={i} className="text-slate-500 text-xs sm:text-sm whitespace-nowrap inline-flex items-center gap-2">
@@ -371,7 +360,7 @@ function PartnerMarquee({ items }) {
 function FaqItem({ q, a }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="rounded-2xl border bg-white">
+    <div className="rounded-2xl border border-slate-200 bg-white">
       <button onClick={() => setOpen((o) => !o)} className="w-full flex items-center justify-between gap-4 px-4 py-3">
         <span className="text-sm font-medium text-slate-900 text-left">{q}</span>
         <span className="text-slate-500">{open ? "−" : "+"}</span>
@@ -397,7 +386,7 @@ function OtpInput({ value, onChange }) {
           maxLength={1}
           value={(value || "")[i] || ""}
           onChange={(e) => set(i, e.target.value)}
-          className="w-11 h-12 text-center text-lg font-semibold rounded-xl border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none"
+          className="w-11 h-12 text-center text-lg font-semibold rounded-xl border-slate-300 border focus:none outline-none"
         />
       ))}
     </>
