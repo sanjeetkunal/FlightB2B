@@ -313,7 +313,7 @@ function FilterPanel({
   );
 
   return (
-    <aside className={`rounded-2xl border border-gray-200 bg-white ${mobile ? "" : "p-4"} sm:p-4 shadow-sm text-[13px]`}>
+    <aside className={`rounded-2xl bg-white ${mobile ? "" : "p-4"} sm:p-4 text-[13px]`}>
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-[15px] font-semibold">Applied Filters</h3>
@@ -783,7 +783,7 @@ function B2BRow({
   };
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm">
+    <div className="rounded-2xl border border-gray-200 bg-white p-3">
       {/* summary */}
       <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
         <div className="flex items-center gap-2">
@@ -987,17 +987,18 @@ export default function B2BFlightListExact() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="mx-auto">
+    <div className="min-h-screen">
       {/* Modify Search bar */}
       {showModify && (
-        <div className="sticky top-0 z-40 mb-3 bg-black backdrop-blur">
-          <div className="mx-auto max-w-[90rem] px-3 py-4">
+        <div className="sticky top-0 z-40 mb-3 backdrop-blur">
+          <div className="mx-auto max-w-7xl">
             <FromToBar onSearch={handleModifySearch} />
           </div>
         </div>
       )}
 
-      <div className="mx-auto max-w-[90rem] px-3 py-4">
+      <div className="mx-auto max-w-7xl">
         {/* Top actions */}
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div className="text-[20px] font-semibold text-gray-900">
@@ -1060,6 +1061,7 @@ export default function B2BFlightListExact() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

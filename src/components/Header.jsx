@@ -57,7 +57,7 @@ export default function Header({ variant = "private" }) {
     <header className="bg-white sticky top-0 z-30">
       {/* TOP BAR */}
       <div className="hidden sm:block bg-black text-white">
-        <div className="max-w-[90rem] mx-auto px-4">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="h-11 flex items-center justify-between gap-3">
             {/* Contact Info */}
             <div className="flex items-center gap-6 text-sm">
@@ -84,7 +84,7 @@ export default function Header({ variant = "private" }) {
 
       {/* BOTTOM BAR */}
       <div className="border border-gray-200">
-        <div className="max-w-[90rem] mx-auto px-4">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="h-16 flex items-center justify-between">
             {/* Left: Logo + product tabs */}
             <div className="flex items-center gap-6 min-w-0">

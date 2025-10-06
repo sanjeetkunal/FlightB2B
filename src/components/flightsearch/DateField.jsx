@@ -31,7 +31,7 @@ export default function DateField({ label, value, onChange, disabled }) {
         >
           {display}
         </button>
-        <span className="ml-2">📅</span>
+        <span className="ml-2"></span>
       </FieldShell>
 
       {/* Multi-month calendar popover */}

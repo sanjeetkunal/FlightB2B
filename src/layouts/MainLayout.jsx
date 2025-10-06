@@ -4,10 +4,10 @@ import Footer from "../components/Footer";
 
 export default function MainLayout({ children }) {
   return (
-    <div className="flex flex-col min-h-dvh">
+    <div className="flex flex-col min-h-dvh bg-gray-100">
       <Header />
       {/* <main className="flex-1">{children}</main> */}
-       <main className="max-w-[90rem] mx-auto px-4 py-4">
+       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
         <Outlet />
       </main>
       <Footer />

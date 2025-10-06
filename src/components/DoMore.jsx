@@ -11,7 +11,7 @@ const items = [
 
 export default function DoMore() {
   return (
-    <section className="max-w-[90rem] mx-auto px-4 pb-10">
+    <section className="mx-auto max-w-7xl pb-10">
       <h3 className="text-lg font-semibold mb-3">Do More With V2A</h3>
       <div className="bg-white  rounded-[22px] border border-gray-200 p-4">
         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8">

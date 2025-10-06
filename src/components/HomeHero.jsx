@@ -12,7 +12,7 @@ export default function HomeHero() {
 
 
   return (
-    <section className="max-w-[90rem] mx-auto px-4 py-7">
+    <section className="mx-auto max-w-7xl py-7">
       <div className="mx-auto mb-3">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div className="space-y-8">

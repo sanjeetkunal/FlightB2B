@@ -3,7 +3,7 @@ import uri from "../../assets/media/uri.webp";
 
 export default function HolidayDeals() {
   return (
-    <section className="max-w-[90rem] mx-auto px-4 py-7">
+    <section className="mx-auto max-w-7xl py-7">
     <div className="flex flex-col md:flex-row gap-4">
       {/* Left card */}
       <div className="bg-slate-300 rounded-xl flex flex-col justify-between p-6 w-full md:w-1/2 relative overflow-hidden h-[210px]">
