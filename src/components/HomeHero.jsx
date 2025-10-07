@@ -18,7 +18,7 @@ export default function HomeHero() {
           <div className="space-y-8">
             <h1 className="text-3xl sm:text-5xl lg:text-5xl text-black leading-tight font-semibold text-center sm:text-left">
               Let's <span className="text-black not-italic">Travel</span> The
-              <span className="block"><span className="text-amber-500  font-bold not-italic">World</span> with us</span>
+              <span className="block"><span className="text-blue-500  font-bold not-italic">World</span> with us</span>
             </h1>
           </div>
 

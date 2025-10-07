@@ -27,7 +27,7 @@ export default function App() {
       >
         {/* index == "/"  => Home */}
         <Route index element={<Home />} />
-        <Route path="flights" element={<FlightResults />} />
+       <Route path="/flight-results" element={<FlightResults />} />
       </Route>
 
       {/* Fallback */}

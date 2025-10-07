@@ -36,8 +36,8 @@ export default function B2BFooter() {
           {/* Brand + Newsletter */}
           <div className="lg:col-span-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-2xl bg-amber-500 flex items-center justify-center shadow-sm">
-                <span className="text-white font-black">TA</span>
+              <div className="h-10 w-10 rounded-2xl bg-blue-500 flex items-center justify-center shadow-sm">
+                <span className="text-white font-black">T</span>
               </div>
               <div>
                 <p className="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">Thynk</p>

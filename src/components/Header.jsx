@@ -158,7 +158,7 @@ export default function Header({ variant = "private" }) {
                             {wallet.currency}{formatMoney(wallet.balance)}
                           </div>
                         </div>
-                        <button className="px-3 py-2 rounded-lg bg-black text-white text-sm font-semibold hover:bg-gray-700">
+                        <button className="px-3 py-2 rounded-lg bg-blue-500 text-white text-sm font-semibold hover:bg-gray-700">
                           Add Funds
                         </button>
                       </div>
@@ -166,7 +166,7 @@ export default function Header({ variant = "private" }) {
                         <InfoTile title="Credit Limit" value={`${wallet.currency}${formatMoney(wallet.creditLimit)}`} />
                         <InfoTile title="Hold Amount" value={`${wallet.currency}0.00`} />
                       </div>
-                      <div className="mt-3 border-t pt-3">
+                      <div className="mt-3 border-t border-gray-200 pt-3">
                         <DropItem>Wallet History</DropItem>
                         <DropItem>Download Statement</DropItem>
                         <DropItem>Refunds & Adjustments</DropItem>
@@ -223,12 +223,12 @@ export default function Header({ variant = "private" }) {
                           </span>
                         </div>
                       </div>
-                      <div className="border-t my-2" />
+                      <div className="border-t my-2 border-gray-200" />
                       <MenuLink>My Profile</MenuLink>
                       <MenuLink>Agency Settings</MenuLink>
                       <MenuLink>GST & KYC</MenuLink>
                       <MenuLink>Payout Accounts</MenuLink>
-                      <div className="border-t my-2" />
+                      <div className="border-t my-2 border-gray-200" />
                       <MenuLink danger onClick={handleLogout}>Logout</MenuLink>
                     </div>
                   )}

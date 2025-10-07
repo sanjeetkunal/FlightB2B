@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";                 // 👈 add
 import { AIRPORTS } from "../../data/airports";
 import AirportSelect from "../flightsearch/AirportSelect";
 import DateField from "../flightsearch/DateField";
 import TravellersField from "../flightsearch/TravellersField";
-import TravellerClassPicker from "../flightsearch/TravellerClassPicker"; // 👈 import add kiya
-
-
+import TravellerClassPicker from "../flightsearch/TravellerClassPicker";
 
 export default function FromToBar({ onSearch }) {
+  const navigate = useNavigate();                               // 👈 add
   const [trip, setTrip] = useState("oneway");
 
   const [fromAP, setFromAP] = useState(AIRPORTS.find(a => a.code === "CCU") || null);
@@ -28,15 +28,38 @@ export default function FromToBar({ onSearch }) {
   const swap = () => { const a = fromAP; setFromAP(toAP); setToAP(a); };
 
   const handleSearch = () => {
-    const payload = {
+    // optional: callback up
+    onSearch?.({
       trip,
       from: fromAP ? { code: fromAP.code, city: fromAP.city } : null,
       to: toAP ? { code: toAP.code, city: toAP.city } : null,
       depart,
       ret: trip === "round" ? ret : "",
       ...tc,
-    };
-    onSearch?.(payload);
+    });
+
+    // guard basics
+    if (!fromAP || !toAP || !depart) {
+      alert("Please select From, To and Departure date");
+      return;
+    }
+    if (trip === "round" && !ret) {
+      alert("Please select Return date");
+      return;
+    }
+
+    // build query params for results page
+    const params = new URLSearchParams({
+      from: fromAP.code,
+      to: toAP.code,
+      date: depart,                 // YYYY-MM-DD
+      cabin: tc.cabin,              // Economy | Premium Economy | Business
+      pax: String(total),
+      trip,
+      ...(trip === "round" && ret ? { ret } : {}),
+    });
+
+    navigate(`/flight-results?${params.toString()}`);           // 👈 go to results
   };
 
   return (
@@ -99,9 +122,8 @@ export default function FromToBar({ onSearch }) {
 
         {/* SEARCH */}
         <button
-          // onClick={handleSearch}  
-         onClick={() => navigate(`/flights/`)}
-          className="w-full md:w-[80px] h-[56px] rounded-xl bg-blue-900 hover:bg-amber-600
+          onClick={handleSearch}                                // 👈 use handler
+          className="w-full md:w-[80px] h-[56px] rounded-xl bg-blue-500 hover:bg-amber-600
                      text-white font-semibold flex items-center justify-center gap-2"
         >
           <span className="text-xl leading-none">›</span>

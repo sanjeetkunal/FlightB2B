@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { saveAuth } from "../auth";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { Mail, Lock } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 
 
@@ -80,24 +82,24 @@ export default function LoginLandingPro() {
     { k: "99.96%", v: "Uptime (SLA)" },
   ];
 
-// inside your page component (top-level of the component body)
-const partnerLogos = useMemo(
-  () => [
-    { name: "Amadeus",       src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Amadeus_%28CRS%29_Logo.svg/1200px-Amadeus_%28CRS%29_Logo.svg.png",       w: 96,  h: 24 },
-    { name: "Sabre",         src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Sabre_Corporation_logo.svg/2560px-Sabre_Corporation_logo.svg.png",         w: 84,  h: 24 },
-    { name: "Galileo",       src: "https://i0.wp.com/www.opendestinations.com/wp-content/uploads/2018/03/logo-travelport.png?fit=799%2C250&ssl=1",       w: 96,  h: 24 },
-    { name: "IndiGo",        src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/IndiGo_Airlines_logo.svg/2560px-IndiGo_Airlines_logo.svg.png",        w: 80,  h: 24 },
-    { name: "Air India",     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Air_India_2023.svg/1200px-Air_India_2023.svg.png",      w: 96,  h: 24 },
-    { name: "Vistara",       src: "https://airhex.com/images/airline-logos/alt/vistara.png",       w: 96,  h: 24 },
-    { name: "SpiceJet",      src: "https://airhex.com/images/airline-logos/alt/spicejet.png",      w: 96,  h: 24 },
-    { name: "Emirates",      src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtm7QhtMWlUdJws_oU4ukSp3ECOutKmgz_Z68u4MMlIM5uqJ-l_aipzC_ZfpXLR_H57Q&usqp=CAU",      w: 96,  h: 24 },
-    { name: "Qatar Airways", src: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Qatar_Airways_logo.svg/1200px-Qatar_Airways_logo.svg.png",         w: 110, h: 24 },
-    { name: "MakeMyTrip",    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Makemytrip_logo.svg/1558px-Makemytrip_logo.svg.png",       w: 110, h: 24 },
-    { name: "Booking.com",   src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Booking.com_logo.svg/2560px-Booking.com_logo.svg.png",       w: 110, h: 24 },
-    { name: "IRCTC",         src: "https://logos-world.net/wp-content/uploads/2022/06/IRCTC-Symbol.png",         w: 84,  h: 24 },
-  ],
-  []
-);
+  // inside your page component (top-level of the component body)
+  const partnerLogos = useMemo(
+    () => [
+      { name: "Amadeus", src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Amadeus_%28CRS%29_Logo.svg/1200px-Amadeus_%28CRS%29_Logo.svg.png", w: 96, h: 24 },
+      { name: "Sabre", src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Sabre_Corporation_logo.svg/2560px-Sabre_Corporation_logo.svg.png", w: 84, h: 24 },
+      { name: "Galileo", src: "https://i0.wp.com/www.opendestinations.com/wp-content/uploads/2018/03/logo-travelport.png?fit=799%2C250&ssl=1", w: 96, h: 24 },
+      { name: "IndiGo", src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/IndiGo_Airlines_logo.svg/2560px-IndiGo_Airlines_logo.svg.png", w: 80, h: 24 },
+      { name: "Air India", src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Air_India_2023.svg/1200px-Air_India_2023.svg.png", w: 96, h: 24 },
+      { name: "Vistara", src: "https://airhex.com/images/airline-logos/alt/vistara.png", w: 96, h: 24 },
+      { name: "SpiceJet", src: "https://airhex.com/images/airline-logos/alt/spicejet.png", w: 96, h: 24 },
+      { name: "Emirates", src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtm7QhtMWlUdJws_oU4ukSp3ECOutKmgz_Z68u4MMlIM5uqJ-l_aipzC_ZfpXLR_H57Q&usqp=CAU", w: 96, h: 24 },
+      { name: "Qatar Airways", src: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Qatar_Airways_logo.svg/1200px-Qatar_Airways_logo.svg.png", w: 110, h: 24 },
+      { name: "MakeMyTrip", src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Makemytrip_logo.svg/1558px-Makemytrip_logo.svg.png", w: 110, h: 24 },
+      { name: "Booking.com", src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Booking.com_logo.svg/2560px-Booking.com_logo.svg.png", w: 110, h: 24 },
+      { name: "IRCTC", src: "https://logos-world.net/wp-content/uploads/2022/06/IRCTC-Symbol.png", w: 84, h: 24 },
+    ],
+    []
+  );
 
 
   return (
@@ -116,11 +118,11 @@ const partnerLogos = useMemo(
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 sm:px-6 lg:px-8 pt-10 pb-16">
           <div className="grid lg:grid-cols-12 gap-10 lg:gap-14 items-center">
             <div className="lg:col-span-8">
-              <p className="inline-flex items-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-3 py-1">
+              <p className="inline-flex items-center gap-2 text-xs font-medium text-blue-500 bg-blue-50 border border-blue-200 rounded-full px-3 py-1">
                 <SparklesIcon className="w-4 h-4" /> Premium B2B Travel OS
               </p>
               <h1 className="mt-4 text-4xl sm:text-5xl font-semibold leading-tight text-slate-900">
-                All your <span className="text-blue-900">travel products</span> in one powerful dashboard
+                All your <span className="text-blue-500">travel products</span> in one powerful dashboard
               </h1>
               <p className="mt-3 text-slate-600 max-w-2xl">
                 Book Flights, Hotels, Train, Bus & Visa with live markups, commission engine, GST invoicing,
@@ -156,18 +158,16 @@ const partnerLogos = useMemo(
                 <div className="mt-4 grid grid-cols-2 rounded-full border border-gray-50 p-1 bg-slate-50">
                   <button
                     onClick={() => setTab("password")}
-                    className={`text-sm rounded-full py-2 transition ${
-                      tab === "password" ? "bg-white shadow font-medium" : "text-slate-500 hover:text-slate-700"
-                    }`}
+                    className={`text-sm rounded-full py-2 transition ${tab === "password" ? "bg-white shadow font-medium" : "text-slate-500 hover:text-slate-700"
+                      }`}
                     aria-current={tab === "password"}
                   >
                     Password
                   </button>
                   <button
                     onClick={() => setTab("otp")}
-                    className={`text-sm rounded-full py-2 transition ${
-                      tab === "otp" ? "bg-white shadow font-medium" : "text-slate-500 hover:text-slate-700"
-                    }`}
+                    className={`text-sm rounded-full py-2 transition ${tab === "otp" ? "bg-white shadow font-medium" : "text-slate-500 hover:text-slate-700"
+                      }`}
                     aria-current={tab === "otp"}
                   >
                     OTP
@@ -177,35 +177,48 @@ const partnerLogos = useMemo(
                 <form onSubmit={onSubmit} className="mt-5 space-y-4">
                   <div>
                     <label className="block text-sm font-medium">Business Email</label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="agent@v2a.com"
-                      className="mt-1 w-full rounded-sm border-slate-300 focus:none border border-gray-50 px-3 py-2.5 outline-none"
-                      required
-                    />
+                    <div className="relative mt-1">
+                      {/* icon */}
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" aria-hidden="true" />
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="agent@v2a.com"
+                        className="w-full rounded-sm border border-gray-200 bg-white/90 pl-9 pr-3 py-2.5 outline-none focus:outline-none focus:ring-0"
+                        required
+                      />
+                    </div>
                   </div>
 
                   {tab === "password" ? (
                     <div>
                       <label className="block text-sm font-medium">Password</label>
                       <div className="relative mt-1">
+                        {/* icon */}
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" aria-hidden="true" />
                         <input
                           type={showPw ? "text" : "password"}
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           placeholder="Password123"
-                          className="w-full rounded-sm border-slate-300 border border-gray-50 focus:none px-3 py-2.5 pr-10 outline-none"
+                          className="w-full rounded-sm border border-gray-200 bg-white/90 pl-9 pr-10 py-2.5 outline-none focus:outline-none focus:ring-0"
                           required
                         />
+                        {/* show/hide button */}
                         <button
                           type="button"
                           onClick={() => setShowPw((s) => !s)}
-                          className="absolute inset-y-0 right-0 px-3 text-slate-500 hover:text-slate-700"
+                          className="absolute inset-y-0 right-0 grid place-items-center px-3 text-slate-500 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 rounded-sm"
                           aria-label={showPw ? "Hide password" : "Show password"}
+                          aria-pressed={showPw}
+                          title={showPw ? "Hide password" : "Show password"}
                         >
-                          {showPw ? "🙈" : "👁️"}
+                          {showPw ? (
+                            <EyeOff className="w-5 h-5" aria-hidden="true" />
+                          ) : (
+                            <Eye className="w-5 h-5" aria-hidden="true" />
+                          )}
                         </button>
                       </div>
                       <div className="mt-2 flex items-center justify-between text-xs">
@@ -233,12 +246,12 @@ const partnerLogos = useMemo(
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-blue-900 hover:bg-amber-600 text-white px-5 py-2.5 font-medium disabled:opacity-60"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-blue-500 hover:bg-amber-600 text-white px-5 py-2.5 font-medium disabled:opacity-60"
                   >
                     {loading ? "Signing in…" : "Sign in"}
                   </button>
 
-                
+
 
                   <p className="text-xs text-slate-500 text-center">
                     Demo credentials: <span className="font-medium">agent@v2a.com / Password123</span>
@@ -246,7 +259,7 @@ const partnerLogos = useMemo(
                 </form>
               </div>
 
-     
+
             </div>
           </div>
         </div>
@@ -344,14 +357,14 @@ const partnerLogos = useMemo(
             <p className="text-slate-400 text-sm mt-1">Onboard in minutes. Add sub‑agents. Start issuing GST invoices today.</p>
           </div>
           <div className="flex md:justify-end">
-            <a href="#" className="inline-flex items-center gap-2 rounded-full bg-blue-900 hover:bg-amber-600 text-white px-5 py-2.5 font-medium">
+            <a href="#" className="inline-flex items-center gap-2 rounded-full bg-blue-500 hover:bg-amber-600 text-white px-5 py-2.5 font-medium">
               Create Agency Account <ArrowRightIcon className="w-4 h-4" />
             </a>
           </div>
         </div>
       </footer>
 
-        <Footer />
+      <Footer />
     </>
   );
 }
@@ -440,19 +453,19 @@ function SSOButton({ label }) {
 }
 
 /* ====================== Icons (inline) ====================== */
-function Dot(props){return(<svg viewBox="0 0 10 10" fill="currentColor" aria-hidden="true" {...props}><circle cx="5" cy="5" r="5"/></svg>)}
-function ArrowRightIcon(props){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>)}
-function SparklesIcon(props){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}><path d="M12 2l2 5 5 2-5 2-2 5-2-5-5-2 5-2 2-5zm7 11l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2zM4 13l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z"/></svg>)}
-function AirplaneIcon(props){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><path d="M10 21l2-5 7-2-9-9-2 7-5 2 7 7z"/></svg>)}
-function HotelIcon(props){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M7 7V5a3 3 0 016 0v2"/></svg>)}
-function TrainIcon(props){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><rect x="6" y="3" width="12" height="12" rx="2"/><path d="M6 11h12M8 21l2-2m6 2l-2-2"/></svg>)}
-function BusIcon(props){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><rect x="4" y="5" width="16" height="12" rx="2"/><circle cx="8" cy="17" r="1.5"/><circle cx="16" cy="17" r="1.5"/></svg>)}
-function VisaIcon(props){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><path d="M4 4h16v16H4z"/><path d="M8 12h8M12 8v8"/></svg>)}
-function BoltIcon(props){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><path d="M13 3L4 14h7l-1 7 9-11h-7l1-7z"/></svg>)}
-function PercentIcon(props){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}><path d="M19 5L5 19"/><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/></svg>)}
-function CoinsIcon(props){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg>)}
-function ClockIcon(props){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><circle cx="12" cy="12" r="9"/><path d="M12 7v6l4 2"/></svg>)}
-function UsersIcon(props){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><circle cx="9" cy="8" r="4"/><path d="M17 11a4 4 0 110 8M3 21a6 6 0 1112 0"/></svg>)}
-function WalletIcon(props){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M16 12h5"/></svg>)}
-function ReportIcon(props){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>)}
-function ShieldIcon(props){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}><path d="M12 3l7 4v5c0 5-3 8-7 9-4-1-7-4-7-9V7l7-4z"/></svg>)}
+function Dot(props) { return (<svg viewBox="0 0 10 10" fill="currentColor" aria-hidden="true" {...props}><circle cx="5" cy="5" r="5" /></svg>) }
+function ArrowRightIcon(props) { return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}><path d="M5 12h14" /><path d="M12 5l7 7-7 7" /></svg>) }
+function SparklesIcon(props) { return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}><path d="M12 2l2 5 5 2-5 2-2 5-2-5-5-2 5-2 2-5zm7 11l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2zM4 13l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z" /></svg>) }
+function AirplaneIcon(props) { return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><path d="M10 21l2-5 7-2-9-9-2 7-5 2 7 7z" /></svg>) }
+function HotelIcon(props) { return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><rect x="3" y="7" width="18" height="12" rx="2" /><path d="M7 7V5a3 3 0 016 0v2" /></svg>) }
+function TrainIcon(props) { return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><rect x="6" y="3" width="12" height="12" rx="2" /><path d="M6 11h12M8 21l2-2m6 2l-2-2" /></svg>) }
+function BusIcon(props) { return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><rect x="4" y="5" width="16" height="12" rx="2" /><circle cx="8" cy="17" r="1.5" /><circle cx="16" cy="17" r="1.5" /></svg>) }
+function VisaIcon(props) { return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><path d="M4 4h16v16H4z" /><path d="M8 12h8M12 8v8" /></svg>) }
+function BoltIcon(props) { return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><path d="M13 3L4 14h7l-1 7 9-11h-7l1-7z" /></svg>) }
+function PercentIcon(props) { return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}><path d="M19 5L5 19" /><circle cx="7" cy="7" r="3" /><circle cx="17" cy="17" r="3" /></svg>) }
+function CoinsIcon(props) { return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><ellipse cx="12" cy="5" rx="7" ry="3" /><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" /></svg>) }
+function ClockIcon(props) { return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><circle cx="12" cy="12" r="9" /><path d="M12 7v6l4 2" /></svg>) }
+function UsersIcon(props) { return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><circle cx="9" cy="8" r="4" /><path d="M17 11a4 4 0 110 8M3 21a6 6 0 1112 0" /></svg>) }
+function WalletIcon(props) { return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M16 12h5" /></svg>) }
+function ReportIcon(props) { return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 9h8M8 13h8M8 17h5" /></svg>) }
+function ShieldIcon(props) { return (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}><path d="M12 3l7 4v5c0 5-3 8-7 9-4-1-7-4-7-9V7l7-4z" /></svg>) }
