@@ -1,9 +1,9 @@
 export type Airport = {
-  code: string;               
+  code: string;
   city: string;
   state?: string;
   country: string;
-  airport: string;            
+  airport: string;
   popular?: boolean;
 };
 
@@ -18,4 +18,9 @@ export const AIRPORTS: Airport[] = [
   { code: "AMD", city: "Ahmedabad", state: "Gujarat", country: "India", airport: "Sardar Vallabhbhai Patel International Airport" },
   { code: "CCU", city: "Kolkata", state: "West Bengal", country: "India", airport: "Netaji Subhas Chandra Bose International Airport" },
   { code: "JAI", city: "Jaipur", state: "Rajasthan", country: "India", airport: "Jaipur International Airport" },
+  { code: "DXB", city: "Dubai", country: "United Arab Emirates", airport: "Dubai International Airport", popular: true },
+  { code: "DOH", city: "Doha", country: "Qatar", airport: "Hamad International Airport", popular: true },
+  { code: "LHR", city: "London", country: "United Kingdom", airport: "Heathrow Airport", popular: true },
+  { code: "SIN", city: "Singapore", country: "Singapore", airport: "Singapore Changi Airport", popular: true },
+  { code: "IST", city: "Istanbul", country: "Türkiye", airport: "Istanbul Airport", popular: true },
 ];

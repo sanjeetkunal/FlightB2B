@@ -50,227 +50,24 @@ export type SearchInput = {
 };
 
 export const FLIGHTS: FlightRow[] = [
-  // ===== DEL → BOM — 2025-10-12 (existing) =====
+    // ===== RETURN FLIGHTS (add these at the end of FLIGHTS[]) =====
+
+  // BOM → DEL — 2025-10-16 (Vistara) — return of DEL→BOM
   {
-    id: "6E-201",
-    airline: "IndiGo",
-    logoBg: "#1A73E8",
-    flightNos: "6E 201",
-    fromCity: "New Delhi", fromIata: "DEL",
-    toCity: "Mumbai",      toIata: "BOM",
-    departTime: "07:15", departDate: "2025-10-12",
-    arriveTime: "09:30", arriveDate: "2025-10-12",
-    stops: 0, stopLabel: "Non-stop",
-    durationMin: 135,
-    refundable: "Refundable",
-    extras: ["Book & Hold", "Partial Payment"],
-    fares: [
-      {
-        fareId: "6E201-ECO-SAVER",
-        brand: "Saver", cabin: "Economy", rbd: "V",
-        baggageKg: 15, cabinBagKg: 7,
-        refundable: false, changeFeeINR: 2500,
-        meal: false, seatSelect: false, holdAllowed: true, partialPay: true,
-        baseINR: 4200, taxINR: 1699, totalINR: 5899
-      },
-      {
-        fareId: "6E201-ECO-FLEX",
-        brand: "Flex", cabin: "Economy", rbd: "K",
-        baggageKg: 20, cabinBagKg: 7,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 4700, taxINR: 1790, totalINR: 6490
-      },
-      {
-        fareId: "6E201-PE-PREM",
-        brand: "Premium", cabin: "Premium Economy", rbd: "W",
-        baggageKg: 25, cabinBagKg: 7,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 6400, taxINR: 2050, totalINR: 8450
-      }
-    ]
-  },
-  {
-    id: "AI-865",
-    airline: "Air India",
-    logoBg: "#C41E3A",
-    flightNos: "AI 865",
-    fromCity: "New Delhi", fromIata: "DEL",
-    toCity: "Mumbai",      toIata: "BOM",
-    departTime: "10:10", departDate: "2025-10-12",
-    arriveTime: "12:25", arriveDate: "2025-10-12",
-    stops: 0, stopLabel: "Non-stop",
-    durationMin: 135,
-    refundable: "Refundable",
-    fares: [
-      {
-        fareId: "AI865-ECO-SAVER",
-        brand: "Saver", cabin: "Economy", rbd: "V",
-        baggageKg: 15, cabinBagKg: 7,
-        refundable: false, changeFeeINR: 2500,
-        meal: true, seatSelect: false,
-        baseINR: 4550, taxINR: 1740, totalINR: 6290
-      },
-      {
-        fareId: "AI865-ECO-FLEX",
-        brand: "Flex", cabin: "Economy", rbd: "K",
-        baggageKg: 20, cabinBagKg: 7,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 5050, taxINR: 1840, totalINR: 6890
-      },
-      {
-        fareId: "AI865-BIZ",
-        brand: "Business", cabin: "Business", rbd: "J",
-        baggageKg: 35, cabinBagKg: 10,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 11900, taxINR: 2900, totalINR: 14800
-      }
-    ]
-  },
-  {
-    id: "UK-951",
+    id: "UK-970",
     airline: "Vistara",
     logoBg: "#5A2E8A",
-    flightNos: "UK 951",
-    fromCity: "New Delhi", fromIata: "DEL",
-    toCity: "Mumbai",      toIata: "BOM",
-    departTime: "18:40", departDate: "2025-10-12",
-    arriveTime: "20:55", arriveDate: "2025-10-12",
+    flightNos: "UK 970",
+    fromCity: "Mumbai", fromIata: "BOM",
+    toCity: "New Delhi", toIata: "DEL",
+    departTime: "19:05", departDate: "2025-10-16",
+    arriveTime: "21:15", arriveDate: "2025-10-16",
     stops: 0, stopLabel: "Non-stop",
-    durationMin: 135,
+    durationMin: 130,
     refundable: "Refundable",
     fares: [
       {
-        fareId: "UK951-ECO-SAVER",
-        brand: "Saver", cabin: "Economy", rbd: "X",
-        baggageKg: 15, cabinBagKg: 7,
-        refundable: false, changeFeeINR: 2500,
-        meal: true, seatSelect: false,
-        baseINR: 4900, taxINR: 1940, totalINR: 6840
-      },
-      {
-        fareId: "UK951-ECO-FLEX",
-        brand: "Flex", cabin: "Economy", rbd: "M",
-        baggageKg: 20, cabinBagKg: 7,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 5350, taxINR: 2050, totalINR: 7400
-      },
-      {
-        fareId: "UK951-BIZ",
-        brand: "Business", cabin: "Business", rbd: "J",
-        baggageKg: 40, cabinBagKg: 10,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 12600, taxINR: 3200, totalINR: 15800
-      }
-    ]
-  },
-
-  // ===== DEL → DXB — 2025-10-12 (existing) =====
-  {
-    id: "EK-513",
-    airline: "Emirates",
-    logoBg: "#E31E24",
-    flightNos: "EK 513",
-    fromCity: "New Delhi", fromIata: "DEL",
-    toCity: "Dubai",      toIata: "DXB",
-    departTime: "16:15", departDate: "2025-10-12",
-    arriveTime: "18:10", arriveDate: "2025-10-12",
-    stops: 0, stopLabel: "Non-stop",
-    durationMin: 205,
-    refundable: "Refundable",
-    fares: [
-      {
-        fareId: "EK513-ECO-SAVER",
-        brand: "Saver", cabin: "Economy", rbd: "V",
-        baggageKg: 25, cabinBagKg: 7,
-        refundable: false, changeFeeINR: 3500,
-        meal: true, seatSelect: false,
-        baseINR: 18200, taxINR: 5900, totalINR: 24100
-      },
-      {
-        fareId: "EK513-ECO-FLEX",
-        brand: "Flex", cabin: "Economy", rbd: "K",
-        baggageKg: 30, cabinBagKg: 7,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 19400, taxINR: 6100, totalINR: 25500
-      },
-      {
-        fareId: "EK513-BIZ",
-        brand: "Business", cabin: "Business", rbd: "J",
-        baggageKg: 40, cabinBagKg: 10,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 53400, taxINR: 9600, totalINR: 63000
-      }
-    ]
-  },
-
-  // ===== NEW ADDITIONS BELOW =====
-
-  // DEL → BLR — 2025-10-13 (Akasa Air)
-  {
-    id: "QP-1101",
-    airline: "Akasa Air",
-    logoBg: "#6B21A8",
-    flightNos: "QP 1101",
-    fromCity: "New Delhi", fromIata: "DEL",
-    toCity: "Bengaluru",   toIata: "BLR",
-    departTime: "06:30", departDate: "2025-10-13",
-    arriveTime: "09:15", arriveDate: "2025-10-13",
-    stops: 0, stopLabel: "Non-stop",
-    durationMin: 165,
-    refundable: "Refundable",
-    extras: ["Book & Hold"],
-    fares: [
-      {
-        fareId: "QP1101-ECO-SAVER",
-        brand: "Saver", cabin: "Economy", rbd: "V",
-        baggageKg: 15, cabinBagKg: 7,
-        refundable: false, changeFeeINR: 2500,
-        meal: false, seatSelect: false,
-        baseINR: 3600, taxINR: 1500, totalINR: 5100
-      },
-      {
-        fareId: "QP1101-ECO-FLEX",
-        brand: "Flex", cabin: "Economy", rbd: "K",
-        baggageKg: 20, cabinBagKg: 7,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 4100, taxINR: 1600, totalINR: 5700
-      },
-      {
-        fareId: "QP1101-PE-PREM",
-        brand: "Premium", cabin: "Premium Economy", rbd: "W",
-        baggageKg: 25, cabinBagKg: 7,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 5800, taxINR: 1900, totalINR: 7700
-      }
-    ]
-  },
-
-  // BLR → DEL — 2025-10-14 (Vistara)
-  {
-    id: "UK-810",
-    airline: "Vistara",
-    logoBg: "#5A2E8A",
-    flightNos: "UK 810",
-    fromCity: "Bengaluru", fromIata: "BLR",
-    toCity: "New Delhi",   toIata: "DEL",
-    departTime: "07:20", departDate: "2025-10-14",
-    arriveTime: "10:05", arriveDate: "2025-10-14",
-    stops: 0, stopLabel: "Non-stop",
-    durationMin: 165,
-    refundable: "Refundable",
-    fares: [
-      {
-        fareId: "UK810-ECO-SAVER",
+        fareId: "UK970-ECO-SAVER",
         brand: "Saver", cabin: "Economy", rbd: "X",
         baggageKg: 15, cabinBagKg: 7,
         refundable: false, changeFeeINR: 2500,
@@ -278,7 +75,7 @@ export const FLIGHTS: FlightRow[] = [
         baseINR: 4200, taxINR: 1600, totalINR: 5800
       },
       {
-        fareId: "UK810-ECO-FLEX",
+        fareId: "UK970-ECO-FLEX",
         brand: "Flex", cabin: "Economy", rbd: "M",
         baggageKg: 20, cabinBagKg: 7,
         refundable: true, changeFeeINR: 0,
@@ -286,558 +83,526 @@ export const FLIGHTS: FlightRow[] = [
         baseINR: 4700, taxINR: 1700, totalINR: 6400
       },
       {
-        fareId: "UK810-BIZ",
+        fareId: "UK970-BIZ",
         brand: "Business", cabin: "Business", rbd: "J",
-        baggageKg: 35, cabinBagKg: 10,
+        baggageKg: 40, cabinBagKg: 10,
         refundable: true, changeFeeINR: 0,
         meal: true, seatSelect: true,
-        baseINR: 12000, taxINR: 3000, totalINR: 15000
+        baseINR: 12400, taxINR: 3200, totalINR: 15600
       }
     ]
   },
 
-  // BOM → DEL — 2025-11-02 (IndiGo)
+  // DXB → DEL — 2025-10-18 (Emirates) — return of DEL→DXB (EK-513)
   {
-    id: "6E-244",
-    airline: "IndiGo",
-    logoBg: "#1A73E8",
-    flightNos: "6E 244",
-    fromCity: "Mumbai",  fromIata: "BOM",
+    id: "EK-510",
+    airline: "Emirates",
+    logoBg: "#E31E24",
+    flightNos: "EK 510",
+    fromCity: "Dubai", fromIata: "DXB",
     toCity: "New Delhi", toIata: "DEL",
-    departTime: "08:00", departDate: "2025-11-02",
-    arriveTime: "10:15", arriveDate: "2025-11-02",
+    departTime: "20:15", departDate: "2025-10-18",
+    arriveTime: "01:00", arriveDate: "2025-10-19",
     stops: 0, stopLabel: "Non-stop",
-    durationMin: 135,
+    durationMin: 195,
     refundable: "Refundable",
     fares: [
       {
-        fareId: "6E244-ECO-SAVER",
+        fareId: "EK510-ECO-SAVER",
         brand: "Saver", cabin: "Economy", rbd: "V",
-        baggageKg: 15, cabinBagKg: 7,
-        refundable: false, changeFeeINR: 2500,
-        meal: false, seatSelect: false,
-        baseINR: 4000, taxINR: 1500, totalINR: 5500
-      },
-      {
-        fareId: "6E244-ECO-FLEX",
-        brand: "Flex", cabin: "Economy", rbd: "K",
-        baggageKg: 20, cabinBagKg: 7,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 4600, taxINR: 1600, totalINR: 6200
-      }
-    ]
-  },
-
-  // DEL → COK — 2025-11-05 (Air India)
-  {
-    id: "AI-581",
-    airline: "Air India",
-    logoBg: "#C41E3A",
-    flightNos: "AI 581",
-    fromCity: "New Delhi", fromIata: "DEL",
-    toCity: "Kochi",      toIata: "COK",
-    departTime: "11:10", departDate: "2025-11-05",
-    arriveTime: "14:05", arriveDate: "2025-11-05",
-    stops: 0, stopLabel: "Non-stop",
-    durationMin: 175,
-    refundable: "Refundable",
-    fares: [
-      {
-        fareId: "AI581-ECO-SAVER",
-        brand: "Saver", cabin: "Economy", rbd: "V",
-        baggageKg: 15, cabinBagKg: 7,
-        refundable: false, changeFeeINR: 2500,
+        baggageKg: 25, cabinBagKg: 7,
+        refundable: false, changeFeeINR: 3500,
         meal: true, seatSelect: false,
-        baseINR: 5200, taxINR: 1900, totalINR: 7100
+        baseINR: 17600, taxINR: 5700, totalINR: 23300
       },
       {
-        fareId: "AI581-ECO-FLEX",
+        fareId: "EK510-ECO-FLEX",
         brand: "Flex", cabin: "Economy", rbd: "K",
-        baggageKg: 20, cabinBagKg: 7,
+        baggageKg: 30, cabinBagKg: 7,
         refundable: true, changeFeeINR: 0,
         meal: true, seatSelect: true,
-        baseINR: 5800, taxINR: 2000, totalINR: 7800
+        baseINR: 18900, taxINR: 5900, totalINR: 24800
       },
       {
-        fareId: "AI581-BIZ",
+        fareId: "EK510-BIZ",
         brand: "Business", cabin: "Business", rbd: "J",
-        baggageKg: 35, cabinBagKg: 10,
+        baggageKg: 40, cabinBagKg: 10,
         refundable: true, changeFeeINR: 0,
         meal: true, seatSelect: true,
-        baseINR: 13500, taxINR: 3200, totalINR: 16700
+        baseINR: 52800, taxINR: 9800, totalINR: 62600
       }
     ]
   },
 
-  // HYD → MAA — 2025-10-18 (SpiceJet)
+  // DXB → DEL — 2025-10-13 (Air India Express) — return of IX-1945
   {
-    id: "SG-472",
-    airline: "SpiceJet",
-    logoBg: "#F97316",
-    flightNos: "SG 472",
-    fromCity: "Hyderabad", fromIata: "HYD",
-    toCity: "Chennai",     toIata: "MAA",
-    departTime: "13:40", departDate: "2025-10-18",
-    arriveTime: "14:55", arriveDate: "2025-10-18",
+    id: "IX-1946",
+    airline: "Air India Express",
+    logoBg: "#E11D48",
+    flightNos: "IX 1946",
+    fromCity: "Dubai", fromIata: "DXB",
+    toCity: "New Delhi", toIata: "DEL",
+    departTime: "02:10", departDate: "2025-10-13",
+    arriveTime: "07:05", arriveDate: "2025-10-13",
+    stops: 0, stopLabel: "Non-stop",
+    durationMin: 205,
+    refundable: "Refundable",
+    fares: [
+      {
+        fareId: "IX1946-ECO-SAVER",
+        brand: "Saver", cabin: "Economy", rbd: "T",
+        baggageKg: 20, cabinBagKg: 7,
+        refundable: false, changeFeeINR: 3000,
+        meal: true, seatSelect: false,
+        baseINR: 15200, taxINR: 5200, totalINR: 20400
+      },
+      {
+        fareId: "IX1946-ECO-FLEX",
+        brand: "Flex", cabin: "Economy", rbd: "K",
+        baggageKg: 25, cabinBagKg: 7,
+        refundable: true, changeFeeINR: 0,
+        meal: true, seatSelect: true,
+        baseINR: 16800, taxINR: 5400, totalINR: 22200
+      },
+      {
+        fareId: "IX1946-BIZ",
+        brand: "Business", cabin: "Business", rbd: "J",
+        baggageKg: 40, cabinBagKg: 10,
+        refundable: true, changeFeeINR: 0,
+        meal: true, seatSelect: true,
+        baseINR: 41200, taxINR: 9200, totalINR: 50400
+      }
+    ]
+  },
+
+  // DOH → DEL — 2025-10-19 (Qatar Airways) — return of QR-579
+  {
+    id: "QR-578",
+    airline: "Qatar Airways",
+    logoBg: "#6C2C3B",
+    flightNos: "QR 578",
+    fromCity: "Doha", fromIata: "DOH",
+    toCity: "New Delhi", toIata: "DEL",
+    departTime: "18:55", departDate: "2025-10-19",
+    arriveTime: "00:05", arriveDate: "2025-10-20",
+    stops: 0, stopLabel: "Non-stop",
+    durationMin: 230,
+    refundable: "Refundable",
+    fares: [
+      {
+        fareId: "QR578-ECO-SAVER",
+        brand: "Saver", cabin: "Economy", rbd: "V",
+        baggageKg: 25, cabinBagKg: 7,
+        refundable: false, changeFeeINR: 3000,
+        meal: true, seatSelect: false,
+        baseINR: 14200, taxINR: 4900, totalINR: 19100
+      },
+      {
+        fareId: "QR578-ECO-FLEX",
+        brand: "Flex", cabin: "Economy", rbd: "K",
+        baggageKg: 30, cabinBagKg: 7,
+        refundable: true, changeFeeINR: 0,
+        meal: true, seatSelect: true,
+        baseINR: 15500, taxINR: 5100, totalINR: 20600
+      },
+      {
+        fareId: "QR578-BIZ",
+        brand: "Business", cabin: "Business", rbd: "J",
+        baggageKg: 40, cabinBagKg: 10,
+        refundable: true, changeFeeINR: 0,
+        meal: true, seatSelect: true,
+        baseINR: 46800, taxINR: 9000, totalINR: 55800
+      }
+    ]
+  },
+
+  // IST → DEL — 2025-10-20/21 (overnight) (Turkish) — return of TK-717
+  {
+    id: "TK-716",
+    airline: "Turkish Airlines",
+    logoBg: "#CC1E2C",
+    flightNos: "TK 716",
+    fromCity: "Istanbul", fromIata: "IST",
+    toCity: "New Delhi", toIata: "DEL",
+    departTime: "19:20", departDate: "2025-10-20",
+    arriveTime: "04:35", arriveDate: "2025-10-21",
+    stops: 0, stopLabel: "Non-stop",
+    durationMin: 405,
+    refundable: "Refundable",
+    fares: [
+      {
+        fareId: "TK716-ECO-SAVER",
+        brand: "Saver", cabin: "Economy", rbd: "V",
+        baggageKg: 25, cabinBagKg: 7,
+        refundable: false, changeFeeINR: 4000,
+        meal: true, seatSelect: false,
+        baseINR: 21200, taxINR: 6100, totalINR: 27300
+      },
+      {
+        fareId: "TK716-ECO-FLEX",
+        brand: "Flex", cabin: "Economy", rbd: "K",
+        baggageKg: 30, cabinBagKg: 7,
+        refundable: true, changeFeeINR: 0,
+        meal: true, seatSelect: true,
+        baseINR: 22800, taxINR: 6400, totalINR: 29200
+      },
+      {
+        fareId: "TK716-BIZ",
+        brand: "Business", cabin: "Business", rbd: "J",
+        baggageKg: 40, cabinBagKg: 10,
+        refundable: true, changeFeeINR: 0,
+        meal: true, seatSelect: true,
+        baseINR: 68400, taxINR: 11200, totalINR: 79600
+      }
+    ]
+  },
+
+  // SIN → BLR — 2025-11-20 (Singapore Airlines) — return of SQ-511
+  {
+    id: "SQ-510",
+    airline: "Singapore Airlines",
+    logoBg: "#003D7C",
+    flightNos: "SQ 510",
+    fromCity: "Singapore", fromIata: "SIN",
+    toCity: "Bengaluru",  toIata: "BLR",
+    departTime: "20:10", departDate: "2025-11-20",
+    arriveTime: "22:45", arriveDate: "2025-11-20",
+    stops: 0, stopLabel: "Non-stop",
+    durationMin: 305,
+    refundable: "Refundable",
+    fares: [
+      {
+        fareId: "SQ510-ECO-SAVER",
+        brand: "Saver", cabin: "Economy", rbd: "V",
+        baggageKg: 25, cabinBagKg: 7,
+        refundable: false, changeFeeINR: 3500,
+        meal: true, seatSelect: false,
+        baseINR: 19800, taxINR: 7100, totalINR: 26900
+      },
+      {
+        fareId: "SQ510-ECO-FLEX",
+        brand: "Flex", cabin: "Economy", rbd: "K",
+        baggageKg: 30, cabinBagKg: 7,
+        refundable: true, changeFeeINR: 0,
+        meal: true, seatSelect: true,
+        baseINR: 21300, taxINR: 7400, totalINR: 28700
+      },
+      {
+        fareId: "SQ510-BIZ",
+        brand: "Business", cabin: "Business", rbd: "J",
+        baggageKg: 40, cabinBagKg: 10,
+        refundable: true, changeFeeINR: 0,
+        meal: true, seatSelect: true,
+        baseINR: 58500, taxINR: 11200, totalINR: 69700
+      }
+    ]
+  },
+
+  // MUC → DEL — 2025-12-12/13 (overnight) (Lufthansa) — return of LH-763
+  {
+    id: "LH-762",
+    airline: "Lufthansa",
+    logoBg: "#FFB300",
+    flightNos: "LH 762",
+    fromCity: "Munich", fromIata: "MUC",
+    toCity: "New Delhi", toIata: "DEL",
+    departTime: "19:15", departDate: "2025-12-12",
+    arriveTime: "07:20", arriveDate: "2025-12-13",
+    stops: 0, stopLabel: "Non-stop",
+    durationMin: 425,
+    refundable: "Refundable",
+    fares: [
+      {
+        fareId: "LH762-ECO-SAVER",
+        brand: "Saver", cabin: "Economy", rbd: "V",
+        baggageKg: 23, cabinBagKg: 8,
+        refundable: false, changeFeeINR: 4500,
+        meal: true, seatSelect: false,
+        baseINR: 32200, taxINR: 9900, totalINR: 42100
+      },
+      {
+        fareId: "LH762-ECO-FLEX",
+        brand: "Flex", cabin: "Economy", rbd: "K",
+        baggageKg: 30, cabinBagKg: 8,
+        refundable: true, changeFeeINR: 0,
+        meal: true, seatSelect: true,
+        baseINR: 34800, taxINR: 10100, totalINR: 44900
+      },
+      {
+        fareId: "LH762-BIZ",
+        brand: "Business", cabin: "Business", rbd: "J",
+        baggageKg: 40, cabinBagKg: 12,
+        refundable: true, changeFeeINR: 0,
+        meal: true, seatSelect: true,
+        baseINR: 93600, taxINR: 15200, totalINR: 108800
+      }
+    ]
+  },
+
+  // AUH → DEL — 2025-10-20 (Etihad) — return of EY-211
+  {
+    id: "EY-218",
+    airline: "Etihad Airways",
+    logoBg: "#B59B49",
+    flightNos: "EY 218",
+    fromCity: "Abu Dhabi", fromIata: "AUH",
+    toCity: "New Delhi",  toIata: "DEL",
+    departTime: "02:30", departDate: "2025-10-20",
+    arriveTime: "07:35", arriveDate: "2025-10-20",
+    stops: 0, stopLabel: "Non-stop",
+    durationMin: 215,
+    refundable: "Refundable",
+    fares: [
+      {
+        fareId: "EY218-ECO-SAVER",
+        brand: "Saver", cabin: "Economy", rbd: "V",
+        baggageKg: 23, cabinBagKg: 7,
+        refundable: false, changeFeeINR: 3000,
+        meal: true, seatSelect: false,
+        baseINR: 13600, taxINR: 4800, totalINR: 18400
+      },
+      {
+        fareId: "EY218-ECO-FLEX",
+        brand: "Flex", cabin: "Economy", rbd: "K",
+        baggageKg: 30, cabinBagKg: 7,
+        refundable: true, changeFeeINR: 0,
+        meal: true, seatSelect: true,
+        baseINR: 14900, taxINR: 5000, totalINR: 19900
+      },
+      {
+        fareId: "EY218-BIZ",
+        brand: "Business", cabin: "Business", rbd: "J",
+        baggageKg: 40, cabinBagKg: 10,
+        refundable: true, changeFeeINR: 0,
+        meal: true, seatSelect: true,
+        baseINR: 46200, taxINR: 8600, totalINR: 54800
+      }
+    ]
+  },
+
+  // GOI → HYD — 2025-12-06 (Akasa) — return of QP-1423
+  {
+    id: "QP-1424",
+    airline: "Akasa Air",
+    logoBg: "#6B21A8",
+    flightNos: "QP 1424",
+    fromCity: "Goa", fromIata: "GOI",
+    toCity: "Hyderabad", toIata: "HYD",
+    departTime: "14:20", departDate: "2025-12-06",
+    arriveTime: "15:35", arriveDate: "2025-12-06",
     stops: 0, stopLabel: "Non-stop",
     durationMin: 75,
     refundable: "Refundable",
     fares: [
       {
-        fareId: "SG472-ECO-SAVER",
-        brand: "Saver", cabin: "Economy", rbd: "Q",
+        fareId: "QP1424-ECO-SAVER",
+        brand: "Saver", cabin: "Economy", rbd: "V",
         baggageKg: 15, cabinBagKg: 7,
         refundable: false, changeFeeINR: 2000,
         meal: false, seatSelect: false,
-        baseINR: 2600, taxINR: 900, totalINR: 3500
+        baseINR: 2850, taxINR: 1000, totalINR: 3850
       },
       {
-        fareId: "SG472-ECO-FLEX",
+        fareId: "QP1424-ECO-FLEX",
         brand: "Flex", cabin: "Economy", rbd: "K",
         baggageKg: 20, cabinBagKg: 7,
         refundable: true, changeFeeINR: 0,
         meal: true, seatSelect: true,
-        baseINR: 3100, taxINR: 950, totalINR: 4050
+        baseINR: 3350, taxINR: 1100, totalINR: 4450
       }
     ]
   },
 
-  // CCU → MAA — 2025-12-20 (SpiceJet)
+  // COK → DEL — 2025-11-12 (Air India) — return of AI-581
   {
-    id: "SG-325",
+    id: "AI-582",
+    airline: "Air India",
+    logoBg: "#C41E3A",
+    flightNos: "AI 582",
+    fromCity: "Kochi", fromIata: "COK",
+    toCity: "New Delhi", toIata: "DEL",
+    departTime: "15:20", departDate: "2025-11-12",
+    arriveTime: "18:10", arriveDate: "2025-11-12",
+    stops: 0, stopLabel: "Non-stop",
+    durationMin: 170,
+    refundable: "Refundable",
+    fares: [
+      {
+        fareId: "AI582-ECO-SAVER",
+        brand: "Saver", cabin: "Economy", rbd: "V",
+        baggageKg: 15, cabinBagKg: 7,
+        refundable: false, changeFeeINR: 2500,
+        meal: true, seatSelect: false,
+        baseINR: 5250, taxINR: 1900, totalINR: 7150
+      },
+      {
+        fareId: "AI582-ECO-FLEX",
+        brand: "Flex", cabin: "Economy", rbd: "K",
+        baggageKg: 20, cabinBagKg: 7,
+        refundable: true, changeFeeINR: 0,
+        meal: true, seatSelect: true,
+        baseINR: 5850, taxINR: 2000, totalINR: 7850
+      },
+      {
+        fareId: "AI582-BIZ",
+        brand: "Business", cabin: "Business", rbd: "J",
+        baggageKg: 35, cabinBagKg: 10,
+        refundable: true, changeFeeINR: 0,
+        meal: true, seatSelect: true,
+        baseINR: 13600, taxINR: 3200, totalINR: 16800
+      }
+    ]
+  },
+
+  // MAA → CCU — 2025-12-24 (SpiceJet) — return of SG-325
+  {
+    id: "SG-326",
     airline: "SpiceJet",
     logoBg: "#F97316",
-    flightNos: "SG 325",
-    fromCity: "Kolkata", fromIata: "CCU",
-    toCity: "Chennai", toIata: "MAA",
-    departTime: "09:20", departDate: "2025-12-20",
-    arriveTime: "11:35", arriveDate: "2025-12-20",
+    flightNos: "SG 326",
+    fromCity: "Chennai", fromIata: "MAA",
+    toCity: "Kolkata", toIata: "CCU",
+    departTime: "12:30", departDate: "2025-12-24",
+    arriveTime: "14:45", arriveDate: "2025-12-24",
     stops: 0, stopLabel: "Non-stop",
     durationMin: 135,
     refundable: "Refundable",
     fares: [
       {
-        fareId: "SG325-ECO-SAVER",
-        brand: "Saver", cabin: "Economy", rbd: "V",
-        baggageKg: 15, cabinBagKg: 7,
-        refundable: false, changeFeeINR: 2500,
-        meal: false, seatSelect: false,
-        baseINR: 3600, taxINR: 1300, totalINR: 4900
-      },
-      {
-        fareId: "SG325-ECO-FLEX",
-        brand: "Flex", cabin: "Economy", rbd: "K",
-        baggageKg: 20, cabinBagKg: 7,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 4100, taxINR: 1400, totalINR: 5500
-      }
-    ]
-  },
-
-  // MAA → DEL — 2025-10-19 (Air India)
-  {
-    id: "AI-540",
-    airline: "Air India",
-    logoBg: "#C41E3A",
-    flightNos: "AI 540",
-    fromCity: "Chennai",   fromIata: "MAA",
-    toCity: "New Delhi",   toIata: "DEL",
-    departTime: "18:30", departDate: "2025-10-19",
-    arriveTime: "21:05", arriveDate: "2025-10-19",
-    stops: 0, stopLabel: "Non-stop",
-    durationMin: 155,
-    refundable: "Refundable",
-    fares: [
-      {
-        fareId: "AI540-ECO-SAVER",
-        brand: "Saver", cabin: "Economy", rbd: "V",
-        baggageKg: 15, cabinBagKg: 7,
-        refundable: false, changeFeeINR: 2500,
-        meal: true, seatSelect: false,
-        baseINR: 5000, taxINR: 1800, totalINR: 6800
-      },
-      {
-        fareId: "AI540-ECO-FLEX",
-        brand: "Flex", cabin: "Economy", rbd: "K",
-        baggageKg: 20, cabinBagKg: 7,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 5600, taxINR: 1900, totalINR: 7500
-      },
-      {
-        fareId: "AI540-PE-PREM",
-        brand: "Premium", cabin: "Premium Economy", rbd: "W",
-        baggageKg: 25, cabinBagKg: 7,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 7200, taxINR: 2100, totalINR: 9300
-      }
-    ]
-  },
-
-  // DEL → DXB — 2025-10-12 (Air India Express)
-  {
-    id: "IX-1945",
-    airline: "Air India Express",
-    logoBg: "#E11D48",
-    flightNos: "IX 1945",
-    fromCity: "New Delhi", fromIata: "DEL",
-    toCity: "Dubai",      toIata: "DXB",
-    departTime: "22:45", departDate: "2025-10-12",
-    arriveTime: "00:55", arriveDate: "2025-10-13",
-    stops: 0, stopLabel: "Non-stop",
-    durationMin: 190,
-    refundable: "Refundable",
-    fares: [
-      {
-        fareId: "IX1945-ECO-SAVER",
-        brand: "Saver", cabin: "Economy", rbd: "T",
-        baggageKg: 20, cabinBagKg: 7,
-        refundable: false, changeFeeINR: 3000,
-        meal: true, seatSelect: false,
-        baseINR: 15000, taxINR: 5000, totalINR: 20000
-      },
-      {
-        fareId: "IX1945-ECO-FLEX",
-        brand: "Flex", cabin: "Economy", rbd: "K",
-        baggageKg: 25, cabinBagKg: 7,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 16500, taxINR: 5200, totalINR: 21700
-      },
-      {
-        fareId: "IX1945-BIZ",
-        brand: "Business", cabin: "Business", rbd: "J",
-        baggageKg: 40, cabinBagKg: 10,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 41000, taxINR: 9000, totalINR: 50000
-      }
-    ]
-  },
-
-  // BOM → DXB — 2025-10-13 (Emirates)
-  {
-    id: "EK-501",
-    airline: "Emirates",
-    logoBg: "#E31E24",
-    flightNos: "EK 501",
-    fromCity: "Mumbai", fromIata: "BOM",
-    toCity: "Dubai",  toIata: "DXB",
-    departTime: "10:30", departDate: "2025-10-13",
-    arriveTime: "13:35", arriveDate: "2025-10-13",
-    stops: 0, stopLabel: "Non-stop",
-    durationMin: 185,
-    refundable: "Refundable",
-    fares: [
-      {
-        fareId: "EK501-ECO-SAVER",
-        brand: "Saver", cabin: "Economy", rbd: "V",
-        baggageKg: 25, cabinBagKg: 7,
-        refundable: false, changeFeeINR: 3500,
-        meal: true, seatSelect: false,
-        baseINR: 17000, taxINR: 5300, totalINR: 22300
-      },
-      {
-        fareId: "EK501-ECO-FLEX",
-        brand: "Flex", cabin: "Economy", rbd: "K",
-        baggageKg: 30, cabinBagKg: 7,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 18200, taxINR: 5600, totalINR: 23800
-      },
-      {
-        fareId: "EK501-BIZ",
-        brand: "Business", cabin: "Business", rbd: "J",
-        baggageKg: 40, cabinBagKg: 10,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 52000, taxINR: 9500, totalINR: 61500
-      }
-    ]
-  },
-
-  // DEL → DOH — 2025-10-12 (Qatar Airways)
-  {
-    id: "QR-579",
-    airline: "Qatar Airways",
-    logoBg: "#6C2C3B",
-    flightNos: "QR 579",
-    fromCity: "New Delhi", fromIata: "DEL",
-    toCity: "Doha",       toIata: "DOH",
-    departTime: "08:40", departDate: "2025-10-12",
-    arriveTime: "10:20", arriveDate: "2025-10-12",
-    stops: 0, stopLabel: "Non-stop",
-    durationMin: 220,
-    refundable: "Refundable",
-    fares: [
-      {
-        fareId: "QR579-ECO-SAVER",
-        brand: "Saver", cabin: "Economy", rbd: "V",
-        baggageKg: 25, cabinBagKg: 7,
-        refundable: false, changeFeeINR: 3000,
-        meal: true, seatSelect: false,
-        baseINR: 14000, taxINR: 4800, totalINR: 18800
-      },
-      {
-        fareId: "QR579-ECO-FLEX",
-        brand: "Flex", cabin: "Economy", rbd: "K",
-        baggageKg: 30, cabinBagKg: 7,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 15300, taxINR: 5000, totalINR: 20300
-      },
-      {
-        fareId: "QR579-BIZ",
-        brand: "Business", cabin: "Business", rbd: "J",
-        baggageKg: 40, cabinBagKg: 10,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 47000, taxINR: 9000, totalINR: 56000
-      }
-    ]
-  },
-
-  // DEL → IST — 2025-10-13 (Turkish Airlines)
-  {
-    id: "TK-717",
-    airline: "Turkish Airlines",
-    logoBg: "#CC1E2C",
-    flightNos: "TK 717",
-    fromCity: "New Delhi", fromIata: "DEL",
-    toCity: "Istanbul",    toIata: "IST",
-    departTime: "06:35", departDate: "2025-10-13",
-    arriveTime: "12:50", arriveDate: "2025-10-13",
-    stops: 0, stopLabel: "Non-stop",
-    durationMin: 375,
-    refundable: "Refundable",
-    fares: [
-      {
-        fareId: "TK717-ECO-SAVER",
-        brand: "Saver", cabin: "Economy", rbd: "V",
-        baggageKg: 25, cabinBagKg: 7,
-        refundable: false, changeFeeINR: 4000,
-        meal: true, seatSelect: false,
-        baseINR: 21000, taxINR: 6000, totalINR: 27000
-      },
-      {
-        fareId: "TK717-ECO-FLEX",
-        brand: "Flex", cabin: "Economy", rbd: "K",
-        baggageKg: 30, cabinBagKg: 7,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 22500, taxINR: 6300, totalINR: 28800
-      },
-      {
-        fareId: "TK717-BIZ",
-        brand: "Business", cabin: "Business", rbd: "J",
-        baggageKg: 40, cabinBagKg: 10,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 68000, taxINR: 11000, totalINR: 79000
-      }
-    ]
-  },
-
-  // BLR → SIN — 2025-11-15 (Singapore Airlines)
-  {
-    id: "SQ-511",
-    airline: "Singapore Airlines",
-    logoBg: "#003D7C",
-    flightNos: "SQ 511",
-    fromCity: "Bengaluru", fromIata: "BLR",
-    toCity: "Singapore",   toIata: "SIN",
-    departTime: "23:30", departDate: "2025-11-15",
-    arriveTime: "06:00", arriveDate: "2025-11-16",
-    stops: 0, stopLabel: "Non-stop",
-    durationMin: 300,
-    refundable: "Refundable",
-    fares: [
-      {
-        fareId: "SQ511-ECO-SAVER",
-        brand: "Saver", cabin: "Economy", rbd: "V",
-        baggageKg: 25, cabinBagKg: 7,
-        refundable: false, changeFeeINR: 3500,
-        meal: true, seatSelect: false,
-        baseINR: 19500, taxINR: 7200, totalINR: 26700
-      },
-      {
-        fareId: "SQ511-ECO-FLEX",
-        brand: "Flex", cabin: "Economy", rbd: "K",
-        baggageKg: 30, cabinBagKg: 7,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 21000, taxINR: 7400, totalINR: 28400
-      },
-      {
-        fareId: "SQ511-BIZ",
-        brand: "Business", cabin: "Business", rbd: "J",
-        baggageKg: 40, cabinBagKg: 10,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 58000, taxINR: 11000, totalINR: 69000
-      }
-    ]
-  },
-
-  // DEL → MUC — 2025-12-05 (Lufthansa)
-  {
-    id: "LH-763",
-    airline: "Lufthansa",
-    logoBg: "#FFB300",
-    flightNos: "LH 763",
-    fromCity: "New Delhi", fromIata: "DEL",
-    toCity: "Munich",      toIata: "MUC",
-    departTime: "13:50", departDate: "2025-12-05",
-    arriveTime: "17:45", arriveDate: "2025-12-05",
-    stops: 0, stopLabel: "Non-stop",
-    durationMin: 415,
-    refundable: "Refundable",
-    fares: [
-      {
-        fareId: "LH763-ECO-SAVER",
-        brand: "Saver", cabin: "Economy", rbd: "V",
-        baggageKg: 23, cabinBagKg: 8,
-        refundable: false, changeFeeINR: 4500,
-        meal: true, seatSelect: false,
-        baseINR: 32000, taxINR: 9800, totalINR: 41800
-      },
-      {
-        fareId: "LH763-ECO-FLEX",
-        brand: "Flex", cabin: "Economy", rbd: "K",
-        baggageKg: 30, cabinBagKg: 8,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 34500, taxINR: 10000, totalINR: 44500
-      },
-      {
-        fareId: "LH763-BIZ",
-        brand: "Business", cabin: "Business", rbd: "J",
-        baggageKg: 40, cabinBagKg: 12,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 93000, taxINR: 15000, totalINR: 108000
-      }
-    ]
-  },
-
-  // DEL → AUH — 2025-10-14 (Etihad)
-  {
-    id: "EY-211",
-    airline: "Etihad Airways",
-    logoBg: "#B59B49",
-    flightNos: "EY 211",
-    fromCity: "New Delhi", fromIata: "DEL",
-    toCity: "Abu Dhabi",   toIata: "AUH",
-    departTime: "21:55", departDate: "2025-10-14",
-    arriveTime: "00:05", arriveDate: "2025-10-15",
-    stops: 0, stopLabel: "Non-stop",
-    durationMin: 190,
-    refundable: "Refundable",
-    fares: [
-      {
-        fareId: "EY211-ECO-SAVER",
-        brand: "Saver", cabin: "Economy", rbd: "V",
-        baggageKg: 23, cabinBagKg: 7,
-        refundable: false, changeFeeINR: 3000,
-        meal: true, seatSelect: false,
-        baseINR: 13500, taxINR: 4700, totalINR: 18200
-      },
-      {
-        fareId: "EY211-ECO-FLEX",
-        brand: "Flex", cabin: "Economy", rbd: "K",
-        baggageKg: 30, cabinBagKg: 7,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 14800, taxINR: 4900, totalINR: 19700
-      },
-      {
-        fareId: "EY211-BIZ",
-        brand: "Business", cabin: "Business", rbd: "J",
-        baggageKg: 40, cabinBagKg: 10,
-        refundable: true, changeFeeINR: 0,
-        meal: true, seatSelect: true,
-        baseINR: 46000, taxINR: 8500, totalINR: 54500
-      }
-    ]
-  },
-
-  // HYD → GOI — 2025-12-02 (Akasa Air)
-  {
-    id: "QP-1423",
-    airline: "Akasa Air",
-    logoBg: "#6B21A8",
-    flightNos: "QP 1423",
-    fromCity: "Hyderabad", fromIata: "HYD",
-    toCity: "Goa",        toIata: "GOI",
-    departTime: "12:10", departDate: "2025-12-02",
-    arriveTime: "13:35", arriveDate: "2025-12-02",
-    stops: 0, stopLabel: "Non-stop",
-    durationMin: 85,
-    refundable: "Refundable",
-    fares: [
-      {
-        fareId: "QP1423-ECO-SAVER",
-        brand: "Saver", cabin: "Economy", rbd: "V",
+        fareId: "SG326-ECO-SAVER",
+        brand: "Saver", cabin: "Economy", rbd: "Q",
         baggageKg: 15, cabinBagKg: 7,
         refundable: false, changeFeeINR: 2000,
         meal: false, seatSelect: false,
-        baseINR: 2800, taxINR: 1000, totalINR: 3800
+        baseINR: 3650, taxINR: 1300, totalINR: 4950
       },
       {
-        fareId: "QP1423-ECO-FLEX",
+        fareId: "SG326-ECO-FLEX",
         brand: "Flex", cabin: "Economy", rbd: "K",
         baggageKg: 20, cabinBagKg: 7,
         refundable: true, changeFeeINR: 0,
         meal: true, seatSelect: true,
-        baseINR: 3300, taxINR: 1100, totalINR: 4400
+        baseINR: 4150, taxINR: 1400, totalINR: 5550
       }
     ]
   },
 
-  // DEL → LHR — 2025-12-10 (Qatar Airways, 1-stop via DOH)
+  // MAA → HYD — 2025-10-21 (SpiceJet) — return of SG-472
   {
-    id: "QR-001",
+    id: "SG-473",
+    airline: "SpiceJet",
+    logoBg: "#F97316",
+    flightNos: "SG 473",
+    fromCity: "Chennai", fromIata: "MAA",
+    toCity: "Hyderabad", toIata: "HYD",
+    departTime: "16:30", departDate: "2025-10-21",
+    arriveTime: "17:45", arriveDate: "2025-10-21",
+    stops: 0, stopLabel: "Non-stop",
+    durationMin: 75,
+    refundable: "Refundable",
+    fares: [
+      {
+        fareId: "SG473-ECO-SAVER",
+        brand: "Saver", cabin: "Economy", rbd: "Q",
+        baggageKg: 15, cabinBagKg: 7,
+        refundable: false, changeFeeINR: 2000,
+        meal: false, seatSelect: false,
+        baseINR: 2650, taxINR: 900, totalINR: 3550
+      },
+      {
+        fareId: "SG473-ECO-FLEX",
+        brand: "Flex", cabin: "Economy", rbd: "K",
+        baggageKg: 20, cabinBagKg: 7,
+        refundable: true, changeFeeINR: 0,
+        meal: true, seatSelect: true,
+        baseINR: 3150, taxINR: 950, totalINR: 4100
+      }
+    ]
+  },
+
+  // DXB → BOM — 2025-10-20 (Emirates) — return of EK-501
+  {
+    id: "EK-500",
+    airline: "Emirates",
+    logoBg: "#E31E24",
+    flightNos: "EK 500",
+    fromCity: "Dubai", fromIata: "DXB",
+    toCity: "Mumbai", toIata: "BOM",
+    departTime: "23:40", departDate: "2025-10-20",
+    arriveTime: "04:30", arriveDate: "2025-10-21",
+    stops: 0, stopLabel: "Non-stop",
+    durationMin: 200,
+    refundable: "Refundable",
+    fares: [
+      {
+        fareId: "EK500-ECO-SAVER",
+        brand: "Saver", cabin: "Economy", rbd: "V",
+        baggageKg: 25, cabinBagKg: 7,
+        refundable: false, changeFeeINR: 3500,
+        meal: true, seatSelect: false,
+        baseINR: 17100, taxINR: 5400, totalINR: 22500
+      },
+      {
+        fareId: "EK500-ECO-FLEX",
+        brand: "Flex", cabin: "Economy", rbd: "K",
+        baggageKg: 30, cabinBagKg: 7,
+        refundable: true, changeFeeINR: 0,
+        meal: true, seatSelect: true,
+        baseINR: 18400, taxINR: 5600, totalINR: 24000
+      },
+      {
+        fareId: "EK500-BIZ",
+        brand: "Business", cabin: "Business", rbd: "J",
+        baggageKg: 40, cabinBagKg: 10,
+        refundable: true, changeFeeINR: 0,
+        meal: true, seatSelect: true,
+        baseINR: 52200, taxINR: 9600, totalINR: 61800
+      }
+    ]
+  },
+
+  // LHR → DEL — 2025-12-18 (Qatar, 1-stop DOH) — return of QR-001
+  {
+    id: "QR-002",
     airline: "Qatar Airways",
     logoBg: "#6C2C3B",
-    flightNos: "QR 001",
-    fromCity: "New Delhi", fromIata: "DEL",
-    toCity: "London",      toIata: "LHR",
-    departTime: "03:10", departDate: "2025-12-10",
-    arriveTime: "12:10", arriveDate: "2025-12-10",
+    flightNos: "QR 002",
+    fromCity: "London", fromIata: "LHR",
+    toCity: "New Delhi", toIata: "DEL",
+    departTime: "09:10", departDate: "2025-12-18",
+    arriveTime: "02:40", arriveDate: "2025-12-19",
     stops: 1, stopLabel: "1 Stop DOH",
-    durationMin: 600,
+    durationMin: 610,
     refundable: "Refundable",
     extras: ["Book & Hold"],
     fares: [
       {
-        fareId: "QR001-ECO-SAVER",
+        fareId: "QR002-ECO-SAVER",
         brand: "Saver", cabin: "Economy", rbd: "V",
         baggageKg: 25, cabinBagKg: 7,
         refundable: false, changeFeeINR: 4500,
         meal: true, seatSelect: false,
-        baseINR: 33000, taxINR: 10700, totalINR: 43700
+        baseINR: 33500, taxINR: 10800, totalINR: 44300
       },
       {
-        fareId: "QR001-ECO-FLEX",
+        fareId: "QR002-ECO-FLEX",
         brand: "Flex", cabin: "Economy", rbd: "K",
         baggageKg: 30, cabinBagKg: 7,
         refundable: true, changeFeeINR: 0,
         meal: true, seatSelect: true,
-        baseINR: 36200, taxINR: 11000, totalINR: 47200
+        baseINR: 36800, taxINR: 11100, totalINR: 47900
       },
       {
-        fareId: "QR001-BIZ",
+        fareId: "QR002-BIZ",
         brand: "Business", cabin: "Business", rbd: "J",
         baggageKg: 40, cabinBagKg: 10,
         refundable: true, changeFeeINR: 0,
         meal: true, seatSelect: true,
-        baseINR: 128000, taxINR: 17000, totalINR: 145000
+        baseINR: 129000, taxINR: 17000, totalINR: 146000
       }
     ]
   },
+
 ];
 
 // utility
