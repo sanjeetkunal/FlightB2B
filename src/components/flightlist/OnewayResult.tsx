@@ -1,5 +1,5 @@
 // src/components/flightlist/ResultList.tsx
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 /** Keep these shapes in sync with what FlightResults produces */
@@ -10,7 +10,7 @@ export type FareOption = {
   refundable: "Refundable" | "Non Refundable";
   cabin?: string;
   meal?: string;
-  badge?: { text: string; tone?: "offer" | "published" };
+  badge?: { text: string; tone?: "offer" | "published" }; // present in data, UI ignores text
   refNo?: number;
   baggage?: { handKg?: number; checkKg?: number };
   seat?: string;
@@ -34,7 +34,8 @@ export type PolicyRule = { when: string; feeUSD: number; note?: string };
 export type Row = {
   id: string;
   airline: string;
-  logoBg: string;
+  /** PNG logo URL */
+  logo: string;
   flightNos: string;
   fromCity: string; fromIata: string; departTime: string; departDate: string;
   toCity: string; toIata: string; arriveTime: string; arriveDate: string;
@@ -66,24 +67,30 @@ const minsToLabel = (m?: number) => {
   return `${h}h ${String(mm).padStart(2, "0")}m`;
 };
 
-/* ================== tiny atoms ================== */
-const CircleLogo = ({ bg }: { bg: string }) => (
-  <div className="grid h-9 w-9 place-items-center rounded-full text-white shadow-sm" style={{ background: bg }}>
-    <svg viewBox="0 0 24 24" className="h-4 w-4"><path d="M2 12l20 2-6-4 3-7-3-1-5 8-5-1-1 2 5 2-2 7 2 1 3-7" fill="currentColor" /></svg>
+/* ===== neutral styles (badge text hidden, colors not tied to badge) ===== */
+const chipNeutral = "bg-slate-100 text-slate-800 ring-slate-300 border-slate-200";
+const dotNeutral  = "bg-gray-400";
+
+/* ================== tiny atoms (image logos) ================== */
+const ImageLogo = ({ src, alt }: { src: string; alt: string }) => (
+  <div className="grid h-9 w-9 place-items-center rounded-full bg-white ring-1 ring-black/5 overflow-hidden shadow-sm">
+    <img src={src} alt={alt} className="h-full w-full object-contain p-1" />
   </div>
 );
 
-const SmallLogo = ({ bg }: { bg: string }) => (
-  <span className="inline-grid h-5 w-5 place-items-center rounded-full text-white ring-1 ring-black/5" style={{ background: bg }}>
-    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5"><path d="M2 12l20 2-6-4 3-7-3-1-5 8-5-1-1 2 5 2-2 7 2 1 3-7" fill="currentColor" /></svg>
+const SmallImageLogo = ({ src, alt }: { src: string; alt: string }) => (
+  <span className="inline-grid h-5 w-5 place-items-center rounded-full bg-white ring-1 ring-black/5 overflow-hidden">
+    <img src={src} alt={alt} className="h-full w-full object-contain p-0.5" />
   </span>
 );
 
-function DetailsHeader({ airline, logoBg, flightNos }:{ airline: string; logoBg: string; flightNos: string }) {
+function DetailsHeader({ airline, logo, flightNos }:{
+  airline: string; logo: string; flightNos: string;
+}) {
   return (
     <div className="mb-3 flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
       <div className="flex min-w-0 items-center gap-3">
-        <CircleLogo bg={logoBg} />
+        <ImageLogo src={logo} alt={airline} />
         <div className="min-w-0">
           <div className="truncate text-[15px] font-semibold text-gray-900">{airline}</div>
           <div className="truncate text-xs text-gray-600">Flight(s): <span className="font-medium">{flightNos}</span></div>
@@ -94,20 +101,34 @@ function DetailsHeader({ airline, logoBg, flightNos }:{ airline: string; logoBg:
   );
 }
 
-/* === arc timeline === */
+/* === straight timeline === */
 const TAKEOFF_ICON = "https://cdn-icons-png.flaticon.com/128/8943/8943898.png";
 const LANDING_ICON = "https://cdn-icons-png.flaticon.com/128/6591/6591567.png";
-const ArcTimeline = ({ label, leftIcon = TAKEOFF_ICON, rightIcon = LANDING_ICON }:{
-  label: string; leftIcon?: string; rightIcon?: string;
+
+const StraightTimeline = ({
+  label,
+  durationMin,
+  leftIcon = TAKEOFF_ICON,
+  rightIcon = LANDING_ICON,
+}:{
+  label: string;
+  durationMin: number;
+  leftIcon?: string;
+  rightIcon?: string;
 }) => (
-  <div className="relative flex items-center justify-center">
-    <svg width="260" height="50" viewBox="0 0 260 50" className="text-gray-300">
-      <g transform="translate(20,32)"><image href={leftIcon} width="16" height="16" x="-8" y="-8" /></g>
-      <g transform="translate(240,32)"><image href={rightIcon} width="16" height="16" x="-8" y="-8" /></g>
-      <path d="M20 32 Q130 4 240 32" stroke="currentColor" strokeDasharray="4 6" strokeWidth="2" fill="none" />
-      <circle cx="130" cy="18" r="6" fill="white" stroke="currentColor" strokeWidth="1.5" />
+  <div className="relative flex items-center justify-center px-1">
+    <div className="absolute -top-3 whitespace-nowrap text-[11px] font-medium text-gray-600">
+      {label}
+    </div>
+    <div className="absolute -bottom-3 whitespace-nowrap text-[11px] font-medium text-gray-700">
+      {minsToLabel(durationMin)}
+    </div>
+    <svg width="260" height="28" viewBox="0 0 260 28" className="text-gray-300">
+      <image href={leftIcon} width="16" height="16" x="8" y="6" />
+      <line x1="24" y1="14" x2="236" y2="14" stroke="currentColor" strokeWidth="2" strokeDasharray="4 6" />
+      <circle cx="130" cy="14" r="5" fill="white" stroke="currentColor" strokeWidth="1.5" />
+      <image href={rightIcon} width="16" height="16" x="236" y="6" />
     </svg>
-    <div className="absolute -top-0 text-[11px] font-medium text-gray-600">{label}</div>
   </div>
 );
 
@@ -116,8 +137,8 @@ const AmenIconLayout = () => (<svg viewBox="0 0 24 24" className="h-4 w-4 text-g
 const AmenIconDrink  = () => (<svg viewBox="0 0 24 24" className="h-4 w-4 text-gray-500"><path d="M4 3h16l-2 5h-4l1 11H9l1-11H6L4 3z" fill="currentColor" /></svg>);
 const AmenIconSeat   = () => (<svg viewBox="0 0 24 24" className="h-4 w-4 text-gray-500"><path d="M7 3h7v9h5v9h-2v-7h-5V5H9v16H7V3z" fill="currentColor" /></svg>);
 
-function SegmentCard({ s, logoBg, airline, rowBaggage }:{
-  s: Segment; logoBg: string; airline: string;
+function SegmentCard({ s, logo, airline, rowBaggage }:{
+  s: Segment; logo: string; airline: string;
   rowBaggage: { handKg?: number; checkKg?: number; piece?: string };
 }) {
   const dur = minsToLabel(s.durationMin);
@@ -127,7 +148,7 @@ function SegmentCard({ s, logoBg, airline, rowBaggage }:{
     <div className="rounded-xl border border-gray-200 p-3">
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <SmallLogo bg={logoBg} />
+          <SmallImageLogo src={logo} alt={airline} />
           <div className="text-sm font-semibold text-gray-900">{airline} {s.carrier}-{s.flightNo}</div>
         </div>
         {s.aircraft && <span className="rounded-full bg-gray-100 px-2 py-1 text-[11px] text-gray-700 ring-1 ring-gray-200">{s.aircraft}</span>}
@@ -181,15 +202,15 @@ function LayoverBadge({ text }: { text: string }) {
   );
 }
 
-function ItineraryPanel({ segs, logoBg, airline, rowBaggage }:{
-  segs: Segment[]; logoBg: string; airline: string;
+function ItineraryPanel({ segs, logo, airline, rowBaggage }:{
+  segs: Segment[]; logo: string; airline: string;
   rowBaggage: { handKg?: number; checkKg?: number; piece?: string };
 }) {
   return (
     <div>
       {segs.map((s, i) => (
         <div key={i}>
-          <SegmentCard s={s} logoBg={logoBg} airline={airline} rowBaggage={rowBaggage} />
+          <SegmentCard s={s} logo={logo} airline={airline} rowBaggage={rowBaggage} />
           {s.layoverAt && s.layoverMin != null && (
             <LayoverBadge text={`Change of planes • ${minsToLabel(s.layoverMin)} Layover in ${s.layoverAt}`} />
           )}
@@ -243,12 +264,11 @@ function SelectedFarePanel({ fare }: { fare: FareOption }) {
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <div className="text-[13px] text-gray-600">Selected Fare</div>
         <div className="text-[18px] font-bold text-gray-900"><Money v={fare.price} /></div>
-        {fare.badge?.text && (
-          <span className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${fare.badge?.tone === "offer" ? "text-pink-700 ring-1 ring-pink-200 bg-pink-50" : "text-amber-800 ring-1 ring-amber-200 bg-amber-50"}`}>{fare.badge.text}</span>
-        )}
         <span className={`text-[12px] ${refundableTone} font-medium`}>{fare.refundable}</span>
       </div>
-      <div className="text-[12px] text-gray-700">{fare.cabin || "Economy"}{fare.meal ? `, ${fare.meal}` : ""}</div>
+      <div className="text-[12px] text-gray-700">
+        {(fare.label || "—")}{fare.cabin ? ` • ${fare.cabin}` : ""}{fare.meal ? `, ${fare.meal}` : ""}
+      </div>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <div className="rounded-lg bg-gray-50 p-3">
           <div className="text-[11px] text-gray-500">Baggage</div>
@@ -266,52 +286,89 @@ function SelectedFarePanel({ fare }: { fare: FareOption }) {
 }
 
 type DetailsTab = "itinerary" | "baggage" | "cancellation" | "fare";
-function RowTabs({ active, onChange }:{ active: DetailsTab; onChange: (t: DetailsTab) => void }) {
-  const TabBtn = ({ id, label }:{ id: DetailsTab; label: string }) => (
-    <button
-      onClick={() => onChange(id)}
-      className={`rounded-lg border px-3 py-1.5 text-sm transition ${active === id ? "border-blue-600 bg-blue-50 text-blue-700" : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"}`}
-    >
-      {label}
-    </button>
-  );
+function RowTabs({ active, onChange }: { active: DetailsTab; onChange: (t: DetailsTab) => void }) {
+  // map existing ids to reference-style labels
+  const tabs: { id: DetailsTab; label: string }[] = [
+    { id: "itinerary",    label: "FLIGHT DETAILS" },  // was: Itinerary
+    { id: "fare",         label: "FARE SUMMARY" },    // was: Fare Details
+    { id: "cancellation", label: "CANCELLATION" },    // was: Cancellation & Changes
+    { id: "baggage",      label: "DATE CHANGE" },     // was: Baggage
+  ];
+
   return (
-    <div className="flex flex-wrap gap-2">
-      <TabBtn id="itinerary" label="Itinerary" />
-      <TabBtn id="baggage" label="Baggage" />
-      <TabBtn id="cancellation" label="Cancellation & Changes" />
-      <TabBtn id="fare" label="Fare Details" />
+    <div className="inline-flex overflow-hidden rounded border border-gray-200">
+      {tabs.map((t, i) => (
+        <button
+          key={t.id}
+          onClick={() => onChange(t.id)}
+          className={[
+            "px-4 py-2 text-xs font-semibold tracking-wide uppercase transition",
+            active === t.id
+              ? "bg-blue-500 text-white"
+              : "bg-white text-gray-800 hover:bg-gray-50",
+            i !== 0 && "border-l border-gray-200",
+          ].filter(Boolean).join(" ")}
+        >
+          {t.label}
+        </button>
+      ))}
     </div>
   );
 }
 
+
 /* =============== fare pickers =============== */
+/** Compact pill: neutral dot + price + (i) + “label • cabin” chip */
 function FareOneLine({ fare, placeholder, onClick }:{
   fare: FareOption | null; placeholder: string; onClick: () => void;
 }) {
-  const badgeTone = fare?.badge?.tone === "offer" ? "bg-pink-50 text-pink-700 ring-pink-200" : "bg-amber-50 text-amber-800 ring-amber-200";
+  const display = fare ? `${fare.label}` : "";
+
   return (
-    <button onClick={onClick} className="inline-flex max-w-full items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-left text-[12px] hover:bg-gray-50" title="Change fare">
-      <span className={`h-3.5 w-3.5 rounded-full border ${fare ? "border-gray-800" : "border-gray-400"} grid place-items-center`}>{fare && <span className="h-2 w-2 rounded-full bg-gray-800" />}</span>
+    <button onClick={onClick} className="inline-flex max-w-full items-center gap-2 rounded-md bg-white px-3 py-1.5 text-left text-[12px] hover:bg-gray-50" title="Change fare">
+      <span className={`h-3.5 w-3.5 rounded-full border ${fare ? "border-gray-800" : "border-gray-400"} grid place-items-center`}>
+        {fare && <span className="h-2 w-2 rounded-full bg-gray-800" />}
+      </span>
+
       {fare ? (
         <div className="flex min-w-0 items-center gap-2">
-          {fare.refNo != null && <span className="text-[10px] text-gray-500 -translate-y-[2px]">{fare.refNo}</span>}
+          <span className={`inline-block h-2.5 w-2.5 rounded-full ${dotNeutral}`} />
           <span className="whitespace-nowrap text-[14px] font-bold text-gray-900"><Money v={fare.price} /></span>
+
+          {/* (i) tooltip */}
           <span className="relative group">
             <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-700">i</span>
             <div className="pointer-events-none absolute left-1/2 z-30 mt-2 w-72 -translate-x-1/2 rounded-lg border border-gray-200 bg-white p-3 text-xs text-gray-700 opacity-0 shadow-2xl transition group-hover:opacity-100">
-              <div className="mb-1 flex items-center justify-between text-[12px]"><span className="font-semibold">{fare.label} • {fare.cabin || "—"}</span><span className="font-semibold"><Money v={fare.price} /></span></div>
+              <div className="mb-1 flex items-center justify-between text-[12px]">
+                <span className="font-semibold">{fare.label} • {fare.cabin || "—"}</span>
+                <span className="font-semibold"><Money v={fare.price} /></span>
+              </div>
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-md bg-gray-50 p-2"><div className="text-[11px] text-gray-500">Baggage</div><div className="mt-0.5 font-medium">{fare.baggage?.handKg != null ? `${fare.baggage.handKg}kg cabin` : "Cabin: airline"}<br/>{fare.baggage?.checkKg != null ? `${fare.baggage.checkKg}kg check-in` : "Check-in: airline"}</div></div>
-                <div className="rounded-md bg-gray-50 p-2"><div className="text-[11px] text-gray-500">Seat</div><div className="mt-0.5 font-medium">{fare.seat || "Seat selection (paid)"}</div></div>
+                <div className="rounded-md bg-gray-50 p-2">
+                  <div className="text-[11px] text-gray-500">Baggage</div>
+                  <div className="mt-0.5 font-medium">
+                    {fare.baggage?.handKg != null ? `${fare.baggage.handKg}kg cabin` : "Cabin: airline"}<br/>
+                    {fare.baggage?.checkKg != null ? `${fare.baggage.checkKg}kg check-in` : "Check-in: airline"}
+                  </div>
+                </div>
+                <div className="rounded-md bg-gray-50 p-2">
+                  <div className="text-[11px] text-gray-500">Seat</div>
+                  <div className="mt-0.5 font-medium">{fare.seat || "Seat selection (paid)"}</div>
+                </div>
               </div>
               <div className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 border-l border-t border-gray-200 bg-white" />
             </div>
           </span>
-          {fare.badge?.text && (<span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ring-1 ${badgeTone}`}>{fare.badge.text}</span>)}
-          <span className="truncate text-[12px] text-gray-700">{(fare.cabin || "Economy")}{fare.meal ? `, ${fare.meal}` : ""},{" "}<span className={fare.refundable === "Refundable" ? "text-emerald-700 font-medium" : "text-rose-700 font-medium"}>{fare.refundable}</span></span>
+
+          {/* fare-type chip */}
+          <span className={`truncate rounded px-1.5 py-0.5 text-[10px] font-semibold ring-1 border ${chipNeutral}`}>
+            {display}
+          </span>
         </div>
-      ) : (<span className="text-[12px] text-gray-600">{placeholder}</span>)}
+      ) : (
+        <span className="text-[12px] text-gray-600">{placeholder}</span>
+      )}
+
       <svg viewBox="0 0 24 24" className="h-4 w-4 text-gray-500"><path d="M7 10l5 5 5-5" fill="currentColor" /></svg>
     </button>
   );
@@ -321,15 +378,26 @@ function FareListRows({ fares, name, selectedCode, onSelect }:{
   fares: FareOption[]; name: string; selectedCode?: string; onSelect: (f: FareOption) => void;
 }) {
   const row = (f: FareOption, last: boolean) => {
-    const badgeTone = f.badge?.tone === "offer" ? "bg-pink-50 text-pink-700 ring-pink-200" : "bg-amber-50 text-amber-800 ring-amber-200";
     const refundableTone = f.refundable === "Refundable" ? "text-emerald-700" : "text-rose-700";
+    const display = `${f.label}`;
+
     return (
       <label key={f.code} className={`grid cursor-pointer grid-cols-[18px_1fr] items-center gap-2 px-2 py-2 ${!last ? "border-b border-gray-100" : ""}`}>
-        <input type="radio" name={name} value={f.code} checked={selectedCode === f.code} onChange={() => onSelect(f)} className="h-3.5 w-3.5 accent-gray-800" />
+        <input
+          type="radio"
+          name={name}
+          value={f.code}
+          checked={selectedCode === f.code}
+          onChange={() => onSelect(f)}
+          className="h-3.5 w-3.5 accent-gray-800"
+        />
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            {f.refNo != null && <span className="text-[10px] text-gray-500 -translate-y-[2px]">{f.refNo}</span>}
+            {/* neutral dot (no Offer/Published text) */}
+            <span className={`inline-block h-2.5 w-2.5 rounded-full ${dotNeutral}`} />
             <span className="text-[15px] font-semibold text-gray-900"><Money v={f.price} /></span>
+
+            {/* (i) tooltip */}
             <span className="relative group">
               <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-700">i</span>
               <div className="pointer-events-none absolute left-0 z-30 mt-2 w-72 rounded-lg border border-gray-200 bg-white p-3 text-xs text-gray-700 opacity-0 shadow-2xl transition group-hover:opacity-100">
@@ -341,8 +409,14 @@ function FareListRows({ fares, name, selectedCode, onSelect }:{
                 <div className="absolute -top-1 left-4 h-2 w-2 rotate-45 border-l border-t border-gray-200 bg-white" />
               </div>
             </span>
-            {f.badge?.text && <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ring-1 ${badgeTone}`}>{f.badge.text}</span>}
-            <span className="truncate text-[12px] text-gray-700">{(f.cabin || "Economy")}{f.meal ? `, ${f.meal}` : ""},{" "}
+
+            {/* fare-type chip (label • cabin) — BACK IN DROPDOWN */}
+            <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ring-1 border ${chipNeutral}`}>
+              {display}
+            </span>
+
+            <span className="truncate text-[12px] text-gray-700">
+              {(f.cabin || "Economy")}{f.meal ? `, ${f.meal}` : ""},{" "}
               <span className={`${refundableTone} font-medium`}>{f.refundable}</span>
             </span>
           </div>
@@ -368,21 +442,34 @@ function B2BRow({
   const nav = useNavigate();
   const [tab, setTab] = useState<DetailsTab>("itinerary");
   const [showFareMenu, setShowFareMenu] = useState(false);
-  const minFare = useMemo(() => Math.min(...r.fares.map(f => f.price)), [r.fares]);
+
+  const minFareObj = useMemo(() => r.fares.reduce((m, f) => (f.price < m.price ? f : m), r.fares[0]), [r.fares]);
+
+  /** default = min fare; sync with external selection if provided */
+  const [localFare, setLocalFare] = useState<FareOption>(selectedFare ?? minFareObj);
+  useEffect(() => { setLocalFare(selectedFare ?? minFareObj); }, [selectedFare, minFareObj]);
+
+  const effFare = localFare; // effective selected fare in UI
+  const effFareDisplay = `${effFare.label}`;
 
   const onBook = () => {
-    if (!selectedFare) return;
-    const qs = new URLSearchParams({ fare: selectedFare.code }).toString();
-    nav(`/flights/${r.id}?${qs}`, { state: { selectedFare, flightId: r.id } });
+    const f = effFare;
+    const qs = new URLSearchParams({ fare: f.code }).toString();
+    nav(`/flights/${r.id}?${qs}`, { state: { selectedFare: f, flightId: r.id } });
   };
-  const chooseFare = (f: FareOption) => { onSelectFare(r.id, f); setShowFareMenu(false); };
+
+  const chooseFare = (f: FareOption) => {
+    setLocalFare(f);
+    onSelectFare(r.id, f);
+    setShowFareMenu(false);
+  };
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-3">
+    <div className="border border-gray-200 bg-white p-3">
       {/* summary */}
       <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
         <div className="flex items-center gap-2">
-          <CircleLogo bg={r.logoBg} />
+          <ImageLogo src={r.logo} alt={r.airline} />
           <div className="min-w-0">
             <div className="truncate text-[16px] font-semibold text-gray-900">{r.airline}</div>
             <div className="text-[11px] text-gray-500">{r.flightNos}</div>
@@ -392,27 +479,49 @@ function B2BRow({
         <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-x-4">
           <div className="text-right">
             <div className="text-[13px] text-gray-700">
-              {r.fromCity} ({r.fromIata}) <span className="font-semibold text-gray-900">{r.departTime}</span>
+              <span className="text-[18px] font-bold text-gray-900">{r.departTime}</span>
             </div>
+            <div className="text-[12px]">{r.fromCity}</div>
             <div className="text-[11px] text-gray-500">{r.departDate}</div>
           </div>
-          <ArcTimeline label={r.stopLabel} />
+
+          <StraightTimeline label={r.stopLabel} durationMin={r.durationMin} />
+
           <div className="text-left">
             <div className="text-[13px] text-gray-700">
-              {r.toCity} ({r.toIata}) <span className="font-semibold text-gray-900">{r.arriveTime}</span>
+             <span className="text-[18px] font-bold text-gray-900">{r.arriveTime}</span>
             </div>
+            <div className="text-[12px]">{r.toCity}</div>
             <div className="text-[11px] text-gray-500">{r.arriveDate}</div>
           </div>
         </div>
 
-        <div className="ml-2 hidden text-right sm:block">
-          <span className="text-[12px] text-gray-600">Starting from </span><br/>
-          <span className="text-[16px] font-semibold text-gray-900"><Money v={minFare} /></span>
-          <small className="text-[12px] text-gray-600"> /per pax</small>
+        {/* Right column: selected fare chip + price + Book Now */}
+        <div className="ml-2 text-left sm:text-right">
+          <span className="text-[12px] text-gray-600">Selected fare</span><br/>
+          <div className="inline-flex items-center gap-2">
+            <span className={`inline-block h-2.5 w-2.5 rounded-full ${dotNeutral}`} />
+            <span className="text-[18px] font-bold text-gray-900"><Money v={effFare.price} /></span>
+            <span className="text-[12px] text-gray-600">
+              {" "}
+              <span className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-semibold ring-1 border ${chipNeutral}`}>
+                {effFareDisplay}
+              </span>
+            </span>
+          </div>
+          <div className="mt-2">
+            <button
+              onClick={onBook}
+              className="rounded-sm bg-blue-500 px-3 py-1.5 text-sm font-semibold text-white shadow hover:opacity-95"
+              title="Proceed to book"
+            >
+              Book Now
+            </button>
+          </div>
         </div>
       </div>
 
-      <hr className="my-3 border-gray-100" />
+      <hr className="my-2 border-t border-dashed border-gray-200" />
 
       {/* actions */}
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
@@ -422,18 +531,21 @@ function B2BRow({
         </div>
 
         <div className="relative flex items-center gap-2">
-          <FareOneLine fare={selectedFare} placeholder="Select fare" onClick={() => setShowFareMenu((s) => !s)} />
+          {/* pill shows the effective fare (same label as dropdown) */}
+          <FareOneLine fare={effFare} placeholder="Select fare" onClick={() => setShowFareMenu((s) => !s)} />
           {showFareMenu && (
             <div className="absolute right-0 top-[calc(100%+6px)] z-50">
-              <FareListRows fares={r.fares} name={"fare-global"} selectedCode={selectedFare?.code} onSelect={chooseFare} />
+              <FareListRows
+                fares={r.fares}
+                name={`fare-${r.id}`}
+                selectedCode={effFare.code}
+                onSelect={chooseFare}
+              />
             </div>
           )}
           <button onClick={onToggle} className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-800 hover:bg-gray-50">
             Details
             <svg viewBox="0 0 24 24" className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`}><path d="M7 10l5 5 5-5" fill="currentColor" /></svg>
-          </button>
-          <button onClick={onBook} disabled={!selectedFare} className={`rounded-lg px-3 py-1.5 text-sm font-semibold text-white shadow ${selectedFare ? "bg-gray-900 hover:opacity-95" : "bg-gray-400 cursor-not-allowed opacity-60"}`}>
-            Book Now
           </button>
         </div>
       </div>
@@ -441,18 +553,14 @@ function B2BRow({
       {/* details */}
       {expanded && (
         <div className="mt-2 rounded-xl border border-gray-200 p-3">
-          <DetailsHeader airline={r.airline} logoBg={r.logoBg} flightNos={r.flightNos} />
-          {selectedFare && <div className="mb-3"><SelectedFarePanel fare={selectedFare} /></div>}
+          <DetailsHeader airline={r.airline} logo={r.logo} flightNos={r.flightNos} />
+          {/* ⬇️ Removed the extra SelectedFarePanel above the tabs */}
           <div className="mb-2"><RowTabs active={tab} onChange={setTab} /></div>
 
-          {tab === "itinerary"   && <ItineraryPanel segs={r.segments} logoBg={r.logoBg} airline={r.airline} rowBaggage={r.baggage} />}
+          {tab === "itinerary"   && <ItineraryPanel segs={r.segments} logo={r.logo} airline={r.airline} rowBaggage={r.baggage} />}
           {tab === "baggage"     && <BaggagePanel hand={r.baggage.handKg} check={r.baggage.checkKg} piece={r.baggage.piece} />}
           {tab === "cancellation"&& <CancellationPanel refund={r.cancellation.refund} change={r.cancellation.change} noShowUSD={r.cancellation.noShowUSD} />}
-          {tab === "fare"        && (selectedFare
-            ? <SelectedFarePanel fare={selectedFare} />
-            : <div className="rounded-lg border border-dashed border-gray-300 p-4 text-sm text-gray-600">
-                Select a fare from the row to view its details here.
-              </div>)}
+          {tab === "fare"        && <SelectedFarePanel fare={effFare} />}
         </div>
       )}
     </div>

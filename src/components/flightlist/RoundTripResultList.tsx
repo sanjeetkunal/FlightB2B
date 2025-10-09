@@ -1,6 +1,7 @@
+// src/components/flightlist/RoundTripResultList.tsx
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import ResultList, { type Row, type FareOption } from "./ResultList";
+import OnewayResult, { type Row as OnewayRow, type FareOption } from "./OnewayResult";
 
 /* small money util (same locale as ResultList) */
 const Money = ({ v }: { v: number }) => (
@@ -11,8 +12,8 @@ type Selected = { flightId: string; fare: FareOption } | null;
 
 type Props = {
   /* data for each leg */
-  outboundRows: Row[];
-  returnRows: Row[];
+  outboundRows: OnewayRow[];
+  returnRows: OnewayRow[];
 
   /* selection state */
   selectedOutbound: Selected;
@@ -124,7 +125,7 @@ export default function RoundTripResultList({
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-[16px] font-semibold text-gray-900">{outHeader}</h2>
           </div>
-          <ResultList
+          <OnewayResult
             rows={outboundRows}
             selectedGlobal={selectedOutbound}
             onSelectFare={onSelectOutboundFare}
@@ -141,7 +142,7 @@ export default function RoundTripResultList({
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-[16px] font-semibold text-gray-900">{inHeader}</h2>
           </div>
-          <ResultList
+          <OnewayResult
             rows={returnRows}
             selectedGlobal={selectedReturn}
             onSelectFare={onSelectReturnFare}

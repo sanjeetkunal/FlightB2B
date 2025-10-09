@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Row, FareOption } from "./ResultList";
+import type { Row, FareOption } from "./OnewayResult";
 
 /** ======== small utils (local copy; same feel as ResultList) ======== */
 const Money = ({ v, currency = "INR" as const, fractionDigits = 2 }:{
@@ -17,13 +17,27 @@ const minsToLabel = (m?: number) => {
   return `${h}h ${String(mm).padStart(2, "0")}m`;
 };
 
-const CircleLogo = ({ bg }: { bg: string }) => (
-  <div className="grid h-9 w-9 place-items-center rounded-full text-white shadow-sm" style={{ background: bg }}>
-    <svg viewBox="0 0 24 24" className="h-4 w-4"><path d="M2 12l20 2-6-4 3-7-3-1-5 8-5-1-1 2 5 2-2 7 2 1 3-7" fill="currentColor" /></svg>
+/** ======== airline logo (image URL) ======== */
+const AirlineLogo = ({ src, alt }: { src?: string; alt: string }) => (
+  <div className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-white ring-1 ring-black/5">
+    {src ? (
+      <img
+        src={src}
+        alt={alt}
+        className="h-9 w-9 object-contain"
+        loading="lazy"
+      />
+    ) : (
+      <div className="grid h-9 w-9 place-items-center text-[10px] font-semibold text-gray-600">
+        {alt?.slice(0,2)?.toUpperCase() ?? "AL"}
+      </div>
+    )}
   </div>
 );
+
 const TAKEOFF_ICON = "https://cdn-icons-png.flaticon.com/128/8943/8943898.png";
 const LANDING_ICON = "https://cdn-icons-png.flaticon.com/128/6591/6591567.png";
+
 const Arc = ({ label }: { label: string }) => (
   <div className="relative flex items-center justify-center">
     <svg width="220" height="40" viewBox="0 0 220 40" className="text-gray-300">
@@ -211,7 +225,7 @@ export default function IntlRoundTripResult({ outbound, inbound }: Props) {
               {/* OUTBOUND */}
               <div className="rounded-xl border border-gray-200 p-3">
                 <div className="mb-2 flex items-center gap-2">
-                  <CircleLogo bg={c.out.logoBg} />
+                  <AirlineLogo src={c.out.logo} alt={c.out.airline} />
                   <div className="min-w-0">
                     <div className="truncate text-[15px] font-semibold text-gray-900">{c.out.airline}</div>
                     <div className="truncate text-xs text-gray-600">
@@ -258,7 +272,7 @@ export default function IntlRoundTripResult({ outbound, inbound }: Props) {
               {/* INBOUND */}
               <div className="rounded-xl border border-gray-200 p-3">
                 <div className="mb-2 flex items-center gap-2">
-                  <CircleLogo bg={c.back.logoBg} />
+                  <AirlineLogo src={c.back.logo} alt={c.back.airline} />
                   <div className="min-w-0">
                     <div className="truncate text-[15px] font-semibold text-gray-900">{c.back.airline}</div>
                     <div className="truncate text-xs text-gray-600">

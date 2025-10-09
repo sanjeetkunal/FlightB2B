@@ -5,10 +5,10 @@ import FromToBar from "../components/flightsearch/FromToBar";
 import { searchFlights, type FlightRow, type FlightFare } from "../data/flights";
 
 import FilterPanel, { type Filters } from "../components/flightlist/FiltersPanel";
-import ResultList, {
+import OnewayResult, {
   type Row as UIRow,
   type FareOption as UIFare,
-} from "../components/flightlist/ResultList";
+} from "../components/flightlist/OnewayResult";
 import RoundTripResultList from "../components/flightlist/RoundTripResultList";
 
 /* ================== small utils ================== */
@@ -42,7 +42,7 @@ function adaptRows(rows: FlightRow[]): UIRow[] {
     return {
       id: r.id,
       airline: r.airline,
-      logoBg: r.logoBg,
+      logo: r.logo,                // ✅ FIX: use image URL (was r.logoB)
       flightNos: r.flightNos,
       fromCity: r.fromCity, fromIata: r.fromIata,
       toCity: r.toCity,     toIata: r.toIata,
@@ -201,6 +201,7 @@ export default function FlightResults() {
     );
   };
 
+  type SortKey = "price_low" | "price_high" | "duration" | "depart_early" | "arrive_late";
   const [sortBy, setSortBy] = useState<SortKey>("price_low");
   const sortRows = (rows: UIRow[]) => {
     const toMin = (t: string) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
@@ -270,7 +271,7 @@ export default function FlightResults() {
     <div className="mx-auto">
       <div className="min-h-screen">
         {showModify && (
-          <div className="sticky top-0 z-40 mb-3 backdrop-blur">
+          <div className="sticky top-0 z-40 mb-3 backdrop-blur bg-gray-900 p-2 rounded">
             <div className="mx-auto max-w-7xl">
               <FromToBar onSearch={handleModifySearch} />
             </div>
@@ -366,7 +367,7 @@ export default function FlightResults() {
                   pax={pax}
                 />
               ) : (
-                <ResultList
+                <OnewayResult
                   rows={rowsOneWay}
                   selectedGlobal={selectedGlobal}
                   onSelectFare={(rowId, fare) => setSelectedOutbound({ flightId: rowId, fare })}
