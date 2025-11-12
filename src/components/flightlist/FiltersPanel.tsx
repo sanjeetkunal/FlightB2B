@@ -15,6 +15,8 @@ export type Filters = {
   toAirports: Set<string>;
   depSlots: Set<TimeSlot>;
   arrSlots: Set<TimeSlot>;
+  /** 👉 choose which direction to apply filters to */
+  applyTo: "both" | "out" | "in";
 };
 
 export type DatasetMeta = {
@@ -114,20 +116,60 @@ function TimeCard({
   );
 }
 
+/* ===== Segmented control for ApplyTo ===== */
+function Seg({
+  value,
+  onChange,
+}: {
+  value: "both" | "out" | "in";
+  onChange: (v: "both" | "out" | "in") => void;
+}) {
+  const btn = (val: "both" | "out" | "in", label: string) => {
+    const active = value === val;
+    return (
+      <button
+        type="button"
+        onClick={() => onChange(val)}
+        className={[
+          "px-3 py-1.5 text-sm rounded-md border",
+          active
+            ? "bg-blue-600 text-white border-blue-600"
+            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50",
+        ].join(" ")}
+        aria-pressed={active}
+      >
+        {label}
+      </button>
+    );
+  };
+  return (
+    <div className="inline-flex items-center gap-1">
+      {btn("both", "Both")}
+      {btn("out", "Outbound")}
+      {btn("in", "Inbound")}
+    </div>
+  );
+}
+
 export default function FilterPanel({
+  title,
   meta,
   f,
   setF,
   onReset,
   mobile,
   onClose,
+  /** 👇 NEW: control visibility of Apply-to segment (pass false on one-way) */
+  showApplyTo = true,
 }: {
+  title?: string;
   meta: DatasetMeta;
   f: Filters;
   setF: (x: Filters) => void;
   onReset: () => void;
   mobile?: boolean;
   onClose?: () => void;
+  showApplyTo?: boolean; // NEW
 }) {
   /* ===== typed Set toggles ===== */
   const toggleStringSet = (set: Set<string>, val: string) => {
@@ -175,11 +217,13 @@ export default function FilterPanel({
   ];
   const arrCards = depCards;
 
+  const applyTo = f.applyTo ?? "both";
+
   return (
     <aside className={`bg-white ${mobile ? "" : "p-4"} sm:p-4 text-[13px] sticky top-[120px]`}>
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-[14px]">Applied Filters</h3>
+        <h3 className="text-[14px] font-semibold">{title ?? "Applied Filters"}</h3>
         <div className="flex items-center gap-2">
           {mobile && (
             <button onClick={onClose} className="rounded-lg border px-3 py-1 text-sm">
@@ -191,6 +235,22 @@ export default function FilterPanel({
           </button>
         </div>
       </div>
+
+      {/* 👉 Apply-to Direction — visible only when allowed (i.e., round-trip) */}
+      {showApplyTo && (
+        <div className="mb-3 border-b border-gray-100 pb-3">
+          <div className="mb-2 flex items-center justify-between">
+            <div className="text-[16px] font-bold">Apply to</div>
+            <Seg
+              value={applyTo}
+              onChange={(v) => setF({ ...f, applyTo: v })}
+            />
+          </div>
+          <p className="text-[12px] text-gray-500">
+            Choose whether these filters affect <b>Outbound</b>, <b>Inbound</b>, or <b>Both</b> lists.
+          </p>
+        </div>
+      )}
 
       {/* Popular Filters */}
       <div className="mb-3 border-b border-gray-100 pb-3">
@@ -283,7 +343,12 @@ export default function FilterPanel({
       <div className="mb-3 border-b border-gray-100 pb-3">
         <div className="mb-3 text-[16px] font-bold">Departure Time</div>
         <div className="flex flex-wrap gap-2">
-          {depCards.map(({ key, top, icon }) => (
+          {[
+            { key: "0-6" as TimeSlot, top: "Before 6 AM", icon: <IconBefore6 /> },
+            { key: "6-12" as TimeSlot, top: "6 AM to 12 PM", icon: <Icon6to12 /> },
+            { key: "12-18" as TimeSlot, top: "12 PM to 6 PM", icon: <Icon12to18 /> },
+            { key: "18-24" as TimeSlot, top: "After 6 PM", icon: <IconAfter6 /> },
+          ].map(({ key, top, icon }) => (
             <TimeCard
               key={key}
               selected={f.depSlots.has(key)}
@@ -299,7 +364,12 @@ export default function FilterPanel({
       <div className="mb-3 border-b border-gray-100 pb-3">
         <div className="mb-3 text-[16px] font-bold">Arrival Time</div>
         <div className="flex flex-wrap gap-2">
-          {arrCards.map(({ key, top, icon }) => (
+          {[
+            { key: "0-6" as TimeSlot, top: "Before 6 AM", icon: <IconBefore6 /> },
+            { key: "6-12" as TimeSlot, top: "6 AM to 12 PM", icon: <Icon6to12 /> },
+            { key: "12-18" as TimeSlot, top: "12 PM to 6 PM", icon: <Icon12to18 /> },
+            { key: "18-24" as TimeSlot, top: "After 6 PM", icon: <IconAfter6 /> },
+          ].map(({ key, top, icon }) => (
             <TimeCard
               key={key}
               selected={f.arrSlots.has(key)}

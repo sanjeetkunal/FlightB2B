@@ -2,10 +2,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Hammersmith+One&display=swap');
 
 @layer components {
-  /* base button */
+
   .btn { @apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 font-medium; }
 
-  /* only color/variant styles here */
+
   .btn-primary { @apply bg-orange-500 text-white hover:opacity-95; }
   .btn-secondary { @apply bg-gray-100 text-gray-800 hover:bg-gray-200; }
 

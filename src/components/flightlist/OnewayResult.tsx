@@ -73,7 +73,7 @@ const dotNeutral  = "bg-gray-400";
 
 /* ================== tiny atoms (image logos) ================== */
 const ImageLogo = ({ src, alt }: { src: string; alt: string }) => (
-  <div className="grid h-9 w-9 place-items-center rounded-full bg-white ring-1 ring-black/5 overflow-hidden shadow-sm">
+  <div className="grid h-11 w-11 place-items-center overflow-hidden">
     <img src={src} alt={alt} className="h-full w-full object-contain p-1" />
   </div>
 );
