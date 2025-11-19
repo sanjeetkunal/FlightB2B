@@ -6,9 +6,9 @@ export default function TravellersField({ label, text, onClick }) {
       <button
         type="button"
         onClick={onClick}
-        className="w-full text-left bg-transparent text-[16px] font-semibold outline-none"
+        className="w-full text-left bg-transparent text-[16px] font-semibold outline-none cursor-pointer"
       >
-        {text}
+        {text || "Select Travellers"}
       </button>
     </FieldShell>
   );

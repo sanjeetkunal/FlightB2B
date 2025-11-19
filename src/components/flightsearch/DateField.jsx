@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import FieldShell from "../flightsearch/FieldShell";
 import MultiMonthDatePicker from "../flightsearch/MultiMonthDatePicker";
 
@@ -7,18 +7,25 @@ export default function DateField({ label, value, onChange, disabled }) {
   const valDate = value ? new Date(value) : null;
 
   const fmt = useMemo(
-    () => new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "short", year: "numeric" }),
+    () =>
+      new Intl.DateTimeFormat(undefined, {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
     []
   );
 
   const display = valDate ? fmt.format(valDate) : "Select date";
 
   const handlePick = (d) => {
-    // parent state string me hai, ISO YYYY-MM-DD me bhejenge
+    if (!d) return;
     const y = d.getFullYear();
-    const m = `${d.getMonth()+1}`.padStart(2,"0");
-    const day = `${d.getDate()}`.padStart(2,"0");
+    const m = `${d.getMonth() + 1}`.padStart(2, "0");
+    const day = `${d.getDate()}`.padStart(2, "0");
+
     onChange(`${y}-${m}-${day}`);
+    setOpen(false); // date pick hote hi calendar close
   };
 
   return (
@@ -26,12 +33,14 @@ export default function DateField({ label, value, onChange, disabled }) {
       <FieldShell label={label}>
         <button
           type="button"
-          onClick={() => !disabled && setOpen(v=>!v)}
-          className={`w-full text-left bg-transparent text-[16px] font-semibold outline-none ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+          onClick={() => !disabled && setOpen((v) => !v)}
+          className={`w-full text-left bg-transparent text-[16px] font-semibold outline-none ${
+            disabled ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
           {display}
         </button>
-        <span className="ml-2"></span>
+        <span className="ml-2" />
       </FieldShell>
 
       {/* Multi-month calendar popover */}
@@ -40,8 +49,8 @@ export default function DateField({ label, value, onChange, disabled }) {
         value={valDate}
         onChange={handlePick}
         onClose={() => setOpen(false)}
-        months={2}                 // 👈 change to 3 if you want 3 months
-        minDate={new Date()}       // optional: block past dates
+        months={2}            // 3 karna ho to yahan change
+        minDate={new Date()}  // aaj se pehle sab block
         className="right-0 z-30"
       />
     </div>

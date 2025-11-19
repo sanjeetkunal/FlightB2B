@@ -220,7 +220,7 @@ export default function FilterPanel({
   const applyTo = f.applyTo ?? "both";
 
   return (
-    <aside className={`bg-white ${mobile ? "" : "p-4"} sm:p-4 text-[13px] sticky top-[120px]`}>
+    <aside className={`bg-white ${mobile ? "" : "p-4"} sm:p-4 text-[13px] sticky top-[190px]`}>
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-[14px] font-semibold">{title ?? "Applied Filters"}</h3>
@@ -239,8 +239,8 @@ export default function FilterPanel({
       {/* 👉 Apply-to Direction — visible only when allowed (i.e., round-trip) */}
       {showApplyTo && (
         <div className="mb-3 border-b border-gray-100 pb-3">
-          <div className="mb-2 flex items-center justify-between">
-            <div className="text-[16px] font-bold">Apply to</div>
+          <div className="mb-2 items-center justify-between">
+            <div className="text-[16px] font-bold mb-2">Apply to</div>
             <Seg
               value={applyTo}
               onChange={(v) => setF({ ...f, applyTo: v })}

@@ -7,8 +7,11 @@ export default function MainLayout({ children }) {
     <div className="flex flex-col min-h-dvh bg-gray-100">
       <Header />
       {/* <main className="flex-1">{children}</main> */}
-       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
-        <Outlet />
+      <main className="flex-1">
+        <div className="mx-auto max-w-7xl py-0">
+          <Outlet />
+        </div>
+
       </main>
       <Footer />
     </div>

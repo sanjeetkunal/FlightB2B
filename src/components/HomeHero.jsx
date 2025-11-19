@@ -12,8 +12,8 @@ export default function HomeHero() {
 
 
   return (
-    <section className="mx-auto max-w-7xl py-7">
-      <div className="mx-auto mb-3">
+    <section className="mx-auto max-w-7xl">
+      <div className="mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div className="space-y-8">
             <h1 className="text-3xl sm:text-5xl lg:text-5xl text-black leading-tight font-semibold text-center sm:text-left">
@@ -22,24 +22,29 @@ export default function HomeHero() {
             </h1>
           </div>
 
-          <div className="relative">
-            <div className="lg:block">
-              <img src={cloudImg} className="w-full h-full object-contain absolute z-[-1]" />
-              <img
-                src={flightImg}
-                alt="world landmarks collage"
-                className=" hidden sm:block w-full h-full object-cover transform transition-transform duration-300 ease-out hover:scale-105"
-              />
+          <div className="relative w-full h-full py-7">
+            {/* Cloud background */}
+            <img
+              src={cloudImg}
+              alt="clouds background"
+              className="absolute inset-0 w-full h-full object-contain md:object-cover pointer-events-none z-0"
+            />
 
-       
-              {/* Desktop */}
-              <img
-                src={ifs}
-                alt="world landmarks collage"
-                className="block sm:hidden w-full h-full object-cover"
-              />
-            </div>
+            {/* Desktop / tablet flight image */}
+            <img
+              src={flightImg}
+              alt="world landmarks collage"
+              className="hidden sm:block w-full h-full object-cover transform transition-transform duration-300 ease-out hover:scale-105 relative z-10"
+            />
+
+            {/* Mobile fallback image */}
+            <img
+              src={ifs}
+              alt="world landmarks collage"
+              className="block sm:hidden w-full h-full object-cover relative z-10"
+            />
           </div>
+
         </div>
       </div>
 

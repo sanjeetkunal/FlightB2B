@@ -1,13 +1,27 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 
 function IconMinus() {
   return (
-    <svg viewBox="0 0 24 24" className="w-4 h-4"><path d="M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+    <svg viewBox="0 0 24 24" className="w-4 h-4">
+      <path
+        d="M5 12h14"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 function IconPlus() {
   return (
-    <svg viewBox="0 0 24 24" className="w-4 h-4"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+    <svg viewBox="0 0 24 24" className="w-4 h-4">
+      <path
+        d="M12 5v14M5 12h14"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 
@@ -25,23 +39,31 @@ export default function TravellerClassPicker({
   const TOTAL_CAP = 9;
 
   const total = value.adults + value.children + value.infants;
+  const isAtCap = useMemo(() => total >= TOTAL_CAP, [total]);
 
   // close on outside / Esc
   useEffect(() => {
     if (!open) return;
-    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose?.(); };
-    const onKey = (e) => { if (e.key === "Escape") onClose?.(); };
+
+    const onDown = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        onClose?.();
+      }
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose?.();
+    };
+
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
     setTimeout(() => setAnim(true), 0);
+
     return () => {
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown", onKey);
       setAnim(false);
     };
   }, [open, onClose]);
-
-  const disabledAdd = useMemo(() => total >= TOTAL_CAP, [total]);
 
   const step = (field, dir) => {
     const next = { ...value };
@@ -50,35 +72,37 @@ export default function TravellerClassPicker({
     if (field === "adults") {
       const n = Math.min(9, Math.max(1, value.adults + delta));
       next.adults = n;
-      // infants ≤ adults
-      if (next.infants > n) next.infants = n;
+      if (next.infants > n) next.infants = n; // infants ≤ adults
     } else if (field === "children") {
       const n = Math.min(8, Math.max(0, value.children + delta));
       next.children = n;
-    } else {
+    } else if (field === "infants") {
       const n = Math.min(4, Math.max(0, value.infants + delta));
       next.infants = Math.min(n, next.adults); // infants ≤ adults
     }
 
-    // total ≤ 9 (cap infants/children when needed)
+    // Total cap handle
     let t = next.adults + next.children + next.infants;
     if (t > TOTAL_CAP) {
       const overflow = t - TOTAL_CAP;
-      if (field === "children") next.children = Math.max(0, next.children - overflow);
-      else if (field === "infants") next.infants = Math.max(0, next.infants - overflow);
-      else {
+      if (field === "children") {
+        next.children = Math.max(0, next.children - overflow);
+      } else if (field === "infants") {
+        next.infants = Math.max(0, next.infants - overflow);
+      } else {
         // adults increased; try reduce children first then infants
         let rem = overflow;
         const reduceChildren = Math.min(rem, next.children);
-        next.children -= reduceChildren; rem -= reduceChildren;
+        next.children -= reduceChildren;
+        rem -= reduceChildren;
         if (rem > 0) next.infants = Math.max(0, next.infants - rem);
       }
     }
 
-    // if still blocked, nudge animation
     const after = next.adults + next.children + next.infants;
     if (after === TOTAL_CAP && dir === "inc") {
-      setAnim(false); // retrigger
+      // nudge small highlight animation when cap reached
+      setAnim(false);
       requestAnimationFrame(() => setAnim(true));
     }
 
@@ -89,7 +113,6 @@ export default function TravellerClassPicker({
 
   return (
     <div className={`absolute z-40 mt-2 w-full md:w-[520px] ${className}`}>
-      {/* gradient border + glass panel */}
       <div
         ref={ref}
         className={[
@@ -108,7 +131,6 @@ export default function TravellerClassPicker({
 
           {/* body */}
           <div className="p-5 grid gap-5">
-            {/* row helper */}
             {[
               { key: "adults", title: "Adults", sub: "12 yrs or above", min: 1, max: 9 },
               { key: "children", title: "Children", sub: "2 - 12 yrs", min: 0, max: 8 },
@@ -117,8 +139,9 @@ export default function TravellerClassPicker({
               const val = value[r.key];
               const decDisabled = val <= r.min;
               const incDisabled =
-                (r.key === "infants" && (val >= Math.min(4, value.adults) || total >= TOTAL_CAP)) ||
-                (r.key !== "infants" && (val >= r.max || total >= TOTAL_CAP));
+                (r.key === "infants" &&
+                  (val >= Math.min(4, value.adults) || isAtCap)) ||
+                (r.key !== "infants" && (val >= r.max || isAtCap));
 
               return (
                 <div key={r.key} className="flex items-center justify-between">
@@ -143,7 +166,7 @@ export default function TravellerClassPicker({
                       className={[
                         "min-w-10 h-9 px-3 rounded-full grid place-items-center text-sm font-semibold",
                         "bg-gray-100 text-gray-800",
-                        anim && total >= TOTAL_CAP ? "ring-2 ring-orange-500/30" : "",
+                        anim && isAtCap ? "ring-2 ring-orange-500/30" : "",
                       ].join(" ")}
                     >
                       {val}
@@ -201,11 +224,9 @@ export default function TravellerClassPicker({
           {/* footer */}
           <div className="px-5 py-3 border-t flex items-center justify-between">
             <div className="text-sm text-gray-600">
-              <span className="font-semibold">{total}</span> Traveller{total > 1 ? "s" : ""} •{" "}
+              <span className="font-semibold">{total}</span> Traveller
+              {total > 1 ? "s" : ""} •{" "}
               <span className="font-semibold">{value.cabin}</span>
-              {value.infants > value.adults && (
-                <span className="ml-2 text-red-600">• infants cannot exceed adults</span>
-              )}
             </div>
             <button
               type="button"

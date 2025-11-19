@@ -1,22 +1,24 @@
-// src/components/flightlist/IntlRoundTripResult.tsx
-import React, { useMemo, useState } from "react";
+// src/components/flightlist/OnewayResultList.tsx
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-/* ========= Types borrowed from oneway style ========= */
-
+/** ==== TYPES ==== */
 export type FareOption = {
   code: string;
   label: string;
-  price: number; // INR (selling price)
-  refundable: "Refundable" | "Non Refundable" | "Non-Refundable";
+  price: number; // INR
+  refundable: "Refundable" | "Non Refundable";
   cabin?: string;
   meal?: string;
   badge?: { text: string; tone?: "offer" | "published" };
   refNo?: number;
   baggage?: { handKg?: number; checkKg?: number };
   seat?: string;
-  commissionINR?: number; // agent commission
-  agentFareINR?: number; // agent net fare (if given separately)
+
+  // agent-side (fare level)
+  commissionINR?: number;
+  agentFareINR?: number;
+
   perks?: string[];
 };
 
@@ -45,15 +47,11 @@ export type Segment = {
 
 export type PolicyRule = { when: string; feeUSD: number; note?: string };
 
-export type PaxConfig = {
-  adults: number;
-  children: number;
-  infants: number;
-};
-
-/* === Round-trip row: 2 legs in one row === */
-
-export type LegSummary = {
+export type Row = {
+  id: string;
+  airline: string;
+  logo: string; // PNG logo URL
+  flightNos: string;
   fromCity: string;
   fromIata: string;
   departTime: string;
@@ -62,124 +60,93 @@ export type LegSummary = {
   toIata: string;
   arriveTime: string;
   arriveDate: string;
+  stops: 0 | 1 | 2;
   stopLabel: string;
   durationMin: number;
-  segments: Segment[];
-  baggage: { handKg?: number; checkKg?: number; piece?: string };
-};
+  totalFareINR: number;
 
-export type IntlRTRow = {
-  id: string;
-  airline: string;
-  logo: string;
+  // row-level agent side (fallback)
+  commissionUSD: number; // treat as INR for UI
+  agentFareUSD: number; // treat as INR for UI
+
   refundable: "Refundable" | "Non-Refundable";
   extras?: string[];
-
-  totalFareINR: number; // RT combo price
-
-  outbound: LegSummary;
-  inbound: LegSummary;
-
+  segments: Segment[];
+  baggage: { handKg?: number; checkKg?: number; piece?: string };
   cancellation: {
     refund: PolicyRule[];
     change: PolicyRule[];
     noShowUSD?: number;
   };
-
   fares: FareOption[];
 };
 
-/* ==== Payload passenger-details page ke liye ==== */
+/** ==== PAX CONFIG ==== */
+export type PaxConfig = {
+  adults: number;
+  children: number;
+  infants: number;
+};
 
-export type SelectedIntlRTFlightPayload = {
+/** ==== CLEAN FLIGHT PAYLOAD passenger page ke liye ==== */
+export type SelectedFlightPayload = {
   id: string;
   airline: string;
   logo: string;
-  refundable: "Refundable" | "Non-Refundable";
+  flightNos: string;
+  fromCity: string;
+  fromIata: string;
+  toCity: string;
+  toIata: string;
+  departTime: string;
+  arriveTime: string;
+  departDate: string;
+  arriveDate: string;
   cabin: string;
-  outbound: {
-    fromCity: string;
-    fromIata: string;
-    toCity: string;
-    toIata: string;
-    departTime: string;
-    arriveTime: string;
-    departDate: string;
-    arriveDate: string;
-    segments: Segment[];
-    baggage: LegSummary["baggage"];
-  };
-  inbound: {
-    fromCity: string;
-    fromIata: string;
-    toCity: string;
-    toIata: string;
-    departTime: string;
-    arriveTime: string;
-    departDate: string;
-    arriveDate: string;
-    segments: Segment[];
-    baggage: LegSummary["baggage"];
-  };
+  refundable: "Refundable" | "Non-Refundable";
+  segments: Segment[];
+  baggage: Row["baggage"];
 };
 
-export function adaptIntlRowToSelectedFlight(
-  r: IntlRTRow,
+/** Row + Fare → passenger page ke liye clean object */
+export function adaptRowToSelectedFlight(
+  r: Row,
   f: FareOption
-): SelectedIntlRTFlightPayload {
+): SelectedFlightPayload {
   return {
     id: r.id,
     airline: r.airline,
     logo: r.logo,
-    refundable: r.refundable,
+    flightNos: r.flightNos,
+    fromCity: r.fromCity,
+    fromIata: r.fromIata,
+    toCity: r.toCity,
+    toIata: r.toIata,
+    departTime: r.departTime,
+    arriveTime: r.arriveTime,
+    departDate: r.departDate,
+    arriveDate: r.arriveDate,
     cabin: f.cabin ?? "Economy",
-    outbound: {
-      fromCity: r.outbound.fromCity,
-      fromIata: r.outbound.fromIata,
-      toCity: r.outbound.toCity,
-      toIata: r.outbound.toIata,
-      departTime: r.outbound.departTime,
-      arriveTime: r.outbound.arriveTime,
-      departDate: r.outbound.departDate,
-      arriveDate: r.outbound.arriveDate,
-      segments: r.outbound.segments,
-      baggage: r.outbound.baggage,
-    },
-    inbound: {
-      fromCity: r.inbound.fromCity,
-      fromIata: r.inbound.fromIata,
-      toCity: r.inbound.toCity,
-      toIata: r.inbound.toIata,
-      departTime: r.inbound.departTime,
-      arriveTime: r.inbound.arriveTime,
-      departDate: r.inbound.departDate,
-      arriveDate: r.inbound.arriveDate,
-      segments: r.inbound.segments,
-      baggage: r.inbound.baggage,
-    },
+    refundable: r.refundable, // row se
+    segments: r.segments,
+    baggage: r.baggage,
   };
 }
 
-/* ========= Small utils ========= */
-
+/* ================== small utils ================== */
 const Money = ({
   v,
-  currency = "INR" as const,
   fractionDigits = 2,
 }: {
   v: number;
-  currency?: "INR" | "USD";
   fractionDigits?: number;
 }) => (
   <>
-    {new Intl.NumberFormat(
-      currency === "INR" ? "en-IN" : "en-US",
-      {
-        style: "currency",
-        currency,
-        maximumFractionDigits: fractionDigits,
-      }
-    ).format(v)}
+    {new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: fractionDigits,
+    }).format(v)}
   </>
 );
 
@@ -194,6 +161,7 @@ const chipNeutral =
   "bg-slate-100 text-slate-800 ring-slate-300 border-slate-200";
 const dotNeutral = "bg-gray-400";
 
+/* ================== tiny atoms ================== */
 const ImageLogo = ({ src, alt }: { src: string; alt: string }) => (
   <div className="grid h-11 w-11 place-items-center overflow-hidden">
     <img src={src} alt={alt} className="h-full w-full object-contain p-1" />
@@ -206,6 +174,36 @@ const SmallImageLogo = ({ src, alt }: { src: string; alt: string }) => (
   </span>
 );
 
+function DetailsHeader({
+  airline,
+  logo,
+  flightNos,
+}: {
+  airline: string;
+  logo: string;
+  flightNos: string;
+}) {
+  return (
+    <div className="mb-3 flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
+      <div className="flex min-w-0 items-center gap-3">
+        <ImageLogo src={logo} alt={airline} />
+        <div className="min-w-0">
+          <div className="truncate text-[15px] font-semibold text-gray-900">
+            {airline}
+          </div>
+          <div className="truncate text-xs text-gray-600">
+            Flight(s): <span className="font-medium">{flightNos}</span>
+          </div>
+        </div>
+      </div>
+      <div className="hidden items-center gap-2 sm:flex text-xs text-gray-600">
+        Aircraft • Economy
+      </div>
+    </div>
+  );
+}
+
+/* === straight timeline === */
 const TAKEOFF_ICON =
   "https://cdn-icons-png.flaticon.com/128/8943/8943898.png";
 const LANDING_ICON =
@@ -253,8 +251,7 @@ const StraightTimeline = ({
   </div>
 );
 
-/* ========= Details atoms (similar to oneway) ========= */
-
+/* =============== details panels =============== */
 const AmenIconLayout = () => (
   <svg viewBox="0 0 24 24" className="h-4 w-4 text-gray-500">
     <path d="M3 7h18v2H3zm0 4h18v2H3zm0 4h18v2H3z" fill="currentColor" />
@@ -275,17 +272,17 @@ function SegmentCard({
   s,
   logo,
   airline,
-  bag,
+  rowBaggage,
 }: {
   s: Segment;
   logo: string;
   airline: string;
-  bag: { handKg?: number; checkKg?: number; piece?: string };
+  rowBaggage: { handKg?: number; checkKg?: number; piece?: string };
 }) {
   const dur = minsToLabel(s.durationMin);
-  const piece = bag.piece || "1 piece only";
-  const hand = bag.handKg ?? 0;
-  const check = bag.checkKg ?? 0;
+  const piece = rowBaggage.piece || "1 piece only";
+  const hand = rowBaggage.handKg ?? 0;
+  const check = rowBaggage.checkKg ?? 0;
 
   return (
     <div className="rounded-xl border border-gray-200 p-3">
@@ -400,25 +397,27 @@ function LayoverBadge({ text }: { text: string }) {
   );
 }
 
-function ItineraryLeg({
-  title,
-  leg,
+function ItineraryPanel({
+  segs,
   logo,
   airline,
+  rowBaggage,
 }: {
-  title: string;
-  leg: LegSummary;
+  segs: Segment[];
   logo: string;
   airline: string;
+  rowBaggage: { handKg?: number; checkKg?: number; piece?: string };
 }) {
   return (
-    <div className="space-y-2">
-      <div className="text-xs font-semibold text-gray-500 uppercase">
-        {title}
-      </div>
-      {leg.segments.map((s, i) => (
+    <div>
+      {segs.map((s, i) => (
         <div key={i}>
-          <SegmentCard s={s} logo={logo} airline={airline} bag={leg.baggage} />
+          <SegmentCard
+            s={s}
+            logo={logo}
+            airline={airline}
+            rowBaggage={rowBaggage}
+          />
           {s.layoverAt && s.layoverMin != null && (
             <LayoverBadge
               text={`Change of planes • ${minsToLabel(
@@ -432,35 +431,27 @@ function ItineraryLeg({
   );
 }
 
-function BaggagePanelRT({
-  outbound,
-  inbound,
+function BaggagePanel({
+  hand,
+  check,
+  piece,
 }: {
-  outbound: LegSummary;
-  inbound: LegSummary;
+  hand?: number;
+  check?: number;
+  piece?: string;
 }) {
-  const render = (title: string, b: LegSummary["baggage"]) => (
+  return (
     <div className="overflow-hidden rounded-xl border border-gray-200">
-      <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-700">
-        {title}
-      </div>
-      <div className="grid grid-cols-3 bg-gray-50 text-[11px] font-semibold text-gray-700 border-t border-gray-200">
+      <div className="grid grid-cols-3 bg-gray-50 text-xs font-semibold text-gray-700">
         <div className="border-r border-gray-200 p-2">Cabin</div>
         <div className="border-r border-gray-200 p-2">Check-in</div>
         <div className="p-2">Policy</div>
       </div>
       <div className="grid grid-cols-3 text-sm">
-        <div className="border-r border-gray-200 p-3">{b.handKg ?? 0} kg</div>
-        <div className="border-r border-gray-200 p-3">{b.checkKg ?? 0} kg</div>
-        <div className="p-3">{b.piece || "As per airline allowance"}</div>
+        <div className="border-r border-gray-200 p-3">{hand ?? 0} kg</div>
+        <div className="border-r border-gray-200 p-3">{check ?? 0} kg</div>
+        <div className="p-3">{piece || "As per airline allowance"}</div>
       </div>
-    </div>
-  );
-
-  return (
-    <div className="grid gap-3 md:grid-cols-2">
-      {render("Departure leg", outbound.baggage)}
-      {render("Return leg", inbound.baggage)}
     </div>
   );
 }
@@ -480,10 +471,7 @@ function CancellationPanel({
         <div className="mb-2 text-sm font-semibold">Refund rules</div>
         <ul className="space-y-1 text-sm text-gray-700">
           {refund.map((r, i) => (
-            <li
-              key={i}
-              className="flex items-start justify-between gap-3"
-            >
+            <li key={i} className="flex items-start justify-between gap-3">
               <span>{r.when}</span>
               <span className="font-medium">₹{r.feeUSD}</span>
             </li>
@@ -500,10 +488,7 @@ function CancellationPanel({
         <div className="mb-2 text-sm font-semibold">Change rules</div>
         <ul className="space-y-1 text-sm text-gray-700">
           {change.map((r, i) => (
-            <li
-              key={i}
-              className="flex items-start justify-between gap-3"
-            >
+            <li key={i} className="flex items-start justify-between gap-3">
               <span>
                 {r.when}
                 {r.note ? ` — ${r.note}` : ""}
@@ -517,7 +502,8 @@ function CancellationPanel({
   );
 }
 
-type DetailsTab = "itinerary" | "fare" | "cancellation" | "baggage";
+/* ========== TABs ========== */
+type DetailsTab = "itinerary" | "baggage" | "cancellation" | "fare";
 
 function RowTabs({
   active,
@@ -530,7 +516,7 @@ function RowTabs({
     { id: "itinerary", label: "FLIGHT DETAILS" },
     { id: "fare", label: "FARE SUMMARY" },
     { id: "cancellation", label: "CANCELLATION" },
-    { id: "baggage", label: "BAGGAGE" },
+    { id: "baggage", label: "DATE CHANGE" },
   ];
 
   return (
@@ -544,7 +530,7 @@ function RowTabs({
             "px-4 py-2 text-xs font-semibold tracking-wide uppercase transition",
             active === t.id
               ? "bg-blue-500 text-white"
-              : "bg-white text-gray-800 hover:bg-gray-50",
+              : "bg-white text-gray-800 sbg-gray-50",
             i !== 0 && "border-l border-gray-200",
           ]
             .filter(Boolean)
@@ -557,30 +543,34 @@ function RowTabs({
   );
 }
 
-function SelectedFarePanelRT({
+/* ==== Selected fare panel ==== */
+function SelectedFarePanel({
   fare,
   showCommission,
+  agentNetFallback,
+  commissionFallback,
 }: {
   fare: FareOption;
   showCommission: boolean;
+  agentNetFallback?: number;
+  commissionFallback?: number;
 }) {
   const refundableTone =
     fare.refundable === "Refundable"
       ? "text-emerald-700"
       : "text-rose-700";
 
-  const commission =
-    fare.commissionINR ??
-    (fare.agentFareINR != null ? fare.price - fare.agentFareINR : undefined);
-
   const agentNet =
-    fare.agentFareINR ??
-    (commission != null ? fare.price - commission : undefined);
+    fare.agentFareINR != null ? fare.agentFareINR : agentNetFallback;
+  const commission =
+    fare.commissionINR != null ? fare.commissionINR : commissionFallback;
+
+  const hasAgentInfo = agentNet != null || commission != null;
 
   return (
     <div className="rounded-xl border border-gray-200 p-3">
       <div className="mb-2 flex flex-wrap items-center gap-2">
-        <div className="text-[13px] text-gray-600">Selected RT Fare</div>
+        <div className="text-[13px] text-gray-600">Selected Fare</div>
         <div className="text-[18px] font-bold text-gray-900">
           <Money v={fare.price} />
         </div>
@@ -593,23 +583,45 @@ function SelectedFarePanelRT({
         {fare.cabin ? ` • ${fare.cabin}` : ""}
         {fare.meal ? `, ${fare.meal}` : ""}
       </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <div className="rounded-lg bg-gray-50 p-3">
+          <div className="text-[11px] text-gray-500">Baggage</div>
+          <div className="mt-0.5 text-sm font-medium">
+            {(fare.baggage?.handKg ?? "—")}kg cabin •{" "}
+            {(fare.baggage?.checkKg ?? "—")}kg check-in
+          </div>
+        </div>
+        <div className="rounded-lg bg-gray-50 p-3">
+          <div className="text-[11px] text-gray-500">Seat</div>
+          <div className="mt-0.5 text-sm font-medium">
+            {fare.seat || "Seat selection (paid)"}
+          </div>
+        </div>
+      </div>
 
       {showCommission && (
-        <div className="mt-3 rounded-lg bg-emerald-50 p-2 text-[12px] text-emerald-800 border border-emerald-200">
-          {agentNet != null && commission != null ? (
-            <>
-              Agent Net:{" "}
-              <span className="font-semibold">
-                <Money v={agentNet} />
-              </span>
-              {" • "}
-              Commission:{" "}
-              <span className="font-semibold">
-                <Money v={commission} />
-              </span>
-            </>
-          ) : (
-            <>Commission info not available</>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-lg bg-emerald-50 p-3">
+            <div className="text-[11px] text-emerald-700">
+              Agent Net Fare
+            </div>
+            <div className="mt-0.5 text-sm font-semibold text-emerald-800">
+              {agentNet != null ? <Money v={agentNet} /> : "—"}
+            </div>
+          </div>
+          <div className="rounded-lg bg-orange-50 p-3">
+            <div className="text-[11px] text-orange-700">
+              Your Commission
+            </div>
+            <div className="mt-0.5 text-sm font-semibold text-orange-800">
+              {commission != null ? <Money v={commission} /> : "—"}
+            </div>
+          </div>
+
+          {!hasAgentInfo && (
+            <div className="col-span-full text-[11px] text-gray-600">
+              Commission info not available for this fare.
+            </div>
           )}
         </div>
       )}
@@ -617,8 +629,7 @@ function SelectedFarePanelRT({
   );
 }
 
-/* =============== Fare picker (same UX as oneway) =============== */
-
+/* =============== fare pickers =============== */
 function FareOneLine({
   fare,
   placeholder,
@@ -651,6 +662,45 @@ function FareOneLine({
           <span className="whitespace-nowrap text-[14px] font-bold text-gray-900">
             <Money v={fare.price} />
           </span>
+
+          {/* (i) tooltip */}
+          <span className="relative group">
+            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-700">
+              i
+            </span>
+            <div className="pointer-events-none absolute left-1/2 z-30 mt-2 w-72 -translate-x-1/2 rounded-lg border border-gray-200 bg-white p-3 text-xs text-gray-700 opacity-0 shadow-2xl transition group-hover:opacity-100">
+              <div className="mb-1 flex items-center justify-between text-[12px]">
+                <span className="font-semibold">
+                  {fare.label} • {fare.cabin || "—"}
+                </span>
+                <span className="font-semibold">
+                  <Money v={fare.price} />
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-md bg-gray-50 p-2">
+                  <div className="text-[11px] text-gray-500">Baggage</div>
+                  <div className="mt-0.5 font-medium">
+                    {fare.baggage?.handKg != null
+                      ? `${fare.baggage.handKg}kg cabin`
+                      : "Cabin: airline"}
+                    <br />
+                    {fare.baggage?.checkKg != null
+                      ? `${fare.baggage.checkKg}kg check-in`
+                      : "Check-in: airline"}
+                  </div>
+                </div>
+                <div className="rounded-md bg-gray-50 p-2">
+                  <div className="text-[11px] text-gray-500">Seat</div>
+                  <div className="mt-0.5 font-medium">
+                    {fare.seat || "Seat selection (paid)"}
+                  </div>
+                </div>
+              </div>
+              <div className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 border-l border-t border-gray-200 bg-white" />
+            </div>
+          </span>
+
           <span
             className={`truncate rounded px-1.5 py-0.5 text-[10px] font-semibold ring-1 border ${chipNeutral}`}
           >
@@ -658,9 +708,7 @@ function FareOneLine({
           </span>
         </div>
       ) : (
-        <span className="text-[12px] text-gray-600">
-          {placeholder}
-        </span>
+        <span className="text-[12px] text-gray-600">{placeholder}</span>
       )}
 
       <svg viewBox="0 0 24 24" className="h-4 w-4 text-gray-500">
@@ -710,6 +758,44 @@ function FareListRows({
               <Money v={f.price} />
             </span>
 
+            {/* (i) tooltip */}
+            <span className="relative group">
+              <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-700">
+                i
+              </span>
+              <div className="pointer-events-none absolute left-0 z-30 mt-2 w-72 rounded-lg border border-gray-200 bg-white p-3 text-xs text-gray-700 opacity-0 shadow-2xl transition group-hover:opacity-100">
+                <div className="mb-1 flex items-center justify-between text-[12px]">
+                  <span className="font-semibold">
+                    {f.label} • {f.cabin || "—"}
+                  </span>
+                  <span className="font-semibold">
+                    <Money v={f.price} />
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-md bg-gray-50 p-2">
+                    <div className="text-[11px] text-gray-500">Baggage</div>
+                    <div className="mt-0.5 font-medium">
+                      {f.baggage?.handKg != null
+                        ? `${f.baggage.handKg}kg cabin`
+                        : "Cabin: airline"}
+                      <br />
+                      {f.baggage?.checkKg != null
+                        ? `${f.baggage.checkKg}kg check-in`
+                        : "Check-in: airline"}
+                    </div>
+                  </div>
+                  <div className="rounded-md bg-gray-50 p-2">
+                    <div className="text-[11px] text-gray-500">Seat</div>
+                    <div className="mt-0.5 font-medium">
+                      {f.seat || "Seat selection (paid)"}
+                    </div>
+                  </div>
+                </div>
+                <div className="absolute -top-1 left-4 h-2 w-2 rotate-45 border-l border-t border-gray-200 bg-white" />
+              </div>
+            </span>
+
             {/* fare chip */}
             <span
               className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ring-1 border ${chipNeutral}`}
@@ -737,9 +823,8 @@ function FareListRows({
   );
 }
 
-/* =============== SINGLE INTL RT ROW =============== */
-
-function IntlB2BRow({
+/* =============== SINGLE ROW =============== */
+function B2BRow({
   r,
   expanded,
   onToggle,
@@ -748,7 +833,7 @@ function IntlB2BRow({
   paxConfig,
   showCommission,
 }: {
-  r: IntlRTRow;
+  r: Row;
   expanded: boolean;
   onToggle: () => void;
   selectedFare: FareOption | null;
@@ -770,16 +855,28 @@ function IntlB2BRow({
     selectedFare ?? minFareObj
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     setLocalFare(selectedFare ?? minFareObj);
   }, [selectedFare, minFareObj]);
 
   const effFare = localFare;
 
+  // total pax
   const totalPax =
     (paxConfig?.adults ?? 1) +
     (paxConfig?.children ?? 0) +
     (paxConfig?.infants ?? 0);
+
+  // agent details with fallback (fare → row)
+  const agentNetDisplay =
+    effFare.agentFareINR != null
+      ? effFare.agentFareINR
+      : r.agentFareUSD ?? undefined;
+
+  const commissionDisplay =
+    effFare.commissionINR != null
+      ? effFare.commissionINR
+      : r.commissionUSD ?? undefined;
 
   const onBook = () => {
     const f = effFare;
@@ -798,12 +895,11 @@ function IntlB2BRow({
       },
     };
 
-    const selectedFlight = adaptIntlRowToSelectedFlight(r, f);
+    const selectedFlight = adaptRowToSelectedFlight(r, f);
 
     nav("/flights/passenger-details", {
       state: {
-        tripType: "intl-rt",
-        selectedFlightRT: selectedFlight,
+        selectedFlight,
         fare: f,
         row: r,
         pricing,
@@ -820,78 +916,50 @@ function IntlB2BRow({
 
   const effFareDisplay = `${effFare.label}`;
 
-  const commission =
-    effFare.commissionINR ??
-    (effFare.agentFareINR != null ? effFare.price - effFare.agentFareINR : undefined);
-
-  const agentNet =
-    effFare.agentFareINR ??
-    (commission != null ? effFare.price - commission : undefined);
-
   return (
-    <div className="border border-gray-200 bg-white p-3 rounded-2xl">
+    <div className="border border-gray-200 bg-white p-3 rounded-1xl">
       {/* summary */}
       <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
-        {/* airline */}
         <div className="flex items-center gap-2">
           <ImageLogo src={r.logo} alt={r.airline} />
           <div className="min-w-0">
             <div className="truncate text-[16px] font-semibold text-gray-900">
               {r.airline}
             </div>
-            <div className="text-[11px] text-gray-500">
-              Special Intl RT B2B Fare
-            </div>
+            <div className="text-[11px] text-gray-500">{r.flightNos}</div>
           </div>
         </div>
 
-        {/* centre: outbound timeline + tiny return line */}
-        <div className="flex flex-col gap-1">
-          <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-x-4">
-            <div className="text-right">
-              <div className="text-[13px] text-gray-700">
-                <span className="text-[18px] font-bold text-gray-900">
-                  {r.outbound.departTime}
-                </span>
-              </div>
-              <div className="text-[12px]">{r.outbound.fromCity}</div>
-              <div className="text-[11px] text-gray-500">
-                {r.outbound.departDate}
-              </div>
+        <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-x-4">
+          <div className="text-right">
+            <div className="text-[13px] text-gray-700">
+              <span className="text-[18px] font-bold text-gray-900">
+                {r.departTime}
+              </span>
             </div>
-
-            <StraightTimeline
-              label={r.outbound.stopLabel}
-              durationMin={r.outbound.durationMin}
-            />
-
-            <div className="text-left">
-              <div className="text-[13px] text-gray-700">
-                <span className="text-[18px] font-bold text-gray-900">
-                  {r.outbound.arriveTime}
-                </span>
-              </div>
-              <div className="text-[12px]">{r.outbound.toCity}</div>
-              <div className="text-[11px] text-gray-500">
-                {r.outbound.arriveDate}
-              </div>
-            </div>
+            <div className="text-[12px]">{r.fromCity}</div>
+            <div className="text-[11px] text-gray-500">{r.departDate}</div>
           </div>
 
-          {/* return info */}
-          <div className="mt-1 text-[11px] text-gray-600">
-            <span className="font-semibold">Return: </span>
-            {r.inbound.departTime} {r.inbound.fromCity} ({r.inbound.fromIata})
-            → {r.inbound.arriveTime} {r.inbound.toCity} ({r.inbound.toIata}) •{" "}
-            {r.inbound.departDate}
+          <StraightTimeline
+            label={r.stopLabel}
+            durationMin={r.durationMin}
+          />
+
+          <div className="text-left">
+            <div className="text-[13px] text-gray-700">
+              <span className="text-[18px] font-bold text-gray-900">
+                {r.arriveTime}
+              </span>
+            </div>
+            <div className="text-[12px]">{r.toCity}</div>
+            <div className="text-[11px] text-gray-500">{r.arriveDate}</div>
           </div>
         </div>
 
-        {/* Right: price + Book + commission info */}
+        {/* Right: price + Book + commission */}
         <div className="ml-2 text-left sm:text-right">
-          <span className="text-[12px] text-gray-600">
-            Selected RT fare
-          </span>
+          <span className="text-[12px] text-gray-600">Selected fare</span>
           <br />
           <div className="inline-flex items-center gap-2">
             <span className={`inline-block h-2.5 w-2.5 rounded-full ${dotNeutral}`} />
@@ -899,34 +967,15 @@ function IntlB2BRow({
               <Money v={effFare.price} />
             </span>
           </div>
-
-          <div className="mt-1 text-[11px] text-gray-600">
+          {/* <div className="mt-1 text-[11px] text-gray-600">
             <span
               className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-semibold ring-1 border ${chipNeutral}`}
             >
               {effFareDisplay}
             </span>
-          </div>
+          </div> */}
 
-          {showCommission && (
-            <div className="mt-1 text-[11px] text-emerald-700">
-              {agentNet != null && commission != null ? (
-                <>
-                  Agent Net:{" "}
-                  <span className="font-semibold">
-                    <Money v={agentNet} />
-                  </span>
-                  {" • "}
-                  Comm:{" "}
-                  <span className="font-semibold">
-                    <Money v={commission} />
-                  </span>
-                </>
-              ) : (
-                <>Commission not available</>
-              )}
-            </div>
-          )}
+         
 
           <div className="mt-2">
             <button
@@ -935,7 +984,7 @@ function IntlB2BRow({
               className="rounded-sm bg-blue-500 px-3 py-1.5 text-sm font-semibold text-white shadow hover:opacity-95"
               title="Proceed to book"
             >
-              Book RT Fare
+              Book Now
             </button>
           </div>
         </div>
@@ -963,19 +1012,42 @@ function IntlB2BRow({
               {x}
             </span>
           ))}
+
+
+           {showCommission &&
+            (agentNetDisplay != null || commissionDisplay != null) && (
+              <div className="mt-1 space-y-0.5 text-[11px] text-gray-700 px-3 py-1.5 bg-gray-50">
+                {agentNetDisplay != null && (
+                  <span className="mr-2">
+                    Net:{" "}
+                    <span className="font-semibold text-emerald-700">
+                      <Money v={agentNetDisplay} />
+                    </span>
+                  </span>
+                )}
+                {commissionDisplay != null && (
+                  <span>
+                    Your Commission:{" "}
+                    <span className="font-semibold text-orange-700">
+                      <Money v={commissionDisplay} />
+                    </span>
+                  </span>
+                )}
+              </div>
+            )}
         </div>
 
         <div className="relative flex items-center gap-2">
           <FareOneLine
             fare={effFare}
-            placeholder="Select RT fare"
+            placeholder="Select fare"
             onClick={() => setShowFareMenu((s) => !s)}
           />
           {showFareMenu && (
             <div className="absolute right-0 top-[calc(100%+6px)] z-50">
               <FareListRows
                 fares={r.fares}
-                name={`rtfare-${r.id}`}
+                name={`fare-${r.id}`}
                 selectedCode={effFare.code}
                 onSelect={chooseFare}
               />
@@ -1002,40 +1074,29 @@ function IntlB2BRow({
       {/* details card */}
       {expanded && (
         <div className="mt-2 rounded-xl border border-gray-200 p-3">
-          <div className="mb-2 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <ImageLogo src={r.logo} alt={r.airline} />
-              <div>
-                <div className="text-[15px] font-semibold text-gray-900">
-                  {r.airline}
-                </div>
-                <div className="text-[11px] text-gray-500">
-                  Intl round-trip itinerary
-                </div>
-              </div>
-            </div>
+          <DetailsHeader
+            airline={r.airline}
+            logo={r.logo}
+            flightNos={r.flightNos}
+          />
+          <div className="mb-2">
             <RowTabs active={tab} onChange={setTab} />
           </div>
 
           {tab === "itinerary" && (
-            <div className="space-y-4">
-              <ItineraryLeg
-                title="Departure flight"
-                leg={r.outbound}
-                logo={r.logo}
-                airline={r.airline}
-              />
-              <div className="border-t border-dashed border-gray-200" />
-              <ItineraryLeg
-                title="Return flight"
-                leg={r.inbound}
-                logo={r.logo}
-                airline={r.airline}
-              />
-            </div>
+            <ItineraryPanel
+              segs={r.segments}
+              logo={r.logo}
+              airline={r.airline}
+              rowBaggage={r.baggage}
+            />
           )}
           {tab === "baggage" && (
-            <BaggagePanelRT outbound={r.outbound} inbound={r.inbound} />
+            <BaggagePanel
+              hand={r.baggage.handKg}
+              check={r.baggage.checkKg}
+              piece={r.baggage.piece}
+            />
           )}
           {tab === "cancellation" && (
             <CancellationPanel
@@ -1045,9 +1106,11 @@ function IntlB2BRow({
             />
           )}
           {tab === "fare" && (
-            <SelectedFarePanelRT
+            <SelectedFarePanel
               fare={effFare}
               showCommission={showCommission}
+              agentNetFallback={agentNetDisplay}
+              commissionFallback={commissionDisplay}
             />
           )}
         </div>
@@ -1056,17 +1119,16 @@ function IntlB2BRow({
   );
 }
 
-/* =============== LIST WRAPPER (showCommission parent se aayega) =============== */
-
-export default function IntlRoundTripResult({
+/* =============== LIST WRAPPER =============== */
+export default function OnewayResultList({
   rows,
   selectedGlobal,
   onSelectFare,
   onEmpty,
   paxConfig,
-  showCommission = false,
+  showCommission = false, // parent se control
 }: {
-  rows: IntlRTRow[];
+  rows: Row[];
   selectedGlobal: { flightId: string; fare: FareOption } | null;
   onSelectFare: (rowId: string, fare: FareOption) => void;
   onEmpty?: React.ReactNode;
@@ -1078,15 +1140,15 @@ export default function IntlRoundTripResult({
   if (!rows || rows.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center text-sm text-gray-600">
-        {onEmpty ?? "No international round-trip results. Modify search or filters."}
+        {onEmpty ?? "No results. Modify your search or adjust filters."}
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {rows.map((r) => (
-        <IntlB2BRow
+        <B2BRow
           key={r.id}
           r={r}
           expanded={expandedId === r.id}
