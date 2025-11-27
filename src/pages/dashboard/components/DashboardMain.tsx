@@ -54,7 +54,7 @@ export default function DashboardMain() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-slate-50">
-      <div className="py-6">
+      <div className="py-6 mx-auto max-w-7xl">
         <div className="grid grid-cols-12 gap-4 lg:gap-6">
           {/* Left: side menu */}
           <div className="col-span-12 md:col-span-4 lg:col-span-3">

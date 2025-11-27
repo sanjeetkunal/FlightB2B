@@ -220,7 +220,7 @@ export default function FilterPanel({
   const applyTo = f.applyTo ?? "both";
 
   return (
-    <aside className={`bg-white ${mobile ? "" : "p-4"} sm:p-4 text-[13px] sticky top-[190px]`}>
+    <aside className={`bg-white ${mobile ? "" : "p-4"} sm:p-4 text-[13px] sticky top-[190px] rounded-2xl`}>
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-[14px] font-semibold">{title ?? "Applied Filters"}</h3>

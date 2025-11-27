@@ -1,3 +1,5 @@
+import { motion } from "framer-motion";
+
 const items = [
   {
     title: "Flight Tracker",
@@ -43,11 +45,44 @@ const items = [
   },
 ];
 
+// Section + grid variants
+const sectionVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.35,
+      ease: "easeOut",
+      staggerChildren: 0.08, // cards ek-ek karke animate honge
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 22, scale: 0.96 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.28, ease: "easeOut" },
+  },
+};
+
 export default function DoMore() {
   return (
-    <section className="mx-auto max-w-7xl  pb-10 mt-6">
+    <motion.section
+      className="mx-auto max-w-7xl pb-10 mt-6"
+      variants={sectionVariants}
+      initial="hidden"
+      whileInView="visible"           // scroll pe animate
+      viewport={{ once: true, amount: 0.3 }} // ek hi baar, jab ~30% section dikhai de
+    >
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 mb-5">
+      <motion.div
+        className="flex items-center justify-between gap-3 mb-5"
+        variants={cardVariants} // header bhi halka sa fade-up
+      >
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
             Add-ons
@@ -61,16 +96,16 @@ export default function DoMore() {
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
           Power tools for frequent flyers
         </span>
-      </div>
+      </motion.div>
 
       {/* Main Container */}
-      <div
-      >
+      <motion.div variants={sectionVariants}>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 sm:gap-4">
           {items.map((it) => (
-            <button
+            <motion.button
               key={it.title}
               type="button"
+              variants={cardVariants}
               className="
                 group flex flex-col items-stretch text-left
                 rounded-2xl border border-slate-100
@@ -161,10 +196,10 @@ export default function DoMore() {
                   transition-opacity duration-200
                 "
               />
-            </button>
+            </motion.button>
           ))}
         </div>
-      </div>
-    </section>
+      </motion.div>
+    </motion.section>
   );
 }

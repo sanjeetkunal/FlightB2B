@@ -94,7 +94,7 @@ export default function LoginLandingPro() {
           <div className="absolute -bottom-16 -right-16 h-72 w-72 rounded-full bg-blue-200 blur-3xl" />
         </div>
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 pb-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0 pt-10 pb-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
             {/* Left copy */}
             <div className="lg:col-span-8">
@@ -262,7 +262,7 @@ export default function LoginLandingPro() {
 
       {/* ============== FAQ ============== */}
       <section className="bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0 py-12">
           <div className="grid lg:grid-cols-2 gap-10 items-start">
             <div>
               <h3 className="text-2xl font-semibold text-slate-900">Frequently Asked Questions</h3>
@@ -293,7 +293,7 @@ export default function LoginLandingPro() {
 
       {/* ============== CTA FOOTER ============== */}
       <footer className="bg-slate-900 text-slate-200">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 grid md:grid-cols-2 gap-8 items-center">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0 py-10 grid md:grid-cols-2 gap-8 items-center">
           <div>
             <h4 className="text-xl font-semibold">Ready to supercharge your B2B?</h4>
             <p className="text-slate-400 text-sm mt-1">Onboard in minutes. Add sub-agents. Start issuing GST invoices today.</p>

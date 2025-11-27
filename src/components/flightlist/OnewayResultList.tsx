@@ -917,7 +917,7 @@ function B2BRow({
   const effFareDisplay = `${effFare.label}`;
 
   return (
-    <div className="border border-gray-200 bg-white p-3 rounded-1xl">
+    <div className="border border-gray-200 bg-white p-3 rounded-2xl">
       {/* summary */}
       <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
         <div className="flex items-center gap-2">

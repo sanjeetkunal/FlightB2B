@@ -1,13 +1,13 @@
 // src/pages/PassengerDetailsPage.jsx
 import React, { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import SeatMap from "../components/flightlist/SeatMap";
+import SeatMap from "../../components/flightlist/SeatMap";
 
 const currencySymbol = "₹";
 const SEAT_PRICE = 250; // SeatMap ke saath sync rakho
 
 export default function PassengerDetailsPage() {
-  const nav = useNavigate();
+  const navigate = useNavigate();
   const location = useLocation();
   const state = location.state || {};
 
@@ -15,6 +15,7 @@ export default function PassengerDetailsPage() {
   const pricing = state.pricing;
   const paxConfig = state.paxConfig;
 
+  // Agar koi data nahi hai to back dikhao
   if (!selectedFlight || !pricing || !paxConfig) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -22,7 +23,7 @@ export default function PassengerDetailsPage() {
           No flight selected. Please go back to the search results.
           <div className="mt-3">
             <button
-              onClick={() => nav(-1)}
+              onClick={() => navigate(-1)}
               className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700"
             >
               Go Back
@@ -33,6 +34,7 @@ export default function PassengerDetailsPage() {
     );
   }
 
+  /* ================== Passenger list (ADT/CHD/INF) ================== */
   const passengers = useMemo(() => {
     const list = [];
     for (let i = 0; i < paxConfig.adults; i++) {
@@ -63,7 +65,7 @@ export default function PassengerDetailsPage() {
     return initial;
   });
 
-  const [selectedSeats, setSelectedSeats] = useState([]); // ["12A", "12B", ...]
+  const [selectedSeats, setSelectedSeats] = useState([]); // ["12A","12B",...]
   const [gstEnabled, setGstEnabled] = useState(false);
   const [gstDetails, setGstDetails] = useState({
     gstin: "",
@@ -81,12 +83,12 @@ export default function PassengerDetailsPage() {
     }));
   }
 
-  const totalPax =
-    paxConfig.adults + paxConfig.children + paxConfig.infants;
+  const totalPax = paxConfig.adults + paxConfig.children + paxConfig.infants;
 
   const seatTotal = selectedSeats.length * SEAT_PRICE;
   const finalTotal = pricing.total + seatTotal;
 
+  /* ================== Submit -> navigate to review-and-pay ================== */
   function handleSubmit(e) {
     e.preventDefault();
 
@@ -105,17 +107,25 @@ export default function PassengerDetailsPage() {
         enabled: gstEnabled,
         ...gstDetails,
       },
+      finalTotal,
     };
 
+    // yahin se confirmation / payment page pe jao
+    navigate("/flights/review-and-pay", {
+      state: {
+        bookingPayload: payload,
+      },
+    });
+
     console.log("Final booking payload (ready for API):", payload);
-    alert("Passenger + seat + GST data captured. Console me payload check karo 🙂");
-    // yahin se aage /booking page ya payment flow pe ja sakte ho
   }
+
+  /* ================== UI ================== */
 
   return (
     <div className="min-h-screen bg-slate-100">
       {/* Top bar */}
-      <div className="border-b border-slate-200 bg-white/90 backdrop-blur">
+      <div className="border-b border-slate-200 bg-white/90 backdrop-blur mx-auto max-w-7xl">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-slate-400">
@@ -133,10 +143,10 @@ export default function PassengerDetailsPage() {
       </div>
 
       {/* Main content container */}
-      <div className="pt-6 lg:flex lg:items-start lg:gap-6">
+      <div className="pt-6 lg:flex lg:items-start lg:gap-6 mx-auto max-w-7xl">
         {/* LEFT: Passenger + Contact inside one big card */}
         <section className="flex-1">
-          <div className="rounded-1xl border border-slate-200 bg-white shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
             <div className="border-b border-slate-200 px-4 py-3 sm:px-5">
               <h2 className="text-sm sm:text-base font-semibold text-slate-900">
                 Passenger Details
@@ -336,14 +346,14 @@ export default function PassengerDetailsPage() {
                 </div>
               </div>
 
-              {/* ✅ Seat map (before GST) */}
+              {/* Seat map */}
               <SeatMap
                 totalPax={totalPax}
                 selectedSeats={selectedSeats}
                 onChange={setSelectedSeats}
               />
 
-              {/* ✅ GST Details (B2B) – seat map ke niche */}
+              {/* GST Details (B2B) */}
               <div className="space-y-3 rounded-xl border border-slate-200 bg-white px-3.5 py-3.5 sm:px-4 sm:py-4">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-semibold text-slate-900">
@@ -431,9 +441,9 @@ export default function PassengerDetailsPage() {
         </section>
 
         {/* RIGHT: Flight + Fare summary */}
-        <aside className="mt-6 w-full space-y-4 lg:mt-0 lg:w-[340px] lg:flex-shrink-0 lg:sticky lg:top-24">
+        <aside className="mt-6 w-full space-y-4 lg:mt-0 lg:w-[340px] lg:flex-shrink-0 lg:sticky lg:top-30">
           {/* Flight card */}
-          <div className="rounded-1xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
               <img
                 src={selectedFlight.logo}
@@ -489,7 +499,7 @@ export default function PassengerDetailsPage() {
           </div>
 
           {/* Fare summary */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="text-sm font-semibold text-slate-900">
                 Fare Summary
@@ -532,7 +542,7 @@ export default function PassengerDetailsPage() {
                 </span>
               </div>
 
-              {/* GST info badge (amount same, sirf invoice ke liye) */}
+              {/* GST info badge */}
               {gstEnabled && (
                 <div className="flex justify-between text-[11px] text-emerald-700">
                   <span>GST details added for tax invoice</span>

@@ -6,17 +6,17 @@ import {
   searchFlights,
   type FlightRow,
   type FlightFare,
-} from "../data/flights";
+} from "../../data/flights";
 import FilterPanel, {
   type Filters as PanelFilters,
-} from "../components/flightlist/FiltersPanel";
+} from "../../components/flightlist/FiltersPanel";
 
 import OnewayResultList, {
   type Row as UIRow,
   type FareOption as UIFare,
   type PaxConfig,
-} from "../components/flightlist/OnewayResultList";
-import FromToBar from "../components/flightsearch/FromToBar";
+} from "../../components/flightlist/OnewayResultList";
+import FromToBar from "../../components/flightsearch/FromToBar";
 
 /* ---------- helpers ---------- */
 const formatDateLabel = (iso?: string) => {

@@ -1,27 +1,28 @@
 // src/pages/FlightResults.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { motion } from "framer-motion"; // ⭐ animation
 
-import FromToBar from "../components/flightsearch/FromToBar";
+import FromToBar from "../../components/flightsearch/FromToBar";
 
 import {
   searchFlights,
   FLIGHTS,
   type FlightRow,
   type FlightFare,
-} from "../data/flights";
+} from "../../data/flights";
 
-import FilterPanel, { type Filters } from "../components/flightlist/FiltersPanel";
+import FilterPanel, { type Filters } from "../../components/flightlist/FiltersPanel";
 
 import OnewayResult, {
   type Row as OW_Row,
   type FareOption as OW_Fare,
-} from "../components/flightlist/OnewayResultList";
+} from "../../components/flightlist/OnewayResultList";
 
 import RoundTripResultList, {
   type RowRT as RT_Row,
   type FareRT as RT_Fare,
-} from "../components/flightlist/RoundTripResultList";
+} from "../../components/flightlist/RoundTripResultList";
 
 import IntlRoundTripResult, {
   type IntlRTRow,
@@ -29,7 +30,7 @@ import IntlRoundTripResult, {
   type PaxConfig as IntlPaxConfig,
   type LegSummary,
   type PolicyRule,
-} from "../components/flightlist/IntlRoundTripResult";
+} from "../../components/flightlist/IntlRoundTripResult";
 
 /* =============== small utils =============== */
 type TimeSlot = "0-6" | "6-12" | "12-18" | "18-24";
@@ -63,6 +64,38 @@ function normalizeRefundable(v: unknown): "Refundable" | "Non-Refundable" {
 const normRefStr = (s: string) => s.toLowerCase().replace(/-/g, " ").replace(/\s+/g, " ").trim();
 const eqRefund = (rowVal: string, filterVal: "any" | "Refundable" | "Non-Refundable") =>
   filterVal === "any" || normRefStr(rowVal) === normRefStr(filterVal);
+
+/* ====== Layout animation variants ====== */
+const layoutContainerVariants: any = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut",
+      staggerChildren: 0.12,
+    },
+  },
+};
+
+const sidebarVariants = {
+  hidden: { opacity: 0, x: -24 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.35, ease: "easeOut" as const },
+  },
+};
+
+const resultsVariants = {
+  hidden: { opacity: 0, x: 24 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.35, ease: "easeOut" as const },
+  },
+};
 
 /* =============== ONEWAY ADAPTERS (strictly for OnewayResult) =============== */
 function mapFareOW(f: FlightFare): OW_Fare {
@@ -794,14 +827,14 @@ export default function FlightResults() {
     (applyTo === "out"
       ? rowsOutRT
       : applyTo === "in"
-      ? rowsInRT
-      : [...rowsOutRT, ...rowsInRT]
+        ? rowsInRT
+        : [...rowsOutRT, ...rowsInRT]
     ).length
       ? applyTo === "out"
         ? rowsOutRT
         : applyTo === "in"
-        ? rowsInRT
-        : [...rowsOutRT, ...rowsInRT]
+          ? rowsInRT
+          : [...rowsOutRT, ...rowsInRT]
       : [...RT_OUT, ...RT_IN]
   );
 
@@ -942,13 +975,13 @@ export default function FlightResults() {
         return (
           a.totalFareINR - b.totalFareINR ||
           a.outbound.durationMin + a.inbound.durationMin -
-            (b.outbound.durationMin + b.inbound.durationMin)
+          (b.outbound.durationMin + b.inbound.durationMin)
         );
       if (sortIntl === "price_high")
         return (
           b.totalFareINR - a.totalFareINR ||
           a.outbound.durationMin + a.inbound.durationMin -
-            (b.outbound.durationMin + b.inbound.durationMin)
+          (b.outbound.durationMin + b.inbound.durationMin)
         );
       if (sortIntl === "duration")
         return (
@@ -1045,145 +1078,171 @@ export default function FlightResults() {
     <div className="mx-auto">
       <div className="min-h-screen">
         {/* TOP STRIP (common) */}
-        <div className="mt-3 mb-3 flex flex-col gap-3 sticky top-[110px] z-20 rounded-2xl border border-gray-200 bg-white px-3 py-2 shadow-sm md:flex-row md:items-center md:justify-between">
-          <div className="space-y-1">
-            <div className="text-[11px] font-semibold uppercase text-gray-500">
-              {isIntlRoundTrip
-                ? "International Round Trip • Sector Details"
-                : isRound
-                ? "Round Trip • Sector Details"
-                : "Oneway • Sector Details"}
-            </div>
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              {sectorLabel && (
-                <span className="rounded-full bg-gray-900 px-3 py-1 text-[13px] font-semibold text-white">
-                  {sectorLabel}
-                </span>
-              )}
-              {departLbl && (
-                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-700">
-                  {departLbl}
-                </span>
-              )}
-              {isRound && returnLbl && (
-                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-700">
-                  {returnLbl}
-                </span>
-              )}
-              <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-700">
-                {totalPaxLabel}
-              </span>
-              <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-500">
-                {uniqueAirlines} Airlines
-              </span>
+        <motion.div
+          className="mt-3 mb-3 sticky top-[110px] z-20 border border-gray-200 bg-white px-3 py-2 shadow-sm mx-auto max-w-7xl rounded-2xl"
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
+        >
+          {/* Modify search bar overlay with transition */}
+          <div
+            className={`
+      mb-4 origin-top 
+      transition-all duration-300 ease-out
+      ${showModify
+                ? "max-h-[500px] opacity-100 translate-y-0"
+                : "max-h-0 opacity-0 -translate-y-2 pointer-events-none"
+              }
+    `}
+          >
+            <div className="rounded-xl">
+              <FromToBar
+                onSearch={() => {
+                  setShowModify(false);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              />
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 text-xs md:justify-end">
-            {/* Intl RT agent commission toggle */}
-            {isIntlRoundTrip && (
-              <button
-                type="button"
-                onClick={() => setShowCommissionIntl((v) => !v)}
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py1.5 font-medium ${
-                  showCommissionIntl
+          {/* baaki tumhara pura bar same rakhte hain */}
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <div className="text-[11px] font-semibold uppercase text-gray-500">
+                {isIntlRoundTrip
+                  ? "International Round Trip • Sector Details"
+                  : isRound
+                    ? "Round Trip • Sector Details"
+                    : "Oneway • Sector Details"}
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                {sectorLabel && (
+                  <span className="rounded-full bg-gray-900 px-3 py-1 text-[13px] font-semibold text-white">
+                    {sectorLabel}
+                  </span>
+                )}
+                {departLbl && (
+                  <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-700">
+                    {departLbl}
+                  </span>
+                )}
+                {isRound && returnLbl && (
+                  <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-700">
+                    {returnLbl}
+                  </span>
+                )}
+                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-700">
+                  {totalPaxLabel}
+                </span>
+                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-500">
+                  {uniqueAirlines} Airlines
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 text-xs md:justify-end">
+              {/* Intl RT agent commission toggle */}
+              {isIntlRoundTrip && (
+                <button
+                  type="button"
+                  onClick={() => setShowCommissionIntl((v) => !v)}
+                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 font-medium ${showCommissionIntl
                     ? "border-emerald-500 bg-emerald-50 text-emerald-700"
                     : "border-gray-300 bg-white text-gray-700"
-                }`}
-              >
-                <span>Agent Commission</span>
-                <span
-                  className={`flex h-4 w-8 items-center rounded-full px-[2px] transition ${
-                    showCommissionIntl ? "bg-emerald-500" : "bg-gray-300"
-                  }`}
-                >
-                  <span
-                    className={`h-3 w-3 transform rounded-full bg-white shadow transition ${
-                      showCommissionIntl ? "translate-x-4" : ""
                     }`}
-                  />
-                </span>
-              </button>
-            )}
-
-            {/* Sort dropdown */}
-            <div className="flex items-center gap-1 rounded-full border border-gray-300 bg-white px-2.5 py-1.5">
-              <span className="text-[11px] text-gray-500">Sort:</span>
-              {!isRound ? (
-                <select
-                  value={sortOW}
-                  onChange={(e) => setSortOW(e.target.value as SortKey)}
-                  className="bg-transparent text-[12px] text-gray-800 outline-none"
                 >
-                  <option value="price_low">Price (Lowest)</option>
-                  <option value="price_high">Price (Highest)</option>
-                  <option value="duration">Duration (Shortest)</option>
-                  <option value="depart_early">Earliest Departure</option>
-                  <option value="arrive_late">Latest Arrival</option>
-                </select>
-              ) : !isIntlRoundTrip ? (
-                <select
-                  value={sortRT}
-                  onChange={(e) => setSortRT(e.target.value as SortKey)}
-                  className="bg-transparent text-[12px] text-gray-800 outline-none"
-                >
-                  <option value="price_low">Price (Lowest)</option>
-                  <option value="price_high">Price (Highest)</option>
-                  <option value="duration">Duration (Shortest)</option>
-                  <option value="depart_early">Earliest Departure</option>
-                  <option value="arrive_late">Latest Arrival</option>
-                </select>
-              ) : (
-                <select
-                  value={sortIntl}
-                  onChange={(e) => setSortIntl(e.target.value as SortKey)}
-                  className="bg-transparent text-[12px] text-gray-800 outline-none"
-                >
-                  <option value="price_low">Price (Lowest)</option>
-                  <option value="price_high">Price (Highest)</option>
-                  <option value="duration">Duration (Shortest)</option>
-                  <option value="depart_early">Earliest Departure (Out)</option>
-                  <option value="arrive_late">Latest Arrival (In)</option>
-                </select>
+                  <span>Agent Commission</span>
+                  <span
+                    className={`flex h-4 w-8 items-center rounded-full px-[2px] transition ${showCommissionIntl ? "bg-emerald-500" : "bg-gray-300"
+                      }`}
+                  >
+                    <span
+                      className={`h-3 w-3 transform rounded-full bg-white shadow transition ${showCommissionIntl ? "translate-x-4" : ""
+                        }`}
+                    />
+                  </span>
+                </button>
               )}
+
+              {/* Sort dropdown */}
+              <div className="flex items-center gap-1 rounded-full border border-gray-300 bg-white px-2.5 py-1.5">
+                <span className="text-[11px] text-gray-500">Sort:</span>
+                {!isRound ? (
+                  <select
+                    value={sortOW}
+                    onChange={(e) => setSortOW(e.target.value as SortKey)}
+                    className="bg-transparent text-[12px] text-gray-800 outline-none"
+                  >
+                    <option value="price_low">Price (Lowest)</option>
+                    <option value="price_high">Price (Highest)</option>
+                    <option value="duration">Duration (Shortest)</option>
+                    <option value="depart_early">Earliest Departure</option>
+                    <option value="arrive_late">Latest Arrival</option>
+                  </select>
+                ) : !isIntlRoundTrip ? (
+                  <select
+                    value={sortRT}
+                    onChange={(e) => setSortRT(e.target.value as SortKey)}
+                    className="bg-transparent text-[12px] text-gray-800 outline-none"
+                  >
+                    <option value="price_low">Price (Lowest)</option>
+                    <option value="price_high">Price (Highest)</option>
+                    <option value="duration">Duration (Shortest)</option>
+                    <option value="depart_early">Earliest Departure</option>
+                    <option value="arrive_late">Latest Arrival</option>
+                  </select>
+                ) : (
+                  <select
+                    value={sortIntl}
+                    onChange={(e) => setSortIntl(e.target.value as SortKey)}
+                    className="bg-transparent text-[12px] text-gray-800 outline-none"
+                  >
+                    <option value="price_low">Price (Lowest)</option>
+                    <option value="price_high">Price (Highest)</option>
+                    <option value="duration">Duration (Shortest)</option>
+                    <option value="depart_early">Earliest Departure (Out)</option>
+                    <option value="arrive_late">Latest Arrival (In)</option>
+                  </select>
+                )}
+              </div>
+
+              {/* Modify Search trigger */}
+              <button
+                type="button"
+                onClick={() => setShowModify((s) => !s)}
+                className="inline-flex items-center gap-1 rounded-full border border-blue-500 bg-white px-3 py-1.5 text-[12px] font-medium text-blue-600 hover:bg-blue-50"
+              >
+                Modify Search
+              </button>
+
+              {/* mobile filter button */}
+              <button
+                onClick={() => setDrawer(true)}
+                className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-sm shadow-sm md:hidden"
+              >
+                Filters
+              </button>
             </div>
-
-            {/* Modify Search trigger */}
-            <button
-              type="button"
-              onClick={() => setShowModify((s) => !s)}
-              className="inline-flex items-center gap-1 rounded-full border border-blue-500 bg-white px-3 py-1.5 text-[12px] font-medium text-blue-600 hover:bg-blue-50"
-            >
-              Modify Search
-            </button>
-
-            {/* mobile filter button */}
-            <button
-              onClick={() => setDrawer(true)}
-              className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-sm shadow-sm md:hidden"
-            >
-              Filters
-            </button>
           </div>
-        </div>
-
-        {/* Modify search bar overlay */}
-        {showModify && (
-          <div className="sticky top-[160px] z-30 mb-3 rounded-xl border border-gray-200 bg-white/90 p-3 shadow">
-            <FromToBar
-              onSearch={() => {
-                setShowModify(false);
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-            />
-          </div>
-        )}
+        </motion.div>
 
         {/* ===== Layout: filters + results ===== */}
-        <div className="mx-auto max-w-7xl">
-          <div className="grid grid-cols-12 gap-4">
+        <motion.div
+          className="mx-auto max-w-7xl"
+          variants={layoutContainerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }} // ⭐ scroll pe trigger
+        >
+          <motion.div
+            className="grid grid-cols-12 gap-4"
+            variants={layoutContainerVariants}
+          >
             {/* Sidebar */}
-            <div className="col-span-12 hidden md:col-span-3 md:block">
+            <motion.div
+              className="col-span-12 hidden md:col-span-3 md:block"
+              variants={sidebarVariants}
+            >
               {!isRound ? (
                 <FilterPanel
                   meta={metaOWForPanel}
@@ -1220,10 +1279,13 @@ export default function FlightResults() {
                   showApplyTo
                 />
               )}
-            </div>
+            </motion.div>
 
             {/* Results */}
-            <div className="col-span-12 md:col-span-9">
+            <motion.div
+              className="col-span-12 md:col-span-9"
+              variants={resultsVariants}
+            >
               {!isRound ? (
                 <OnewayResult
                   rows={rowsOW}
@@ -1269,9 +1331,9 @@ export default function FlightResults() {
                   }
                 />
               )}
-            </div>
-          </div>
-        </div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
 
         {/* Mobile drawer */}
         {drawer && (
@@ -1280,7 +1342,12 @@ export default function FlightResults() {
               className="absolute inset-0 bg-black/40"
               onClick={() => setDrawer(false)}
             />
-            <div className="absolute inset-y-0 right-0 w-full max-w-sm overflow-y-auto bg-white p-4 shadow-2xl">
+            <motion.div
+              className="absolute inset-y-0 right-0 w-full max-w-sm overflow-y-auto bg-white p-4 shadow-2xl"
+              initial={{ x: "100%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+            >
               {!isRound ? (
                 <FilterPanel
                   meta={metaOWForPanel}
@@ -1339,7 +1406,7 @@ export default function FlightResults() {
                   </button>
                 </>
               )}
-            </div>
+            </motion.div>
           </div>
         )}
       </div>

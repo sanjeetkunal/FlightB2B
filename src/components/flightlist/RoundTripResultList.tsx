@@ -1,5 +1,5 @@
 // src/components/flightlist/RoundTripResultList.tsx
-import React, { useMemo, type ReactNode } from "react";
+import React, { useMemo, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 
 /* ===== Types (ROUNDTRIP-only) ===== */
@@ -97,66 +97,6 @@ function getAgentInfo(
   return { agentNet, commission };
 }
 
-/* ===== Fare chip like screenshot ===== */
-function FareChip({
-  fare,
-  active,
-  onClick,
-}: {
-  fare: FareRT;
-  active: boolean;
-  onClick: () => void;
-}) {
-  const badgeClass =
-    fare.badge?.tone === "published"
-      ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-      : "bg-amber-50 text-amber-700 ring-1 ring-amber-200";
-
-  return (
-    <button
-      onClick={onClick}
-      className={[
-        "group w-full rounded-lg border px-3 py-2 text-left shadow-sm transition",
-        active
-          ? "border-gray-900 bg-gray-900 text-white"
-          : "border-gray-200 bg-white hover:border-gray-300 hover:shadow",
-      ].join(" ")}
-    >
-      <div className="flex items-center gap-2">
-        <span
-          className={[
-            "rounded-md px-2 py-0.5 text-[11px] font-semibold tracking-wide",
-            active ? "bg-white/10 text-white" : "bg-gray-100 text-gray-700",
-          ].join(" ")}
-        >
-          {fare.label}
-        </span>
-
-        {fare.badge && (
-          <span
-            className={`rounded-md px-2 py-0.5 text-[11px] font-medium ${badgeClass}`}
-          >
-            {fare.badge.text}
-          </span>
-        )}
-      </div>
-
-      <div className="mt-1 text-lg font-semibold leading-tight">
-        <Money v={fare.price} />
-      </div>
-
-      <div
-        className={[
-          "mt-0.5 text-[12px]",
-          active ? "text-white/80" : "text-gray-600",
-        ].join(" ")}
-      >
-        {fare.refundable} • {fare.cabin}
-      </div>
-    </button>
-  );
-}
-
 /* ===== One leg card ===== */
 function LegCard({
   row,
@@ -169,11 +109,31 @@ function LegCard({
   onPickFare: (fare: FareRT) => void;
   showCommission: boolean;
 }) {
-  const isSelected = (f: FareRT) =>
-    selected?.flightId === row.id && selected?.fare.code === f.code;
+  const [showDetails, setShowDetails] = useState(false);
 
-  const selectedFare = selected?.flightId === row.id ? selected.fare : undefined;
-  const { agentNet, commission } = getAgentInfo(selectedFare);
+  // Jo fare select hai wo, warna pehla fare as default
+  const currentFare: FareRT | undefined =
+    selected?.flightId === row.id
+      ? selected.fare
+      : row.fares && row.fares.length > 0
+      ? row.fares[0]
+      : undefined;
+
+  const { agentNet, commission } = getAgentInfo(currentFare);
+
+  const handleFareChange = (code: string) => {
+    const fare = row.fares.find((f) => f.code === code);
+    if (fare) {
+      onPickFare(fare);
+    }
+  };
+
+  const cancellationText =
+    typeof row.cancellation === "string"
+      ? row.cancellation
+      : row.cancellation
+      ? JSON.stringify(row.cancellation, null, 2)
+      : null;
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm">
@@ -228,27 +188,60 @@ function LegCard({
         </div>
       </div>
 
-      {/* Fare chips row (two like screenshot). Stack on mobile. */}
-      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {row.fares.slice(0, 2).map((fare) => (
-          <FareChip
-            key={fare.code}
-            fare={fare}
-            active={isSelected(fare)}
-            onClick={() => onPickFare(fare)}
-          />
-        ))}
+      {/* Fare selector + price block */}
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] uppercase tracking-wide text-gray-500">
+            Fare type
+          </span>
+          <select
+            className="rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-gray-800 focus:border-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-500"
+            value={currentFare?.code ?? ""}
+            onChange={(e) => handleFareChange(e.target.value)}
+          >
+            {row.fares.map((f) => (
+              <option key={f.code} value={f.code}>
+                {f.label} • {nfIN.format(f.price)}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {currentFare && (
+          <div className="text-right">
+            <div className="text-lg font-semibold leading-tight">
+              <Money v={currentFare.price} />
+            </div>
+            <div className="text-[11px] text-gray-600">
+              {currentFare.refundable} • {currentFare.cabin}
+            </div>
+            {currentFare.badge && (
+              <div className="mt-0.5">
+                <span
+                  className={`inline-flex rounded-md px-2 py-0.5 text-[11px] font-medium ${
+                    currentFare.badge.tone === "published"
+                      ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                      : "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
+                  }`}
+                >
+                  {currentFare.badge.text}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Baggage line */}
+      {/* Quick baggage line */}
       <div className="mt-2 text-xs text-gray-500">
         Baggage: {row.baggage?.handKg ?? 0}kg hand •{" "}
         {row.baggage?.checkKg ?? 0}kg check-in
+        {row.baggage?.piece ? ` (${row.baggage.piece})` : ""}
       </div>
 
       {/* Commission line (per leg, for selected fare) */}
       {showCommission &&
-        selectedFare &&
+        currentFare &&
         (agentNet != null || commission != null) && (
           <div className="mt-1 text-[11px] text-gray-700">
             {agentNet != null && (
@@ -269,6 +262,84 @@ function LegCard({
             )}
           </div>
         )}
+
+      {/* Details toggle + panel */}
+      <div className="mt-2 border-t border-dashed pt-2">
+        <button
+          type="button"
+          onClick={() => setShowDetails((s) => !s)}
+          className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-500"
+        >
+          <span>{showDetails ? "Hide details" : "View details"}</span>
+          <span
+            className={`inline-block transform text-[10px] transition-transform ${
+              showDetails ? "rotate-180" : ""
+            }`}
+          >
+            ▼
+          </span>
+        </button>
+
+        {showDetails && (
+          <div className="mt-2 space-y-2 text-[11px] text-gray-700">
+            {/* Flight details */}
+            <div>
+              <div className="font-semibold text-gray-800">
+                Flight details
+              </div>
+              <div>
+                {row.fromCity} ({row.fromIata}) → {row.toCity} ({row.toIata}) •{" "}
+                {hhmm(row.durationMin)} •{" "}
+                {row.stopLabel ??
+                  (row.stops === 0 ? "Non-stop" : `${row.stops} Stop`)}
+              </div>
+              {row.departDate && row.arriveDate && (
+                <div className="text-gray-500">
+                  Depart: {row.departDate} · Arrive: {row.arriveDate}
+                </div>
+              )}
+            </div>
+
+            {/* Fare details */}
+            {currentFare && (
+              <div>
+                <div className="font-semibold text-gray-800">
+                  Fare details
+                </div>
+                <div>
+                  {currentFare.refundable} • {currentFare.cabin} •{" "}
+                  {currentFare.meal}
+                </div>
+                {currentFare.seat && (
+                  <div className="text-gray-600">{currentFare.seat}</div>
+                )}
+              </div>
+            )}
+
+            {/* Baggage full details */}
+            <div>
+              <div className="font-semibold text-gray-800">Baggage</div>
+              <div>
+                Hand baggage: {row.baggage?.handKg ?? 0} kg · Check-in:{" "}
+                {row.baggage?.checkKg ?? 0} kg{" "}
+                {row.baggage?.piece ? `(${row.baggage.piece})` : ""}
+              </div>
+            </div>
+
+            {/* Cancellation / change rules */}
+            {cancellationText && (
+              <div>
+                <div className="font-semibold text-gray-800">
+                  Cancellation / Change rules
+                </div>
+                <div className="mt-1 max-h-40 overflow-auto rounded bg-gray-50 p-2 text-[10px] text-gray-700 whitespace-pre-wrap">
+                  {cancellationText}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

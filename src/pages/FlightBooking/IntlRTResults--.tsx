@@ -6,11 +6,11 @@ import {
   FLIGHTS,
   type FlightRow,
   type FlightFare,
-} from "../data/flights";
+} from "../../data/flights";
 
 import FilterPanel, {
   type Filters as PanelFilters,
-} from "../components/flightlist/FiltersPanel";
+} from "../../components/flightlist/FiltersPanel";
 
 import IntlRoundTripResult, {
   type IntlRTRow,
@@ -18,7 +18,7 @@ import IntlRoundTripResult, {
   type PaxConfig,
   type LegSummary,
   type PolicyRule,
-} from "../components/flightlist/IntlRoundTripResult";
+} from "../../components/flightlist/IntlRoundTripResult";
 
 /* ---------- helpers ---------- */
 

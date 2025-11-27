@@ -6,14 +6,14 @@ import {
   searchFlights,
   type FlightRow,
   type FlightFare,
-} from "../data/flights";
+} from "../../data/flights";
 import FilterPanel, {
   type Filters as PanelFilters,
-} from "../components/flightlist/FiltersPanel";
+} from "../../components/flightlist/FiltersPanel";
 import RoundtripList, {
   type RowRT,
   type FareRT,
-} from "../components/flightlist/RoundTripResultList";
+} from "../../components/flightlist/RoundTripResultList";
 
 /* ---------------------- helpers ---------------------- */
 const formatDateLabel = (iso?: string) => {

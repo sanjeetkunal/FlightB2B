@@ -33,7 +33,7 @@ export default function B2BHeroNTW() {
         <div className="absolute left-[-5rem] bottom-0 h-64 w-64 rounded-full bg-[#004aad]/15 blur-3xl" />
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0 py-12 lg:py-16">
         {/* items-stretch ensures equal height across columns on lg+ */}
         <div className="grid lg:grid-cols-12 gap-10 lg:gap-14 items-stretch">
           {/* LEFT: Image block (equal height) */}
