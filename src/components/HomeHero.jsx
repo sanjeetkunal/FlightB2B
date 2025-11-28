@@ -138,7 +138,7 @@ export default function HomeHero() {
 
             <span className="ml-auto">
               <span className="shield" aria-hidden="true">
-                🛡️
+                <img src="https://cdn-icons-gif.flaticon.com/17702/17702130.gif" alt="shield icon" className="w-10 h-10" />
               </span>
             </span>
           </div>

@@ -7,6 +7,7 @@ import FlightResults from "./pages/FlightBooking/FlightResults";
 import PassengerDetailsPage from "./pages/FlightBooking/PassengerDetailsPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import PaymentConfirmationPage from "./pages/FlightBooking/PaymentConfirmationPage";
+import FlightReport from "./pages/dashboard/flight/FlightReport";
 
 function Protected({ children }) {
   return isAuthed() ? children : <Navigate to="/login" replace />;
@@ -37,6 +38,16 @@ export default function App() {
         <Route path="/flights/review-and-pay" element={<PaymentConfirmationPage />} />
 
         <Route path="dashboard" element={<DashboardPage />} />
+           <Route
+          path="dashboard/flight/my-bookings"
+          element={<FlightReport />}
+        />
+
+        {/* (optional) same report for ticket-report link bhi */}
+        <Route
+          path="dashboard/flight/ticket-report"
+          element={<FlightReport />}
+        />
       </Route>
 
       {/* FALLBACK */}

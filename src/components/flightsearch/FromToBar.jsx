@@ -29,6 +29,9 @@ export default function FromToBar({ onSearch }) {
   });
   const [openTC, setOpenTC] = useState(false);
 
+  // 🔔 Toast message (simple)
+  const [errorMsg, setErrorMsg] = useState("");
+
   const total = tc.adults + tc.children + tc.infants;
 
   const travellersLabel = useMemo(
@@ -42,6 +45,13 @@ export default function FromToBar({ onSearch }) {
     setFromAP(toAP);
     setToAP(a);
   };
+
+  // Auto-hide toast after 3 seconds
+  useEffect(() => {
+    if (!errorMsg) return;
+    const t = setTimeout(() => setErrorMsg(""), 3000);
+    return () => clearTimeout(t);
+  }, [errorMsg]);
 
   // 🔹 LISTEN TO "Modify Search" EVENT FROM RESULTS PAGE
   useEffect(() => {
@@ -93,15 +103,15 @@ export default function FromToBar({ onSearch }) {
   // -------------------------------------------------------
   const handleSearch = () => {
     if (!fromAP || !toAP || !depart) {
-      alert("Please select From, To and Departure date");
+      setErrorMsg("Please select From, To and Departure date");
       return;
     }
     if (trip === "round" && !ret) {
-      alert("Please select Return date");
+      setErrorMsg("Please select Return date");
       return;
     }
     if (fromAP.code === toAP.code) {
-      alert("From and To airports cannot be same");
+      setErrorMsg("From and To airports cannot be same");
       return;
     }
 
@@ -155,8 +165,8 @@ export default function FromToBar({ onSearch }) {
 
     // ---------- COMMON QUERY PARAMS ----------
     const params = new URLSearchParams({
-      trip: tripType,          // "oneway" | "roundtrip"
-      sector,                  // "dom" | "intl"
+      trip: tripType, // "oneway" | "roundtrip"
+      sector, // "dom" | "intl"
       from: fromIata,
       to: toIata,
       adt: String(adt),
@@ -178,7 +188,25 @@ export default function FromToBar({ onSearch }) {
 
   // ---------------- RENDER -------------------
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 relative">
+      {/* 🔔 Toast strip (top-right inside component) */}
+      {errorMsg && (
+        <div className="flex justify-end absolute top-0 right-0">
+          <div className="mb-2 flex max-w-sm items-start gap-3 rounded-lg bg-red-400 px-4 py-2 text-sm text-white shadow">
+            <div className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-xs font-bold">
+              !
+            </div>
+            <div className="flex-1 font-medium">{errorMsg}</div>
+            <button
+              onClick={() => setErrorMsg("")}
+              className="ml-2 text-xs text-white/80 hover:text-white"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Trip Type Toggle */}
       <div className="mb-3 flex gap-3">
         {["oneway", "round"].map((k) => (
