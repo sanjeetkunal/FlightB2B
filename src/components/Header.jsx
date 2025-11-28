@@ -63,9 +63,9 @@ export default function Header({ variant = "private" }) {
     <header className="bg-white sticky top-0 z-30 ">
       {/* TOP BAR */}
       {!isPublic && (
-        <div className="hidden sm:block bg-black text-white ">
+        <div className="hidden sm:block bg-black text-white">
           <div className="mx-auto max-w-7xl px-0 sm:px-0 lg:px-0 ">
-            <div className="h-11 flex items-center justify-between gap-3">
+            <div className="h-11 flex items-center justify-between gap-3 px-4">
               {/* Contact Info */}
               <div className="flex items-center gap-6 text-sm">
                 <span>📞 +91-9876543210</span>
@@ -92,8 +92,8 @@ export default function Header({ variant = "private" }) {
 
       {/* BOTTOM BAR */}
       <div className="border border-gray-200">
-        <div className="mx-auto max-w-7xl px-0 sm:px-0 lg:px-0">
-          <div className="h-16 flex items-center justify-between">
+        <div className="mx-auto max-w-7xl px-0 sm:px-0 lg:px-0 ">
+          <div className="h-16 flex items-center justify-between px-4">
             {/* Left: ONLY Logo now */}
             <div className="flex items-center gap-3 min-w-0">
               <button

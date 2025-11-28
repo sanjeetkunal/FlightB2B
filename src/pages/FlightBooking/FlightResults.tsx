@@ -1078,17 +1078,19 @@ export default function FlightResults() {
     <div className="mx-auto">
       <div className="min-h-screen">
         {/* TOP STRIP (common) */}
+
         <motion.div
-          className="mt-3 mb-3 sticky top-[110px] z-20 border border-gray-200 bg-white px-3 py-2 shadow-sm mx-auto max-w-7xl rounded-2xl"
+          className="mt-3 mb-3 sticky top-[110px] z-20 px-4 mx-auto max-w-7xl"
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
         >
+          <div className="border border-gray-200 bg-white rounded-2xl px-3 shadow-sm py-2  ">
           {/* Modify search bar overlay with transition */}
           <div
             className={`
       mb-4 origin-top 
-      transition-all duration-300 ease-out
+      transition-all duration-300 ease-out 
       ${showModify
                 ? "max-h-[500px] opacity-100 translate-y-0"
                 : "max-h-0 opacity-0 -translate-y-2 pointer-events-none"
@@ -1224,11 +1226,12 @@ export default function FlightResults() {
               </button>
             </div>
           </div>
+          </div>
         </motion.div>
 
         {/* ===== Layout: filters + results ===== */}
         <motion.div
-          className="mx-auto max-w-7xl"
+          className="mx-auto max-w-7xl px-4"
           variants={layoutContainerVariants}
           initial="hidden"
           whileInView="visible"
