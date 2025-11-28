@@ -71,6 +71,7 @@ const cardVariants = {
 
 export default function DoMore() {
   return (
+     
     <motion.section
       className="mx-auto max-w-7xl pb-10 mt-6"
       variants={sectionVariants}
@@ -79,6 +80,7 @@ export default function DoMore() {
       viewport={{ once: true, amount: 0.3 }} // ek hi baar, jab ~30% section dikhai de
     >
       {/* Header */}
+     <div className=" px-4">
       <motion.div
         className="flex items-center justify-between gap-3 mb-5"
         variants={cardVariants} // header bhi halka sa fade-up
@@ -144,11 +146,10 @@ export default function DoMore() {
                 {/* Badge */}
                 {it.badge && (
                   <span
-                    className={`absolute -top-1.5 -right-0 px-2 py-0.5 rounded-full text-[10px] font-semibold shadow-sm ${
-                      it.badge === "Pro"
+                    className={`absolute -top-1.5 -right-0 px-2 py-0.5 rounded-full text-[10px] font-semibold shadow-sm ${it.badge === "Pro"
                         ? "bg-gradient-to-r from-orange-500 to-amber-400 text-white"
                         : "bg-indigo-50 text-indigo-700"
-                    }`}
+                      }`}
                   >
                     {it.badge}
                   </span>
@@ -200,6 +201,8 @@ export default function DoMore() {
           ))}
         </div>
       </motion.div>
-    </motion.section>
+  </div>
+    </motion.section >
+   
   );
 }

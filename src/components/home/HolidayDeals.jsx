@@ -42,6 +42,7 @@ export default function HolidayDeals() {
       whileInView="visible"                 // scroll pe trigger
       viewport={{ once: true, amount: 0.3 }} // ek hi baar, jab ~30% section dikh jaye
     >
+      <div className="px-4">
       <motion.div
         className="flex flex-col md:flex-row gap-4"
         variants={containerVariants}
@@ -88,6 +89,7 @@ export default function HolidayDeals() {
           </button>
         </motion.div>
       </motion.div>
+      </div>
     </motion.section>
   );
 }

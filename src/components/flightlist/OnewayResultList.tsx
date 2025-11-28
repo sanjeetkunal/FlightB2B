@@ -981,7 +981,7 @@ function B2BRow({
             <button
               type="button"
               onClick={onBook}
-              className="rounded-sm bg-blue-500 px-3 py-1.5 text-sm font-semibold text-white shadow hover:opacity-95"
+              className="rounded-2xl bg-blue-500 px-3 py-1.5 text-sm font-semibold text-white shadow hover:opacity-95"
               title="Proceed to book"
             >
               Book Now

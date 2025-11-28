@@ -5,7 +5,7 @@ import ChatWidget from "../components/chat/ChatWidget";
 
 export default function MainLayout({ children }) {
   return (
-    <div className="flex flex-col min-h-dvh bg-gray-100">
+    <div className="flex flex-col min-h-dvh bg-gray-100 ">
       <Header />
       {/* <main className="flex-1">{children}</main> */}
       <main className="flex-1">

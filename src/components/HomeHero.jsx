@@ -43,12 +43,12 @@ export default function HomeHero() {
           h-[460px]
           bg-gradient-to-r from-[#3474c0] to-[#1c5db5]
           rounded-b-[0%]
-          z-0
+          z-0 
         "
       />
 
       {/* Actual content container */}
-      <div className="relative z-10 mx-auto max-w-7xl pb-8">
+      <div className="relative z-10 mx-auto max-w-7xl pb-8 px-4">
         <div className="mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             {/* LEFT: Heading – page load pe fade-up */}

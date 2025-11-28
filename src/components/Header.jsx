@@ -60,11 +60,11 @@ export default function Header({ variant = "private" }) {
   const topLinks = isPublic ? ["Support", "Help"] : ["Manage", "Reports", "Support", "Help"];
 
   return (
-    <header className="bg-white sticky top-0 z-30">
+    <header className="bg-white sticky top-0 z-30 ">
       {/* TOP BAR */}
       {!isPublic && (
-        <div className="hidden sm:block bg-black text-white">
-          <div className="mx-auto max-w-7xl px-0 sm:px-0 lg:px-0">
+        <div className="hidden sm:block bg-black text-white ">
+          <div className="mx-auto max-w-7xl px-0 sm:px-0 lg:px-0 ">
             <div className="h-11 flex items-center justify-between gap-3">
               {/* Contact Info */}
               <div className="flex items-center gap-6 text-sm">
