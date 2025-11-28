@@ -1231,15 +1231,14 @@ export default function FlightResults() {
 
         {/* ===== Layout: filters + results ===== */}
         <motion.div
-          className="mx-auto max-w-7xl px-4"
-          variants={layoutContainerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }} // ⭐ scroll pe trigger
+           className="mx-auto max-w-7xl px-4"
+  variants={layoutContainerVariants}
+  initial="hidden"
+  animate="visible"  // ⭐ scroll pe trigger
         >
           <motion.div
-            className="grid grid-cols-12 gap-4"
-            variants={layoutContainerVariants}
+             className="grid grid-cols-12 gap-4"
+    variants={layoutContainerVariants}
           >
             {/* Sidebar */}
             <motion.div
