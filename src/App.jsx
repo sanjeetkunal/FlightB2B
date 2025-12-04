@@ -8,6 +8,13 @@ import PassengerDetailsPage from "./pages/FlightBooking/PassengerDetailsPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import PaymentConfirmationPage from "./pages/FlightBooking/PaymentConfirmationPage";
 import FlightReport from "./pages/dashboard/flight/FlightReport";
+import RefundReport from "./pages/dashboard/flight/RefundReport";
+import ReissueReport from "./pages/dashboard/flight/ReissueReport";
+import HoldPNRReport from "./pages/dashboard/flight/HoldPNRReport";
+import TravelCalendar from "./pages/dashboard/flight/TravelCalendar";
+import TicketStatusReport from "./pages/dashboard/flight/TicketStatusReport";
+import PNRImport from "./pages/dashboard/flight/PNRImport";
+import OfflineRequest from "./pages/dashboard/flight/OfflineRequest";
 
 function Protected({ children }) {
   return isAuthed() ? children : <Navigate to="/login" replace />;
@@ -42,6 +49,13 @@ export default function App() {
           path="dashboard/flight/my-bookings"
           element={<FlightReport />}
         />
+        <Route path="dashboard/flight/refund-report" element={<RefundReport />} />
+         <Route path="dashboard/flight/reissue-report" element={<ReissueReport />} />
+        <Route path="dashboard/flight/holdpnr-report" element={<HoldPNRReport />} />
+         <Route path="dashboard/flight/travel-calendar" element={<TravelCalendar />} />
+           <Route path="dashboard/flight/ticket-status-report" element={<TicketStatusReport />} />
+           <Route path="dashboard/flight/pnr-import" element={<PNRImport />} />
+            <Route path="dashboard/flight/offline-request" element={<OfflineRequest />} />
 
         {/* (optional) same report for ticket-report link bhi */}
         <Route

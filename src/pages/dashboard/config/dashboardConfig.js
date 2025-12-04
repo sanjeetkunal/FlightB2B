@@ -331,7 +331,7 @@ export const sectionMenusMap = {
       links: [
         {
           label: "Ticket Status Report",
-          path: "/dashboard/flight/ticket-status",
+          path: "/dashboard/flight/ticket-status-report",
         },
         { label: "Import PNR", path: "/dashboard/flight/import-pnr" },
         {
