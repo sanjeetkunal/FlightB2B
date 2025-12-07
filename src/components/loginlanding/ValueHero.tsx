@@ -5,7 +5,7 @@ import {
 
 export default function B2BHeroNTW() {
   const heroImg =
-    "https://img.freepik.com/premium-vector/travel-around-world_24640-17115.jpg";
+    "../src/assets/media/travel-fashion.png";
 
   const points = [
     { icon: Plane,        title: "Direct Supply",      subtitle: "NDC, LCC and GDS in one window" },
@@ -39,7 +39,7 @@ export default function B2BHeroNTW() {
           {/* LEFT: Image block (equal height) */}
           <div className="lg:col-span-5 h-full">
             <div className="relative h-full">
-              <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white h-full">
+              <div className="relative overflow-hidden h-full">
                 {/* mobile/tablet get a sensible min height; lg uses full equal height */}
                 <div className="relative h-72 sm:h-96 lg:h-full">
                   {/* FIX-2: make image a block element to avoid inline overflow quirks */}
@@ -58,7 +58,7 @@ export default function B2BHeroNTW() {
           <div className="lg:col-span-7 flex flex-col">
             <h2 className="mt-3 text-3xl sm:text-4xl font-semibold text-slate-900 leading-tight">
               Grow your travel business with
-              <span className="text-blue-600"> Thynk</span>
+              <span className="text-blue-600"> V2A</span>
             </h2>
 
             <p className="mt-3 text-slate-600 max-w-2xl">

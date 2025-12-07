@@ -37,11 +37,11 @@ export default function B2BFooter() {
           <div className="lg:col-span-4">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-2xl bg-blue-500 flex items-center justify-center shadow-sm">
-                <span className="text-white font-black">T</span>
+                <span className="text-white font-black">V2A</span>
               </div>
               <div>
-                <p className="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">Thynk</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Global Consolidator Platform</p>
+                <p className="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">Virtual2Actual</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Turning Vision Into Reality</p>
               </div>
             </div>
 

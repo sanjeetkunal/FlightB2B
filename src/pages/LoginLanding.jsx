@@ -85,7 +85,7 @@ export default function LoginLandingPro() {
 
   return (
     <>
-      <Header variant="public" />
+    
 
       {/* ============== HERO (responsive) ============== */}
       <section className="relative isolate overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50">
@@ -306,7 +306,7 @@ export default function LoginLandingPro() {
         </div>
       </footer>
 
-      <Footer />
+
     </>
   );
 }
