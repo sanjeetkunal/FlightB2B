@@ -156,7 +156,7 @@ export default function Header({ variant = "private" }) {
                 aria-label="Go home"
               >
                 <div className="text-2xl font-extrabold text-orange-500 tracking-tight hidden sm:block">
-                  <img src={logo} className="w-[125px]" alt="Logo" />
+                  <img src={logo} className="w-[230px]" alt="Logo" />
                 </div>
                 <div className="hidden sm:block w-px h-6 bg-gray-200" />
               </button>
