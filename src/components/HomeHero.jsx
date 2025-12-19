@@ -1,13 +1,18 @@
 import { motion } from "framer-motion";
 import FromToBar from "./flightsearch/FromToBar";
-import flightImg from "../assets/media/flight.png";
+import flightImg from "../assets/media/plane.gif";
 import cloudImg from "../assets/media/cloud.png";
 import ifs from "../assets/media/ifs.webp";
+import RecentSearches from "./flightsearch/RecentSearches";
+import QuickActions from "../pages/FlightBooking/quickaction/QuickActions";
+import PopularRoutes from "../pages/FlightBooking/quickaction/PopularRoutes";
+import RecentBookings from "../pages/FlightBooking/quickaction/RecentBookings";
+// import AgentAlerts  from "../pages/FlightBooking/quickaction/AgentAlerts";
 
 export default function HomeHero() {
   const onSearch = (payload) => {
     console.log("SEARCH →", payload);
-    alert(`Searching...\n${JSON.stringify(payload, null, 2)}`);
+    // alert(`Searching...\n${JSON.stringify(payload, null, 2)}`);
   };
 
   // Common variants
@@ -58,11 +63,11 @@ export default function HomeHero() {
             >
               <h1 className="text-3xl sm:text-5xl lg:text-5xl text-white leading-tight font-semibold text-center sm:text-left">
 
-                 
-                <span className="text-white italic font-['Dancing_Script',cursive]" >Let’s Grow Your </span> 
+
+                <span className="text-white italic font-['Dancing_Script',cursive]" >Let’s Grow Your </span>
                 <span className="block">
                   <span className="font-bold not-italic bg-gradient-to-r from-blue-300 to-cyan-200
-           bg-clip-text text-transparent">  
+           bg-clip-text text-transparent">
                     Travel Business Together
                   </span>{" "}
                 </span>
@@ -71,7 +76,7 @@ export default function HomeHero() {
 
             {/* RIGHT: Image – thoda delay ke sath */}
             <motion.div
-              className="relative w-full h-full py-7"
+              className="relative w-full h-full"
               variants={fadeUpSlow}
             >
               {/* Cloud background */}
@@ -85,7 +90,7 @@ export default function HomeHero() {
               <img
                 src={flightImg}
                 alt="world landmarks collage"
-                className="hidden sm:block w-full h-full object-cover transform transition-transform duration-300 ease-out hover:scale-105 relative z-10"
+                className="hidden sm:block w-70 object-contain transform transition-transform duration-300 ease-out hover:scale-105 relative z-10"
               />
 
               {/* Mobile fallback image */}
@@ -143,6 +148,28 @@ export default function HomeHero() {
             </span>
           </div>
         </motion.div>
+
+        <RecentSearches />
+       
+
+        {/* ===== ACTION + INSIGHTS ===== */}
+        <div className="mt-6 space-y-6">
+
+          {/* Action Dock */}
+          <QuickActions disabledKeys={["book_hold"]} />
+
+          {/* Insights Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <PopularRoutes />
+            <RecentBookings />
+          </div>
+
+        </div>
+        {/* 
+       
+       
+        
+        <AgentAlerts /> */}
       </div>
     </motion.section>
   );

@@ -22,15 +22,16 @@ import OnewayResult, {
 import RoundTripResultList, {
   type RowRT as RT_Row,
   type FareRT as RT_Fare,
+
 } from "../../components/flightlist/RoundTripResultList";
 
-import IntlRoundTripResult, {
-  type IntlRTRow,
-  type FareOption as INTL_Fare,
-  type PaxConfig as IntlPaxConfig,
+import SpecialRoundTripResult, {
+  type SpecialRTRow,
+  type FareOption as SpecialFare,
+  type PaxConfig as SpecialPaxConfig,
   type LegSummary,
   type PolicyRule,
-} from "../../components/flightlist/IntlRoundTripResult";
+} from "../../components/flightlist/SpecialRoundTripResult";
 
 /* =============== small utils =============== */
 type TimeSlot = "0-6" | "6-12" | "12-18" | "18-24";
@@ -249,7 +250,7 @@ function mapFareRT(f: FlightFare): RT_Fare {
   };
 }
 
-function adaptRowsRT(rows: FlightRow[]): RT_Row[] {
+function adaptRowsRT(rows: FlightRow[], sector: "DOM" | "INTL"): RT_Row[] {
   return rows.map((r) => {
     const departDateLbl = formatDateLabel(r.departDate);
     const arriveDateLbl = formatDateLabel(r.arriveDate);
@@ -261,44 +262,34 @@ function adaptRowsRT(rows: FlightRow[]): RT_Row[] {
       airline: r.airline,
       logo: r.logo,
       flightNos: r.flightNos,
+
       fromCity: r.fromCity,
       fromIata: r.fromIata,
       toCity: r.toCity,
       toIata: r.toIata,
+
       departTime: r.departTime,
-      departDate: departDateLbl,
       arriveTime: r.arriveTime,
+      departDate: departDateLbl,
       arriveDate: arriveDateLbl,
+
       stops: r.stops,
       stopLabel: r.stopLabel,
       durationMin: r.durationMin,
+
       totalFareINR: minFare,
       refundable: normalizeRefundableRT(r.refundable),
-      extras: r.extras ?? [],
-      segments: [],
+
+      fares: fares.map(mapFareRT),
       baggage: {
-        handKg: fares.length ? Math.max(...fares.map((f) => f.cabinBagKg ?? 0)) : 0,
-        checkKg: fares.length ? Math.max(...fares.map((f) => f.baggageKg ?? 0)) : 0,
+        handKg: fares.length ? Math.max(...fares.map(f => f.cabinBagKg ?? 0)) : 0,
+        checkKg: fares.length ? Math.max(...fares.map(f => f.baggageKg ?? 0)) : 0,
         piece: "1 piece only",
       },
-      cancellation: {
-        refund: [
-          {
-            when: "≥ 24h before departure",
-            feeUSD: fares.some((f) => f.refundable) ? 0 : 200,
-          },
-        ],
-        change: [
-          {
-            when: "Date/Time change (per pax)",
-            feeUSD: fares.some((f) => f.changeFeeINR === 0) ? 0 : 150,
-            note: "Fare diff applies",
-          },
-        ],
-        noShowUSD: 250,
-      },
-      fares: fares.map(mapFareRT),
+
+      sector, // ✅🔥 THIS FIXES EVERYTHING
     };
+
   });
 }
 
@@ -339,7 +330,7 @@ function useDatasetMetaRT(data: RT_Row[]) {
   return { airlines, minPrice, maxPrice, airlineMinPrice, departAirports, arriveAirports };
 }
 
-/* =============== INTL ROUND-TRIP ADAPTERS (for IntlRoundTripResult) =============== */
+/* =============== INTL ROUND-TRIP ADAPTERS (for SpecialRoundTripResult) =============== */
 
 const toLegSummary = (r: FlightRow): LegSummary => {
   const departDateLbl = formatDateLabel(r.departDate);
@@ -390,14 +381,14 @@ const toLegSummary = (r: FlightRow): LegSummary => {
 const getMinFare = (fares?: FlightFare[]): number =>
   fares && fares.length ? Math.min(...fares.map((f) => f.totalINR)) : 0;
 
-const buildRTFares = (out: FlightRow, back: FlightRow): { total: number; fares: INTL_Fare[] } => {
+const buildRTFares = (out: FlightRow, back: FlightRow): { total: number; fares: SpecialFare[] } => {
   const outMin = getMinFare(out.fares);
   const inMin = getMinFare(back.fares);
   const baseRT = outMin + inMin;
 
   const specialPrice = Math.round(baseRT * 0.95);
 
-  const saver: INTL_Fare = {
+  const saver: SpecialFare = {
     code: `${out.id}-${back.id}-RT-SAVER`,
     label: "Special Saver RT",
     price: specialPrice,
@@ -420,7 +411,7 @@ const buildRTFares = (out: FlightRow, back: FlightRow): { total: number; fares: 
     perks: ["Special B2B round-trip fare"],
   };
 
-  const flex: INTL_Fare = {
+  const flex: SpecialFare = {
     ...saver,
     code: `${out.id}-${back.id}-RT-FLEX`,
     label: "Special Flex RT",
@@ -448,13 +439,13 @@ const defaultPolicy: { refund: PolicyRule[]; change: PolicyRule[]; noShowUSD?: n
   noShowUSD: 5000,
 };
 
-const buildIntlRTRows = (
+const buildSpecialRTRows = (
   fromIata: string,
   toIata: string,
   departDate: string,
   returnDate: string,
   cabin?: string
-): IntlRTRow[] => {
+): SpecialRTRow[] => {
   const outbound = FLIGHTS.filter(
     (f) =>
       f.fromIata === fromIata &&
@@ -470,7 +461,7 @@ const buildIntlRTRows = (
       (!cabin || f.fares?.some((x) => x.cabin === cabin))
   );
 
-  const rows: IntlRTRow[] = [];
+  const rows: SpecialRTRow[] = [];
 
   outbound.forEach((out) => {
     inbound.forEach((back) => {
@@ -498,7 +489,7 @@ const buildIntlRTRows = (
 };
 
 // dataset meta for Intl RT filter panel
-function useDatasetMetaIntlRT(data: IntlRTRow[]) {
+function useDatasetMetaIntlRT(data: SpecialRTRow[]) {
   const airlines = useMemo(
     () => Array.from(new Set(data.map((d) => d.airline))).sort(),
     [data]
@@ -548,7 +539,7 @@ function useDatasetMetaIntlRT(data: IntlRTRow[]) {
 }
 
 // Intl RT stops value: 0 if both legs Non-stop, else 1+
-const getStopsValueIntl = (r: IntlRTRow): number => {
+const getStopsValueIntl = (r: SpecialRTRow): number => {
   const isNonstop = (label?: string) =>
     !label || label.toLowerCase().includes("non-stop");
   const outNon = isNonstop(r.outbound.stopLabel);
@@ -582,6 +573,9 @@ export default function FlightResults() {
   const { search } = useLocation();
   const qp = useMemo(() => new URLSearchParams(search), [search]);
 
+  const fareType = qp.get("fare"); // null OR "special"
+  const isSpecialFare = fareType === "special";
+
   const fromIata = (qp.get("from") || "").toUpperCase();
   const toIata = (qp.get("to") || "").toUpperCase();
 
@@ -606,9 +600,10 @@ export default function FlightResults() {
   const isRound = tripRaw === "roundtrip" || (!!retISO && retISO !== "");
   const isInternational = sector === "intl";
   const isIntlRoundTrip = isRound && isInternational;
+  const isSpecialIntlRT = isIntlRoundTrip && isSpecialFare;
 
   // Intl RT specific pax config
-  const paxConfigIntl: IntlPaxConfig = {
+  const paxConfigIntl: SpecialPaxConfig = {
     adults: adt || 1,
     children: chd || 0,
     infants: inf || 0,
@@ -630,10 +625,10 @@ export default function FlightResults() {
     });
   }, [isRound, fromIata, toIata, retISO, cabin]);
 
-  const intlRaw: IntlRTRow[] = useMemo(() => {
-    if (!isIntlRoundTrip || !fromIata || !toIata || !dateISO || !retISO) return [];
-    return buildIntlRTRows(fromIata, toIata, dateISO, retISO, cabin);
-  }, [isIntlRoundTrip, fromIata, toIata, dateISO, retISO, cabin]);
+  const intlRaw: SpecialRTRow[] = useMemo(() => {
+    if (!isSpecialIntlRT || !fromIata || !toIata || !dateISO || !retISO) return [];
+    return buildSpecialRTRows(fromIata, toIata, dateISO, retISO, cabin);
+  }, [isSpecialIntlRT, fromIata, toIata, dateISO, retISO, cabin]);
 
   /* ========================== ONEWAY PIPE ========================== */
   const OW_DATA: OW_Row[] = useMemo(() => adaptRowsOW(rawOutbound), [rawOutbound]);
@@ -723,8 +718,15 @@ export default function FlightResults() {
   }, [rowsOW, selOW]);
 
   /* ========================== ROUND DOMESTIC PIPE ========================== */
-  const RT_OUT: RT_Row[] = useMemo(() => adaptRowsRT(rawOutbound), [rawOutbound]);
-  const RT_IN: RT_Row[] = useMemo(() => adaptRowsRT(rawReturn), [rawReturn]);
+  const RT_OUT = useMemo(
+    () => adaptRowsRT(rawOutbound, "DOM"),
+    [rawOutbound]
+  );
+
+  const RT_IN = useMemo(
+    () => adaptRowsRT(rawReturn, "DOM"),
+    [rawReturn]
+  );
   const metaRTAll = useDatasetMetaRT([...RT_OUT, ...RT_IN]);
 
   const [applyTo, setApplyTo] = useState<"both" | "out" | "in">("both");
@@ -894,23 +896,23 @@ export default function FlightResults() {
 
     const inAirline = (a: string) => f.airlines.size === 0 || f.airlines.has(a);
 
-    const inStops = (row: IntlRTRow) => {
+    const inStops = (row: SpecialRTRow) => {
       if (f.stops === "any") return true;
       const s = getStopsValueIntl(row);
       return s === f.stops;
     };
 
-    const inRefund = (r: IntlRTRow) =>
+    const inRefund = (r: SpecialRTRow) =>
       f.refundable === "any" || r.refundable === f.refundable;
 
-    const inPayments = (r: IntlRTRow) =>
+    const inPayments = (r: SpecialRTRow) =>
       f.payments.size === 0 ||
       r.extras?.some((x) => Array.from(f.payments).includes(x));
 
-    const inPrice = (r: IntlRTRow) =>
+    const inPrice = (r: SpecialRTRow) =>
       r.totalFareINR >= f.priceMin && r.totalFareINR <= f.priceMax;
 
-    const inFrom = (r: IntlRTRow) => {
+    const inFrom = (r: SpecialRTRow) => {
       if (f.fromAirports.size === 0) return true;
       const froms = [
         r.outbound.fromIata.toUpperCase(),
@@ -919,13 +921,13 @@ export default function FlightResults() {
       return froms.some((code) => f.fromAirports.has(code));
     };
 
-    const inTo = (r: IntlRTRow) => {
+    const inTo = (r: SpecialRTRow) => {
       if (f.toAirports.size === 0) return true;
       const tos = [r.outbound.toIata.toUpperCase(), r.inbound.toIata.toUpperCase()];
       return tos.some((code) => f.toAirports.has(code));
     };
 
-    const inDepSlot = (r: IntlRTRow) => {
+    const inDepSlot = (r: SpecialRTRow) => {
       if (f.depSlots.size === 0) return true;
       const outSlot = timeOfDay(r.outbound.departTime);
       const inSlot = timeOfDay(r.inbound.departTime);
@@ -935,7 +937,7 @@ export default function FlightResults() {
       return f.depSlots.has(outSlot) || f.depSlots.has(inSlot);
     };
 
-    const inArrSlot = (r: IntlRTRow) => {
+    const inArrSlot = (r: SpecialRTRow) => {
       if (f.arrSlots.size === 0) return true;
       const outSlot = timeOfDay(r.outbound.arriveTime);
       const inSlot = timeOfDay(r.inbound.arriveTime);
@@ -1004,7 +1006,7 @@ export default function FlightResults() {
 
   const [selectedIntl, setSelectedIntl] = useState<{
     flightId: string;
-    fare: INTL_Fare;
+    fare: SpecialFare;
   } | null>(null);
 
   useEffect(() => {
@@ -1038,7 +1040,7 @@ export default function FlightResults() {
   const [showModify, setShowModify] = useState(false);
 
   const uniqueAirlines = useMemo(() => {
-    if (isIntlRoundTrip) {
+    if (isSpecialIntlRT) {
       const s = new Set<string>();
       rowsIntl.forEach((r) => s.add(r.airline));
       return s.size;
@@ -1051,11 +1053,11 @@ export default function FlightResults() {
     const s = new Set<string>();
     rowsOW.forEach((r) => s.add(r.airline));
     return s.size;
-  }, [isIntlRoundTrip, isRound, rowsIntl, rowsOutRT, rowsInRT, rowsOW]);
+  }, [isSpecialIntlRT, isRound, rowsIntl, rowsOutRT, rowsInRT, rowsOW]);
 
   const sectorLabel = useMemo(() => {
     if (!fromIata || !toIata) return "";
-    if (isIntlRoundTrip && rowsIntl[0]) {
+    if (isSpecialIntlRT && rowsIntl[0]) {
       const first = rowsIntl[0];
       return `${first.outbound.fromCity} (${first.outbound.fromIata}) → ${first.outbound.toCity} (${first.outbound.toIata})`;
     }
@@ -1068,7 +1070,7 @@ export default function FlightResults() {
       return `${r.fromCity} (${r.fromIata}) → ${r.toCity} (${r.toIata})`;
     }
     return `${fromIata} → ${toIata}`;
-  }, [fromIata, toIata, isIntlRoundTrip, rowsIntl, rowsOW, rowsOutRT]);
+  }, [fromIata, toIata, isSpecialIntlRT, rowsIntl, rowsOW, rowsOutRT]);
 
   const departLbl = dateISO ? formatDateLabel(dateISO) : "";
   const returnLbl = retISO ? formatDateLabel(retISO) : "";
@@ -1086,159 +1088,159 @@ export default function FlightResults() {
           transition={{ duration: 0.35, ease: "easeOut" }}
         >
           <div className="border border-gray-200 bg-white rounded-2xl px-3 shadow-sm py-2  ">
-          {/* Modify search bar overlay with transition */}
-          <div
-            className={`
+            {/* Modify search bar overlay with transition */}
+            <div
+              className={`
       mb-4 origin-top 
       transition-all duration-300 ease-out 
       ${showModify
-                ? "max-h-[500px] opacity-100 translate-y-0"
-                : "max-h-0 opacity-0 -translate-y-2 pointer-events-none"
-              }
+                  ? "max-h-[500px] opacity-100 translate-y-0"
+                  : "max-h-0 opacity-0 -translate-y-2 pointer-events-none"
+                }
     `}
-          >
-            <div className="rounded-xl">
-              <FromToBar
-                onSearch={() => {
-                  setShowModify(false);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
-              />
-            </div>
-          </div>
-
-          {/* baaki tumhara pura bar same rakhte hain */}
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div className="space-y-1">
-              <div className="text-[11px] font-semibold uppercase text-gray-500">
-                {isIntlRoundTrip
-                  ? "International Round Trip • Sector Details"
-                  : isRound
-                    ? "Round Trip • Sector Details"
-                    : "Oneway • Sector Details"}
-              </div>
-              <div className="flex flex-wrap items-center gap-2 text-sm">
-                {sectorLabel && (
-                  <span className="rounded-full bg-gray-900 px-3 py-1 text-[13px] font-semibold text-white">
-                    {sectorLabel}
-                  </span>
-                )}
-                {departLbl && (
-                  <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-700">
-                    {departLbl}
-                  </span>
-                )}
-                {isRound && returnLbl && (
-                  <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-700">
-                    {returnLbl}
-                  </span>
-                )}
-                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-700">
-                  {totalPaxLabel}
-                </span>
-                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-500">
-                  {uniqueAirlines} Airlines
-                </span>
+            >
+              <div className="rounded-xl">
+                <FromToBar
+                  onSearch={() => {
+                    setShowModify(false);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                />
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 text-xs md:justify-end">
-              {/* Intl RT agent commission toggle */}
-              {isIntlRoundTrip && (
-                <button
-                  type="button"
-                  onClick={() => setShowCommissionIntl((v) => !v)}
-                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 font-medium ${showCommissionIntl
-                    ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                    : "border-gray-300 bg-white text-gray-700"
-                    }`}
-                >
-                  <span>Agent Commission</span>
-                  <span
-                    className={`flex h-4 w-8 items-center rounded-full px-[2px] transition ${showCommissionIntl ? "bg-emerald-500" : "bg-gray-300"
+            {/* baaki tumhara pura bar same rakhte hain */}
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div className="space-y-1">
+                <div className="text-[11px] font-semibold uppercase text-gray-500">
+                  {isSpecialIntlRT
+                    ? "International Round Trip • Sector Details"
+                    : isRound
+                      ? "Round Trip • Sector Details"
+                      : "Oneway • Sector Details"}
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                  {sectorLabel && (
+                    <span className="rounded-full bg-gray-900 px-3 py-1 text-[13px] font-semibold text-white">
+                      {sectorLabel}
+                    </span>
+                  )}
+                  {departLbl && (
+                    <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-700">
+                      {departLbl}
+                    </span>
+                  )}
+                  {isRound && returnLbl && (
+                    <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-700">
+                      {returnLbl}
+                    </span>
+                  )}
+                  <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-700">
+                    {totalPaxLabel}
+                  </span>
+                  <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-500">
+                    {uniqueAirlines} Airlines
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 text-xs md:justify-end">
+                {/* Intl RT agent commission toggle */}
+                {isSpecialIntlRT && (
+                  <button
+                    type="button"
+                    onClick={() => setShowCommissionIntl((v) => !v)}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 font-medium ${showCommissionIntl
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                      : "border-gray-300 bg-white text-gray-700"
                       }`}
                   >
+                    <span>Agent Commission</span>
                     <span
-                      className={`h-3 w-3 transform rounded-full bg-white shadow transition ${showCommissionIntl ? "translate-x-4" : ""
+                      className={`flex h-4 w-8 items-center rounded-full px-[2px] transition ${showCommissionIntl ? "bg-emerald-500" : "bg-gray-300"
                         }`}
-                    />
-                  </span>
-                </button>
-              )}
-
-              {/* Sort dropdown */}
-              <div className="flex items-center gap-1 rounded-full border border-gray-300 bg-white px-2.5 py-1.5">
-                <span className="text-[11px] text-gray-500">Sort:</span>
-                {!isRound ? (
-                  <select
-                    value={sortOW}
-                    onChange={(e) => setSortOW(e.target.value as SortKey)}
-                    className="bg-transparent text-[12px] text-gray-800 outline-none"
-                  >
-                    <option value="price_low">Price (Lowest)</option>
-                    <option value="price_high">Price (Highest)</option>
-                    <option value="duration">Duration (Shortest)</option>
-                    <option value="depart_early">Earliest Departure</option>
-                    <option value="arrive_late">Latest Arrival</option>
-                  </select>
-                ) : !isIntlRoundTrip ? (
-                  <select
-                    value={sortRT}
-                    onChange={(e) => setSortRT(e.target.value as SortKey)}
-                    className="bg-transparent text-[12px] text-gray-800 outline-none"
-                  >
-                    <option value="price_low">Price (Lowest)</option>
-                    <option value="price_high">Price (Highest)</option>
-                    <option value="duration">Duration (Shortest)</option>
-                    <option value="depart_early">Earliest Departure</option>
-                    <option value="arrive_late">Latest Arrival</option>
-                  </select>
-                ) : (
-                  <select
-                    value={sortIntl}
-                    onChange={(e) => setSortIntl(e.target.value as SortKey)}
-                    className="bg-transparent text-[12px] text-gray-800 outline-none"
-                  >
-                    <option value="price_low">Price (Lowest)</option>
-                    <option value="price_high">Price (Highest)</option>
-                    <option value="duration">Duration (Shortest)</option>
-                    <option value="depart_early">Earliest Departure (Out)</option>
-                    <option value="arrive_late">Latest Arrival (In)</option>
-                  </select>
+                    >
+                      <span
+                        className={`h-3 w-3 transform rounded-full bg-white shadow transition ${showCommissionIntl ? "translate-x-4" : ""
+                          }`}
+                      />
+                    </span>
+                  </button>
                 )}
+
+                {/* Sort dropdown */}
+                <div className="flex items-center gap-1 rounded-full border border-gray-300 bg-white px-2.5 py-1.5">
+                  <span className="text-[11px] text-gray-500">Sort:</span>
+                  {!isRound ? (
+                    <select
+                      value={sortOW}
+                      onChange={(e) => setSortOW(e.target.value as SortKey)}
+                      className="bg-transparent text-[12px] text-gray-800 outline-none"
+                    >
+                      <option value="price_low">Price (Lowest)</option>
+                      <option value="price_high">Price (Highest)</option>
+                      <option value="duration">Duration (Shortest)</option>
+                      <option value="depart_early">Earliest Departure</option>
+                      <option value="arrive_late">Latest Arrival</option>
+                    </select>
+                  ) : !isSpecialIntlRT ? (
+                    <select
+                      value={sortRT}
+                      onChange={(e) => setSortRT(e.target.value as SortKey)}
+                      className="bg-transparent text-[12px] text-gray-800 outline-none"
+                    >
+                      <option value="price_low">Price (Lowest)</option>
+                      <option value="price_high">Price (Highest)</option>
+                      <option value="duration">Duration (Shortest)</option>
+                      <option value="depart_early">Earliest Departure</option>
+                      <option value="arrive_late">Latest Arrival</option>
+                    </select>
+                  ) : (
+                    <select
+                      value={sortIntl}
+                      onChange={(e) => setSortIntl(e.target.value as SortKey)}
+                      className="bg-transparent text-[12px] text-gray-800 outline-none"
+                    >
+                      <option value="price_low">Price (Lowest)</option>
+                      <option value="price_high">Price (Highest)</option>
+                      <option value="duration">Duration (Shortest)</option>
+                      <option value="depart_early">Earliest Departure (Out)</option>
+                      <option value="arrive_late">Latest Arrival (In)</option>
+                    </select>
+                  )}
+                </div>
+
+                {/* Modify Search trigger */}
+                <button
+                  type="button"
+                  onClick={() => setShowModify((s) => !s)}
+                  className="inline-flex items-center gap-1 rounded-full border border-blue-500 bg-white px-3 py-1.5 text-[12px] font-medium text-blue-600 hover:bg-blue-50"
+                >
+                  Modify Search
+                </button>
+
+                {/* mobile filter button */}
+                <button
+                  onClick={() => setDrawer(true)}
+                  className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-sm shadow-sm md:hidden"
+                >
+                  Filters
+                </button>
               </div>
-
-              {/* Modify Search trigger */}
-              <button
-                type="button"
-                onClick={() => setShowModify((s) => !s)}
-                className="inline-flex items-center gap-1 rounded-full border border-blue-500 bg-white px-3 py-1.5 text-[12px] font-medium text-blue-600 hover:bg-blue-50"
-              >
-                Modify Search
-              </button>
-
-              {/* mobile filter button */}
-              <button
-                onClick={() => setDrawer(true)}
-                className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-sm shadow-sm md:hidden"
-              >
-                Filters
-              </button>
             </div>
-          </div>
           </div>
         </motion.div>
 
         {/* ===== Layout: filters + results ===== */}
         <motion.div
-           className="mx-auto max-w-7xl px-4"
-  variants={layoutContainerVariants}
-  initial="hidden"
-  animate="visible"  // ⭐ scroll pe trigger
+          className="mx-auto max-w-7xl px-4"
+          variants={layoutContainerVariants}
+          initial="hidden"
+          animate="visible"  // ⭐ scroll pe trigger
         >
           <motion.div
-             className="grid grid-cols-12 gap-4"
-    variants={layoutContainerVariants}
+            className="grid grid-cols-12 gap-4"
+            variants={layoutContainerVariants}
           >
             {/* Sidebar */}
             <motion.div
@@ -1264,7 +1266,7 @@ export default function FlightResults() {
                   }}
                   showApplyTo={false}
                 />
-              ) : !isIntlRoundTrip ? (
+              ) : !isSpecialIntlRT ? (
                 <FilterPanel
                   meta={metaForPanelRT}
                   f={activeForPanelRT}
@@ -1294,7 +1296,7 @@ export default function FlightResults() {
                   selectedGlobal={selOW}
                   onSelectFare={(rowId, fare) => setSelOW({ flightId: rowId, fare })}
                 />
-              ) : !isIntlRoundTrip ? (
+              ) : !isSpecialIntlRT ? (
                 <RoundTripResultList
                   outboundRows={rowsOutRT}
                   returnRows={rowsInRT}
@@ -1306,15 +1308,11 @@ export default function FlightResults() {
                   onSelectReturnFare={(rowId, fare) =>
                     setSelInRT({ flightId: rowId, fare })
                   }
-                  fromIata={fromIata}
-                  toIata={toIata}
-                  departDate={dateISO}
-                  returnDate={retISO}
-                  cabin={String(cabin || "Economy")}
-                  pax={pax}
+                  showCommission={false}
                 />
+
               ) : (
-                <IntlRoundTripResult
+                <SpecialRoundTripResult
                   rows={rowsIntl}
                   selectedGlobal={selectedIntl}
                   onSelectFare={(rowId, fare) =>
@@ -1371,7 +1369,7 @@ export default function FlightResults() {
                   onClose={() => setDrawer(false)}
                   showApplyTo={false}
                 />
-              ) : !isIntlRoundTrip ? (
+              ) : !isSpecialIntlRT ? (
                 <>
                   <FilterPanel
                     meta={metaForPanelRT}

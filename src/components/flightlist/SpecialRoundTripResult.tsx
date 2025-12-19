@@ -1,4 +1,4 @@
-// src/components/flightlist/IntlRoundTripResult.tsx
+// src/components/flightlist/SpecialRoundTripResult.tsx
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -68,7 +68,7 @@ export type LegSummary = {
   baggage: { handKg?: number; checkKg?: number; piece?: string };
 };
 
-export type IntlRTRow = {
+export type SpecialRTRow = {
   id: string;
   airline: string;
   logo: string;
@@ -124,7 +124,7 @@ export type SelectedIntlRTFlightPayload = {
 };
 
 export function adaptIntlRowToSelectedFlight(
-  r: IntlRTRow,
+  r: SpecialRTRow,
   f: FareOption
 ): SelectedIntlRTFlightPayload {
   return {
@@ -748,7 +748,7 @@ function IntlB2BRow({
   paxConfig,
   showCommission,
 }: {
-  r: IntlRTRow;
+  r: SpecialRTRow;
   expanded: boolean;
   onToggle: () => void;
   selectedFare: FareOption | null;
@@ -1058,7 +1058,7 @@ function IntlB2BRow({
 
 /* =============== LIST WRAPPER (showCommission parent se aayega) =============== */
 
-export default function IntlRoundTripResult({
+export default function SpecialRoundTripResult({
   rows,
   selectedGlobal,
   onSelectFare,
@@ -1066,7 +1066,7 @@ export default function IntlRoundTripResult({
   paxConfig,
   showCommission = false,
 }: {
-  rows: IntlRTRow[];
+  rows: SpecialRTRow[];
   selectedGlobal: { flightId: string; fare: FareOption } | null;
   onSelectFare: (rowId: string, fare: FareOption) => void;
   onEmpty?: React.ReactNode;
