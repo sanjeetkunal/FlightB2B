@@ -6,6 +6,8 @@ import DateField from "../flightsearch/DateField";
 import TravellersField from "../flightsearch/TravellersField";
 import TravellerClassPicker from "../flightsearch/TravellerClassPicker";
 
+
+
 /* ---------------- RECENT SEARCH HELPERS ---------------- */
 const RECENT_KEY = "flight_recent_searches";
 

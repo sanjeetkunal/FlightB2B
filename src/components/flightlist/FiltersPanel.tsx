@@ -17,6 +17,8 @@ export type Filters = {
   arrSlots: Set<TimeSlot>;
   /** 👉 choose which direction to apply filters to */
   applyTo: "both" | "out" | "in";
+
+  fareView: "SINGLE" | "FULL";
 };
 
 export type DatasetMeta = {
@@ -252,6 +254,46 @@ export default function FilterPanel({
         </div>
       )}
 
+      {/* Fare Display Mode */}
+<div className="mb-3 border-b border-gray-100 pb-3">
+  <div className="mb-2 flex items-center justify-between">
+    <div className="text-[16px] font-bold">Fare Display</div>
+  </div>
+
+  <div className="flex items-center gap-2">
+    <button
+      type="button"
+      onClick={() => setF({ ...f, fareView: "SINGLE" })}
+      className={[
+        "px-3 py-1.5 rounded-md text-sm font-semibold border",
+        f.fareView === "SINGLE"
+          ? "bg-blue-600 text-white border-blue-600"
+          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50",
+      ].join(" ")}
+    >
+      Per Pax
+    </button>
+
+    <button
+      type="button"
+      onClick={() => setF({ ...f, fareView: "FULL" })}
+      className={[
+        "px-3 py-1.5 rounded-md text-sm font-semibold border",
+        f.fareView === "FULL"
+          ? "bg-blue-600 text-white border-blue-600"
+          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50",
+      ].join(" ")}
+    >
+      Full Fare
+    </button>
+  </div>
+
+  <p className="mt-1 text-[12px] text-gray-500">
+    Choose whether prices are shown <b>per traveller</b> or as <b>total fare</b>.
+  </p>
+</div>
+
+
       {/* Popular Filters */}
       <div className="mb-3 border-b border-gray-100 pb-3">
         <div className="mb-2 flex items-center justify-between">
@@ -342,22 +384,36 @@ export default function FilterPanel({
       {/* Departure time */}
       <div className="mb-3 border-b border-gray-100 pb-3">
         <div className="mb-3 text-[16px] font-bold">Departure Time</div>
-        <div className="flex flex-wrap gap-2">
-          {[
-            { key: "0-6" as TimeSlot, top: "Before 6 AM", icon: <IconBefore6 /> },
-            { key: "6-12" as TimeSlot, top: "6 AM to 12 PM", icon: <Icon6to12 /> },
-            { key: "12-18" as TimeSlot, top: "12 PM to 6 PM", icon: <Icon12to18 /> },
-            { key: "18-24" as TimeSlot, top: "After 6 PM", icon: <IconAfter6 /> },
-          ].map(({ key, top, icon }) => (
-            <TimeCard
-              key={key}
-              selected={f.depSlots.has(key)}
-              onClick={() => setF({ ...f, depSlots: toggleSlot(f.depSlots, key) })}
-              titleTop={top}
-              icon={icon}
-            />
-          ))}
-        </div>
+        <div className="flex flex-wrap items-center gap-2">
+  {[
+    { key: "0-6" as TimeSlot, label: "Before 6 AM", icon: <IconBefore6 /> },
+    { key: "6-12" as TimeSlot, label: "6 AM – 12 PM", icon: <Icon6to12 /> },
+    { key: "12-18" as TimeSlot, label: "12 PM – 6 PM", icon: <Icon12to18 /> },
+    { key: "18-24" as TimeSlot, label: "After 6 PM", icon: <IconAfter6 /> },
+  ].map(({ key, label, icon }) => {
+    const active = f.depSlots.has(key);
+
+    return (
+      <button
+        key={key}
+        type="button"
+        onClick={() =>
+          setF({ ...f, depSlots: toggleSlot(f.depSlots, key) })
+        }
+        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] font-medium transition
+          ${
+            active
+              ? "border-blue-600 bg-blue-50 text-blue-700"
+              : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+          }`}
+      >
+        <span className="h-3.5 w-3.5">{icon}</span>
+        <span className="whitespace-nowrap">{label}</span>
+      </button>
+    );
+  })}
+</div>
+
       </div>
 
       {/* Arrival time */}

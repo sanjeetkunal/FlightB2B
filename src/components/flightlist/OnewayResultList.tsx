@@ -133,6 +133,8 @@ export function adaptRowToSelectedFlight(
   };
 }
 
+
+
 /* ================== small utils ================== */
 const Money = ({
   v,
@@ -156,6 +158,10 @@ const minsToLabel = (m?: number) => {
   const mm = m % 60;
   return `${h}h ${String(mm).padStart(2, "0")}m`;
 };
+
+
+
+
 
 const chipNeutral =
   "bg-slate-100 text-slate-800 ring-slate-300 border-slate-200";
@@ -649,9 +655,8 @@ function FareOneLine({
       title="Change fare"
     >
       <span
-        className={`h-3.5 w-3.5 rounded-full border ${
-          fare ? "border-gray-800" : "border-gray-400"
-        } grid place-items-center`}
+        className={`h-3.5 w-3.5 rounded-full border ${fare ? "border-gray-800" : "border-gray-400"
+          } grid place-items-center`}
       >
         {fare && <span className="h-2 w-2 rounded-full bg-gray-800" />}
       </span>
@@ -739,9 +744,8 @@ function FareListRows({
     return (
       <label
         key={f.code}
-        className={`grid cursor-pointer grid-cols-[18px_1fr] items-center gap-2 px-2 py-2 ${
-          !last ? "border-b border-gray-100" : ""
-        }`}
+        className={`grid cursor-pointer grid-cols-[18px_1fr] items-center gap-2 px-2 py-2 ${!last ? "border-b border-gray-100" : ""
+          }`}
       >
         <input
           type="radio"
@@ -832,6 +836,7 @@ function B2BRow({
   onSelectFare,
   paxConfig,
   showCommission,
+  fareView,
 }: {
   r: Row;
   expanded: boolean;
@@ -840,10 +845,12 @@ function B2BRow({
   onSelectFare: (rowId: string, fare: FareOption) => void;
   paxConfig?: PaxConfig;
   showCommission: boolean;
+  fareView: "SINGLE" | "FULL";
 }) {
   const nav = useNavigate();
   const [tab, setTab] = useState<DetailsTab>("itinerary");
   const [showFareMenu, setShowFareMenu] = useState(false);
+
 
   const minFareObj = useMemo(
     () =>
@@ -867,6 +874,18 @@ function B2BRow({
     (paxConfig?.children ?? 0) +
     (paxConfig?.infants ?? 0);
 
+
+  const singleFare = effFare.price;
+  const fullFare = effFare.price * totalPax;
+
+  const displayFare =
+    fareView === "FULL" ? fullFare : singleFare;
+
+  const MIN_VISIBLE = 1;
+
+  const visibleFares = r.fares.slice(0, MIN_VISIBLE);
+  const extraFares = r.fares.slice(MIN_VISIBLE);
+
   // agent details with fallback (fare → row)
   const agentNetDisplay =
     effFare.agentFareINR != null
@@ -883,11 +902,12 @@ function B2BRow({
 
     const pricing = {
       currency: "INR" as const,
-      total: f.price,
-      perTraveller:
-        totalPax > 0
-          ? Math.round((f.price / totalPax) * 100) / 100
-          : f.price,
+
+      singleFare: singleFare,     // 👈 per pax
+      totalFare: fullFare,        // 👈 FULL fare
+
+      perTraveller: singleFare,
+
       pax: {
         adults: paxConfig?.adults ?? totalPax,
         children: paxConfig?.children ?? 0,
@@ -930,7 +950,7 @@ function B2BRow({
           </div>
         </div>
 
-        <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-x-4">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-4">
           <div className="text-right">
             <div className="text-[13px] text-gray-700">
               <span className="text-[18px] font-bold text-gray-900">
@@ -958,36 +978,58 @@ function B2BRow({
         </div>
 
         {/* Right: price + Book + commission */}
-        <div className="ml-2 text-left sm:text-right">
-          <span className="text-[12px] text-gray-600">Selected fare</span>
-          <br />
-          <div className="inline-flex items-center gap-2">
-            <span className={`inline-block h-2.5 w-2.5 rounded-full ${dotNeutral}`} />
-            <span className="text-[18px] font-bold text-gray-900">
-              <Money v={effFare.price} />
-            </span>
-          </div>
-          {/* <div className="mt-1 text-[11px] text-gray-600">
-            <span
-              className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-semibold ring-1 border ${chipNeutral}`}
+        <div className="flex flex-col gap-2">
+          {visibleFares.map((f) => (
+            <label
+              key={f.code}
+              className={`flex cursor-pointer items-center gap-3 text-sm
+        ${effFare.code === f.code
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-300 bg-white hover:bg-gray-50"}`}
             >
-              {effFareDisplay}
-            </span>
-          </div> */}
+              {/* radio */}
+              <input
+                type="radio"
+                name={`fare-${r.id}`}
+                checked={effFare.code === f.code}
+                onChange={() => chooseFare(f)}
+                className="accent-blue-600"
+              />
 
-         
+              {/* price */}
+              <div className="font-bold text-gray-900">
+                <Money v={f.price} />
+              </div>
 
-          <div className="mt-2">
+              {/* info icon */}
+              <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-700">
+                i
+              </span>
+
+              {/* badge */}
+              {f.badge?.text && (
+                <span className="rounded bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-700">
+                  {f.badge.text}
+                </span>
+              )}
+
+            </label>
+          ))}
+
+          {/* more fares */}
+          {extraFares.length > 0 && (
             <button
               type="button"
-              onClick={onBook}
-              className="rounded-2xl bg-blue-500 px-3 py-1.5 text-sm font-semibold text-white shadow hover:opacity-95"
-              title="Proceed to book"
+              onClick={() => setShowFareMenu(true)}
+              className="self-start text-[12px] text-blue-600 hover:underline"
             >
-              Book Now
+              +{extraFares.length} more fares
             </button>
-          </div>
+          )}
         </div>
+
+
+
       </div>
 
       <hr className="my-2 border-t border-dashed border-gray-200" />
@@ -996,11 +1038,10 @@ function B2BRow({
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
         <div className="flex min-w-0 flex-1 items-center gap-2 text-[12px]">
           <span
-            className={`${
-              r.refundable === "Refundable"
-                ? "text-emerald-700"
-                : "text-rose-700"
-            } font-medium`}
+            className={`${r.refundable === "Refundable"
+              ? "text-emerald-700"
+              : "text-rose-700"
+              } font-medium`}
           >
             {r.refundable}
           </span>
@@ -1014,7 +1055,7 @@ function B2BRow({
           ))}
 
 
-           {showCommission &&
+          {showCommission &&
             (agentNetDisplay != null || commissionDisplay != null) && (
               <div className="mt-1 space-y-0.5 text-[11px] text-gray-700 px-3 py-1.5 bg-gray-50">
                 {agentNetDisplay != null && (
@@ -1038,21 +1079,7 @@ function B2BRow({
         </div>
 
         <div className="relative flex items-center gap-2">
-          <FareOneLine
-            fare={effFare}
-            placeholder="Select fare"
-            onClick={() => setShowFareMenu((s) => !s)}
-          />
-          {showFareMenu && (
-            <div className="absolute right-0 top-[calc(100%+6px)] z-50">
-              <FareListRows
-                fares={r.fares}
-                name={`fare-${r.id}`}
-                selectedCode={effFare.code}
-                onSelect={chooseFare}
-              />
-            </div>
-          )}
+
           <button
             type="button"
             onClick={onToggle}
@@ -1061,13 +1088,33 @@ function B2BRow({
             Details
             <svg
               viewBox="0 0 24 24"
-              className={`h-4 w-4 transition-transform ${
-                expanded ? "rotate-180" : ""
-              }`}
+              className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""
+                }`}
             >
               <path d="M7 10l5 5 5-5" fill="currentColor" />
             </svg>
           </button>
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="text-[12px] text-gray-600">Selected Fare</div>
+              <div className="text-[18px] font-bold text-gray-900">
+                <Money v={displayFare} />
+              </div>
+              {fareView === "FULL" && totalPax > 1 && (
+                <div className="text-[11px] text-gray-600">
+                  Total for {totalPax} passengers
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={onBook}
+              className="bg-gray-900 rounded-lg px-4 py-2 text-sm font-semibold text-white hover:bg-gray-700 cursor-pointer"
+            >
+              Book Now
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1127,6 +1174,7 @@ export default function OnewayResultList({
   onEmpty,
   paxConfig,
   showCommission = false, // parent se control
+  fareView,
 }: {
   rows: Row[];
   selectedGlobal: { flightId: string; fare: FareOption } | null;
@@ -1134,6 +1182,7 @@ export default function OnewayResultList({
   onEmpty?: React.ReactNode;
   paxConfig?: PaxConfig;
   showCommission?: boolean;
+  fareView: "SINGLE" | "FULL";
 }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -1163,6 +1212,7 @@ export default function OnewayResultList({
           onSelectFare={onSelectFare}
           paxConfig={paxConfig}
           showCommission={showCommission}
+          fareView={fareView}
         />
       ))}
     </div>

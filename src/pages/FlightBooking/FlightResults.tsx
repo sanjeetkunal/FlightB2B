@@ -563,6 +563,7 @@ const makeDefaultFilters = (minPrice: number, maxPrice: number): BaseFilters => 
   toAirports: new Set<string>(),
   depSlots: new Set<TimeSlot>(),
   arrSlots: new Set<TimeSlot>(),
+  fareView: "SINGLE",
 });
 
 /* ===================================================================== */
@@ -572,6 +573,8 @@ const makeDefaultFilters = (minPrice: number, maxPrice: number): BaseFilters => 
 export default function FlightResults() {
   const { search } = useLocation();
   const qp = useMemo(() => new URLSearchParams(search), [search]);
+
+
 
   const fareType = qp.get("fare"); // null OR "special"
   const isSpecialFare = fareType === "special";
@@ -596,6 +599,14 @@ export default function FlightResults() {
     0
   );
   const pax = paxCalc || 1;
+
+  // ✅ ONEWAY + DOMESTIC RT pax config
+const paxConfig = {
+  adults: adt || 1,
+  children: chd || 0,
+  infants: inf || 0,
+};
+
 
   const isRound = tripRaw === "roundtrip" || (!!retISO && retISO !== "");
   const isInternational = sector === "intl";
@@ -881,6 +892,7 @@ export default function FlightResults() {
     depSlots: new Set<TimeSlot>(),
     arrSlots: new Set<TimeSlot>(),
     applyTo: "both",
+    fareView: "SINGLE",
   }));
 
   useEffect(() => {
@@ -1030,6 +1042,7 @@ export default function FlightResults() {
       depSlots: new Set<TimeSlot>(),
       arrSlots: new Set<TimeSlot>(),
       applyTo: "both",
+      fareView: "SINGLE",
     });
   };
 
@@ -1294,7 +1307,12 @@ export default function FlightResults() {
                 <OnewayResult
                   rows={rowsOW}
                   selectedGlobal={selOW}
-                  onSelectFare={(rowId, fare) => setSelOW({ flightId: rowId, fare })}
+                  onSelectFare={(rowId, fare) =>
+                    setSelOW({ flightId: rowId, fare })
+                  }
+                  paxConfig={paxConfig}        // ✅ NOW DEFINED
+                  showCommission
+                  fareView={fOW.fareView}      // ✅ CORRECT STATE
                 />
               ) : !isSpecialIntlRT ? (
                 <RoundTripResultList
