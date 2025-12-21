@@ -1,4 +1,3 @@
-// src/components/flightlist/OnewayResultList.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -7,7 +6,7 @@ export type FareOption = {
   code: string;
   label: string;
   price: number; // INR
-  refundable: "Refundable" | "Non Refundable";
+  refundable: "Refundable" | "Non-Refundable"; // ✅ hyphen standard
   cabin?: string;
   meal?: string;
   badge?: { text: string; tone?: "offer" | "published" };
@@ -69,7 +68,7 @@ export type Row = {
   commissionUSD: number; // treat as INR for UI
   agentFareUSD: number; // treat as INR for UI
 
-  refundable: "Refundable" | "Non-Refundable";
+  refundable: "Refundable" | "Non-Refundable"; // ✅ hyphen standard
   extras?: string[];
   segments: Segment[];
   baggage: { handKg?: number; checkKg?: number; piece?: string };
@@ -127,18 +126,16 @@ export function adaptRowToSelectedFlight(
     departDate: r.departDate,
     arriveDate: r.arriveDate,
     cabin: f.cabin ?? "Economy",
-    refundable: r.refundable, // row se
+    refundable: f.refundable, // ✅ fare-level refundable (correct)
     segments: r.segments,
     baggage: r.baggage,
   };
 }
 
-
-
 /* ================== small utils ================== */
 const Money = ({
   v,
-  fractionDigits = 2,
+  fractionDigits = 0,
 }: {
   v: number;
   fractionDigits?: number;
@@ -158,10 +155,6 @@ const minsToLabel = (m?: number) => {
   const mm = m % 60;
   return `${h}h ${String(mm).padStart(2, "0")}m`;
 };
-
-
-
-
 
 const chipNeutral =
   "bg-slate-100 text-slate-800 ring-slate-300 border-slate-200";
@@ -351,23 +344,17 @@ function SegmentCard({
 
         {/* baggage summary */}
         <div className="hidden text-right md:block">
-          <div className="text-[11px] font-semibold text-gray-600">
-            BAGGAGE :
-          </div>
+          <div className="text-[11px] font-semibold text-gray-600">BAGGAGE :</div>
           <div className="text-[11px] font-semibold text-gray-800">ADULT</div>
         </div>
         <div className="hidden md:block">
-          <div className="text-[11px] font-semibold text-gray-600">
-            CHECK IN
-          </div>
+          <div className="text-[11px] font-semibold text-gray-600">CHECK IN</div>
           <div className="text-[12px] text-gray-800">
             {check} Kgs ({piece})
           </div>
         </div>
         <div className="hidden md:block">
-          <div className="text-[11px] font-semibold text-gray-600">
-            CABIN
-          </div>
+          <div className="text-[11px] font-semibold text-gray-600">CABIN</div>
           <div className="text-[12px] text-gray-800">
             {hand} Kgs ({piece})
           </div>
@@ -418,17 +405,10 @@ function ItineraryPanel({
     <div>
       {segs.map((s, i) => (
         <div key={i}>
-          <SegmentCard
-            s={s}
-            logo={logo}
-            airline={airline}
-            rowBaggage={rowBaggage}
-          />
+          <SegmentCard s={s} logo={logo} airline={airline} rowBaggage={rowBaggage} />
           {s.layoverAt && s.layoverMin != null && (
             <LayoverBadge
-              text={`Change of planes • ${minsToLabel(
-                s.layoverMin
-              )} Layover in ${s.layoverAt}`}
+              text={`Change of planes • ${minsToLabel(s.layoverMin)} Layover in ${s.layoverAt}`}
             />
           )}
         </div>
@@ -485,8 +465,7 @@ function CancellationPanel({
         </ul>
         {typeof noShowUSD === "number" && (
           <div className="mt-2 text-xs text-gray-600">
-            No-show fee:{" "}
-            <span className="font-semibold">₹{noShowUSD}</span>
+            No-show fee: <span className="font-semibold">₹{noShowUSD}</span>
           </div>
         )}
       </div>
@@ -562,15 +541,10 @@ function SelectedFarePanel({
   commissionFallback?: number;
 }) {
   const refundableTone =
-    fare.refundable === "Refundable"
-      ? "text-emerald-700"
-      : "text-rose-700";
+    fare.refundable === "Refundable" ? "text-emerald-700" : "text-rose-700";
 
-  const agentNet =
-    fare.agentFareINR != null ? fare.agentFareINR : agentNetFallback;
-  const commission =
-    fare.commissionINR != null ? fare.commissionINR : commissionFallback;
-
+  const agentNet = fare.agentFareINR != null ? fare.agentFareINR : agentNetFallback;
+  const commission = fare.commissionINR != null ? fare.commissionINR : commissionFallback;
   const hasAgentInfo = agentNet != null || commission != null;
 
   return (
@@ -584,11 +558,13 @@ function SelectedFarePanel({
           {fare.refundable}
         </span>
       </div>
+
       <div className="text-[12px] text-gray-700">
         {fare.label || "—"}
         {fare.cabin ? ` • ${fare.cabin}` : ""}
         {fare.meal ? `, ${fare.meal}` : ""}
       </div>
+
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <div className="rounded-lg bg-gray-50 p-3">
           <div className="text-[11px] text-gray-500">Baggage</div>
@@ -608,17 +584,13 @@ function SelectedFarePanel({
       {showCommission && (
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <div className="rounded-lg bg-emerald-50 p-3">
-            <div className="text-[11px] text-emerald-700">
-              Agent Net Fare
-            </div>
+            <div className="text-[11px] text-emerald-700">Agent Net Fare</div>
             <div className="mt-0.5 text-sm font-semibold text-emerald-800">
               {agentNet != null ? <Money v={agentNet} /> : "—"}
             </div>
           </div>
           <div className="rounded-lg bg-orange-50 p-3">
-            <div className="text-[11px] text-orange-700">
-              Your Commission
-            </div>
+            <div className="text-[11px] text-orange-700">Your Commission</div>
             <div className="mt-0.5 text-sm font-semibold text-orange-800">
               {commission != null ? <Money v={commission} /> : "—"}
             </div>
@@ -631,198 +603,6 @@ function SelectedFarePanel({
           )}
         </div>
       )}
-    </div>
-  );
-}
-
-/* =============== fare pickers =============== */
-function FareOneLine({
-  fare,
-  placeholder,
-  onClick,
-}: {
-  fare: FareOption | null;
-  placeholder: string;
-  onClick: () => void;
-}) {
-  const display = fare ? `${fare.label}` : "";
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="inline-flex max-w-full items-center gap-2 rounded-md bg-white px-3 py-1.5 text-left text-[12px] hover:bg-gray-50"
-      title="Change fare"
-    >
-      <span
-        className={`h-3.5 w-3.5 rounded-full border ${fare ? "border-gray-800" : "border-gray-400"
-          } grid place-items-center`}
-      >
-        {fare && <span className="h-2 w-2 rounded-full bg-gray-800" />}
-      </span>
-
-      {fare ? (
-        <div className="flex min-w-0 items-center gap-2">
-          <span className={`inline-block h-2.5 w-2.5 rounded-full ${dotNeutral}`} />
-          <span className="whitespace-nowrap text-[14px] font-bold text-gray-900">
-            <Money v={fare.price} />
-          </span>
-
-          {/* (i) tooltip */}
-          <span className="relative group">
-            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-700">
-              i
-            </span>
-            <div className="pointer-events-none absolute left-1/2 z-30 mt-2 w-72 -translate-x-1/2 rounded-lg border border-gray-200 bg-white p-3 text-xs text-gray-700 opacity-0 shadow-2xl transition group-hover:opacity-100">
-              <div className="mb-1 flex items-center justify-between text-[12px]">
-                <span className="font-semibold">
-                  {fare.label} • {fare.cabin || "—"}
-                </span>
-                <span className="font-semibold">
-                  <Money v={fare.price} />
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-md bg-gray-50 p-2">
-                  <div className="text-[11px] text-gray-500">Baggage</div>
-                  <div className="mt-0.5 font-medium">
-                    {fare.baggage?.handKg != null
-                      ? `${fare.baggage.handKg}kg cabin`
-                      : "Cabin: airline"}
-                    <br />
-                    {fare.baggage?.checkKg != null
-                      ? `${fare.baggage.checkKg}kg check-in`
-                      : "Check-in: airline"}
-                  </div>
-                </div>
-                <div className="rounded-md bg-gray-50 p-2">
-                  <div className="text-[11px] text-gray-500">Seat</div>
-                  <div className="mt-0.5 font-medium">
-                    {fare.seat || "Seat selection (paid)"}
-                  </div>
-                </div>
-              </div>
-              <div className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 border-l border-t border-gray-200 bg-white" />
-            </div>
-          </span>
-
-          <span
-            className={`truncate rounded px-1.5 py-0.5 text-[10px] font-semibold ring-1 border ${chipNeutral}`}
-          >
-            {display}
-          </span>
-        </div>
-      ) : (
-        <span className="text-[12px] text-gray-600">{placeholder}</span>
-      )}
-
-      <svg viewBox="0 0 24 24" className="h-4 w-4 text-gray-500">
-        <path d="M7 10l5 5 5-5" fill="currentColor" />
-      </svg>
-    </button>
-  );
-}
-
-function FareListRows({
-  fares,
-  name,
-  selectedCode,
-  onSelect,
-}: {
-  fares: FareOption[];
-  name: string;
-  selectedCode?: string;
-  onSelect: (f: FareOption) => void;
-}) {
-  const row = (f: FareOption, last: boolean) => {
-    const refundableTone =
-      f.refundable === "Refundable"
-        ? "text-emerald-700"
-        : "text-rose-700";
-    const display = `${f.label}`;
-
-    return (
-      <label
-        key={f.code}
-        className={`grid cursor-pointer grid-cols-[18px_1fr] items-center gap-2 px-2 py-2 ${!last ? "border-b border-gray-100" : ""
-          }`}
-      >
-        <input
-          type="radio"
-          name={name}
-          value={f.code}
-          checked={selectedCode === f.code}
-          onChange={() => onSelect(f)}
-          className="h-3.5 w-3.5 accent-gray-800"
-        />
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className={`inline-block h-2.5 w-2.5 rounded-full ${dotNeutral}`} />
-            <span className="text-[15px] font-semibold text-gray-900">
-              <Money v={f.price} />
-            </span>
-
-            {/* (i) tooltip */}
-            <span className="relative group">
-              <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-700">
-                i
-              </span>
-              <div className="pointer-events-none absolute left-0 z-30 mt-2 w-72 rounded-lg border border-gray-200 bg-white p-3 text-xs text-gray-700 opacity-0 shadow-2xl transition group-hover:opacity-100">
-                <div className="mb-1 flex items-center justify-between text-[12px]">
-                  <span className="font-semibold">
-                    {f.label} • {f.cabin || "—"}
-                  </span>
-                  <span className="font-semibold">
-                    <Money v={f.price} />
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="rounded-md bg-gray-50 p-2">
-                    <div className="text-[11px] text-gray-500">Baggage</div>
-                    <div className="mt-0.5 font-medium">
-                      {f.baggage?.handKg != null
-                        ? `${f.baggage.handKg}kg cabin`
-                        : "Cabin: airline"}
-                      <br />
-                      {f.baggage?.checkKg != null
-                        ? `${f.baggage.checkKg}kg check-in`
-                        : "Check-in: airline"}
-                    </div>
-                  </div>
-                  <div className="rounded-md bg-gray-50 p-2">
-                    <div className="text-[11px] text-gray-500">Seat</div>
-                    <div className="mt-0.5 font-medium">
-                      {f.seat || "Seat selection (paid)"}
-                    </div>
-                  </div>
-                </div>
-                <div className="absolute -top-1 left-4 h-2 w-2 rotate-45 border-l border-t border-gray-200 bg-white" />
-              </div>
-            </span>
-
-            {/* fare chip */}
-            <span
-              className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ring-1 border ${chipNeutral}`}
-            >
-              {display}
-            </span>
-
-            <span className="truncate text-[12px] text-gray-700">
-              {f.cabin || "Economy"}
-              {f.meal ? `, ${f.meal}` : ""},{" "}
-              <span className={`${refundableTone} font-medium`}>
-                {f.refundable}
-              </span>
-            </span>
-          </div>
-        </div>
-      </label>
-    );
-  };
-
-  return (
-    <div className="w-[28rem] max-w-[90vw] overflow-hidden rounded-md border border-gray-200 bg-white shadow-2xl">
-      {fares.map((f, i) => row(f, i === fares.length - 1))}
     </div>
   );
 }
@@ -849,18 +629,24 @@ function B2BRow({
 }) {
   const nav = useNavigate();
   const [tab, setTab] = useState<DetailsTab>("itinerary");
-  const [showFareMenu, setShowFareMenu] = useState(false);
 
+  // ✅ inline "show more fares" (no popup)
+  const [showAllFares, setShowAllFares] = useState(false);
 
-  const minFareObj = useMemo(
-    () =>
-      r.fares.reduce((m, f) => (f.price < m.price ? f : m), r.fares[0]),
-    [r.fares]
-  );
+  const minFareObj = useMemo(() => {
+    if (!r.fares || r.fares.length === 0) {
+      // safeguard
+      return {
+        code: "NA",
+        label: "NA",
+        price: 0,
+        refundable: r.refundable,
+      } as FareOption;
+    }
+    return r.fares.reduce((m, f) => (f.price < m.price ? f : m), r.fares[0]);
+  }, [r.fares, r.refundable]);
 
-  const [localFare, setLocalFare] = useState<FareOption>(
-    selectedFare ?? minFareObj
-  );
+  const [localFare, setLocalFare] = useState<FareOption>(selectedFare ?? minFareObj);
 
   useEffect(() => {
     setLocalFare(selectedFare ?? minFareObj);
@@ -868,48 +654,39 @@ function B2BRow({
 
   const effFare = localFare;
 
-  // total pax
+  // ✅ total pax
   const totalPax =
     (paxConfig?.adults ?? 1) +
     (paxConfig?.children ?? 0) +
     (paxConfig?.infants ?? 0);
 
+  const singleFare = effFare.price;            // per pax
+  const fullFare = effFare.price * totalPax;   // ✅ total
 
-  const singleFare = effFare.price;
-  const fullFare = effFare.price * totalPax;
-
-  const displayFare =
-    fareView === "FULL" ? fullFare : singleFare;
-
-  const MIN_VISIBLE = 1;
-
-  const visibleFares = r.fares.slice(0, MIN_VISIBLE);
-  const extraFares = r.fares.slice(MIN_VISIBLE);
+  const displayFare = fareView === "FULL" ? fullFare : singleFare;
 
   // agent details with fallback (fare → row)
   const agentNetDisplay =
-    effFare.agentFareINR != null
-      ? effFare.agentFareINR
-      : r.agentFareUSD ?? undefined;
+    effFare.agentFareINR != null ? effFare.agentFareINR : r.agentFareUSD ?? undefined;
 
   const commissionDisplay =
-    effFare.commissionINR != null
-      ? effFare.commissionINR
-      : r.commissionUSD ?? undefined;
+    effFare.commissionINR != null ? effFare.commissionINR : r.commissionUSD ?? undefined;
+
+  const chooseFare = (f: FareOption) => {
+    setLocalFare(f);
+    onSelectFare(r.id, f);
+  };
 
   const onBook = () => {
     const f = effFare;
 
     const pricing = {
       currency: "INR" as const,
-
-      singleFare: singleFare,     // 👈 per pax
-      totalFare: fullFare,        // 👈 FULL fare
-
+      singleFare: singleFare, // per pax
+      totalFare: fullFare,    // FULL fare
       perTraveller: singleFare,
-
       pax: {
-        adults: paxConfig?.adults ?? totalPax,
+        adults: paxConfig?.adults ?? 1,
         children: paxConfig?.children ?? 0,
         infants: paxConfig?.infants ?? 0,
       },
@@ -928,13 +705,12 @@ function B2BRow({
     });
   };
 
-  const chooseFare = (f: FareOption) => {
-    setLocalFare(f);
-    onSelectFare(r.id, f);
-    setShowFareMenu(false);
-  };
+  const MIN_VISIBLE = 1;
+  const visibleFares = r.fares.slice(0, MIN_VISIBLE);
+  const extraFares = r.fares.slice(MIN_VISIBLE);
 
-  const effFareDisplay = `${effFare.label}`;
+  // show either first 1 or all
+  const faresToRender = showAllFares ? r.fares : visibleFares;
 
   return (
     <div className="border border-gray-200 bg-white p-3 rounded-2xl">
@@ -961,10 +737,7 @@ function B2BRow({
             <div className="text-[11px] text-gray-500">{r.departDate}</div>
           </div>
 
-          <StraightTimeline
-            label={r.stopLabel}
-            durationMin={r.durationMin}
-          />
+          <StraightTimeline label={r.stopLabel} durationMin={r.durationMin} />
 
           <div className="text-left">
             <div className="text-[13px] text-gray-700">
@@ -977,17 +750,18 @@ function B2BRow({
           </div>
         </div>
 
-        {/* Right: price + Book + commission */}
+        {/* Right: fares inline */}
         <div className="flex flex-col gap-2">
-          {visibleFares.map((f) => (
+          {faresToRender.map((f) => (
             <label
               key={f.code}
               className={`flex cursor-pointer items-center gap-3 text-sm
-        ${effFare.code === f.code
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-300 bg-white hover:bg-gray-50"}`}
+                ${
+                  effFare.code === f.code
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-300 bg-white hover:bg-gray-50"
+                }`}
             >
-              {/* radio */}
               <input
                 type="radio"
                 name={`fare-${r.id}`}
@@ -996,40 +770,41 @@ function B2BRow({
                 className="accent-blue-600"
               />
 
-              {/* price */}
               <div className="font-bold text-gray-900">
                 <Money v={f.price} />
               </div>
 
-              {/* info icon */}
               <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-700">
                 i
               </span>
 
-              {/* badge */}
-              {f.badge?.text && (
+              {/* ✅ brand/label chip (Saver/Regular/Flex/Premium etc.) */}
+              <span
+                className={`truncate rounded px-1.5 py-0.5 text-[10px] font-semibold ring-1 border ${chipNeutral}`}
+              >
+                {f.label}
+              </span>
+
+              {/* ✅ keep badge only if present */}
+              {f.badge?.text ? (
                 <span className="rounded bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-700">
                   {f.badge.text}
                 </span>
-              )}
-
+              ) : null}
             </label>
           ))}
 
-          {/* more fares */}
+          {/* show more / show less inline */}
           {extraFares.length > 0 && (
             <button
               type="button"
-              onClick={() => setShowFareMenu(true)}
+              onClick={() => setShowAllFares((s) => !s)}
               className="self-start text-[12px] text-blue-600 hover:underline"
             >
-              +{extraFares.length} more fares
+              {showAllFares ? "Show less fares" : `+${extraFares.length} more fares`}
             </button>
           )}
         </div>
-
-
-
       </div>
 
       <hr className="my-2 border-t border-dashed border-gray-200" />
@@ -1038,13 +813,15 @@ function B2BRow({
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
         <div className="flex min-w-0 flex-1 items-center gap-2 text-[12px]">
           <span
-            className={`${r.refundable === "Refundable"
-              ? "text-emerald-700"
-              : "text-rose-700"
-              } font-medium`}
+            className={`${
+              effFare.refundable === "Refundable"
+                ? "text-emerald-700"
+                : "text-rose-700"
+            } font-medium`}
           >
-            {r.refundable}
+            {effFare.refundable}
           </span>
+
           {r.extras?.map((x) => (
             <span
               key={x}
@@ -1054,32 +831,29 @@ function B2BRow({
             </span>
           ))}
 
-
-          {showCommission &&
-            (agentNetDisplay != null || commissionDisplay != null) && (
-              <div className="mt-1 space-y-0.5 text-[11px] text-gray-700 px-3 py-1.5 bg-gray-50">
-                {agentNetDisplay != null && (
-                  <span className="mr-2">
-                    Net:{" "}
-                    <span className="font-semibold text-emerald-700">
-                      <Money v={agentNetDisplay} />
-                    </span>
+          {showCommission && (agentNetDisplay != null || commissionDisplay != null) && (
+            <div className="mt-1 space-y-0.5 text-[11px] text-gray-700 px-3 py-1.5 bg-gray-50 rounded">
+              {agentNetDisplay != null && (
+                <span className="mr-2">
+                  Net:{" "}
+                  <span className="font-semibold text-emerald-700">
+                    <Money v={agentNetDisplay} />
                   </span>
-                )}
-                {commissionDisplay != null && (
-                  <span>
-                    Your Commission:{" "}
-                    <span className="font-semibold text-orange-700">
-                      <Money v={commissionDisplay} />
-                    </span>
+                </span>
+              )}
+              {commissionDisplay != null && (
+                <span>
+                  Your Commission:{" "}
+                  <span className="font-semibold text-orange-700">
+                    <Money v={commissionDisplay} />
                   </span>
-                )}
-              </div>
-            )}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="relative flex items-center gap-2">
-
           <button
             type="button"
             onClick={onToggle}
@@ -1088,8 +862,7 @@ function B2BRow({
             Details
             <svg
               viewBox="0 0 24 24"
-              className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""
-                }`}
+              className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`}
             >
               <path d="M7 10l5 5 5-5" fill="currentColor" />
             </svg>
@@ -1097,10 +870,13 @@ function B2BRow({
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <div className="text-[12px] text-gray-600">Selected Fare</div>
+              <div className="text-[12px] text-gray-600">
+                Selected Fare {fareView === "FULL" ? "(Total)" : "(Per Pax)"}
+              </div>
               <div className="text-[18px] font-bold text-gray-900">
                 <Money v={displayFare} />
               </div>
+
               {fareView === "FULL" && totalPax > 1 && (
                 <div className="text-[11px] text-gray-600">
                   Total for {totalPax} passengers
@@ -1121,11 +897,7 @@ function B2BRow({
       {/* details card */}
       {expanded && (
         <div className="mt-2 rounded-xl border border-gray-200 p-3">
-          <DetailsHeader
-            airline={r.airline}
-            logo={r.logo}
-            flightNos={r.flightNos}
-          />
+          <DetailsHeader airline={r.airline} logo={r.logo} flightNos={r.flightNos} />
           <div className="mb-2">
             <RowTabs active={tab} onChange={setTab} />
           </div>
@@ -1173,7 +945,7 @@ export default function OnewayResultList({
   onSelectFare,
   onEmpty,
   paxConfig,
-  showCommission = false, // parent se control
+  showCommission = false,
   fareView,
 }: {
   rows: Row[];
@@ -1201,14 +973,8 @@ export default function OnewayResultList({
           key={r.id}
           r={r}
           expanded={expandedId === r.id}
-          onToggle={() =>
-            setExpandedId(expandedId === r.id ? null : r.id)
-          }
-          selectedFare={
-            selectedGlobal?.flightId === r.id
-              ? selectedGlobal.fare
-              : null
-          }
+          onToggle={() => setExpandedId(expandedId === r.id ? null : r.id)}
+          selectedFare={selectedGlobal?.flightId === r.id ? selectedGlobal.fare : null}
           onSelectFare={onSelectFare}
           paxConfig={paxConfig}
           showCommission={showCommission}
