@@ -943,7 +943,7 @@ function shareOnEmail(text: string) {
     <div className="mx-auto">
       <div className="min-h-screen">
         <motion.div
-          className="mt-3 mb-3 sticky top-[110px] z-20 px-4 mx-auto max-w-7xl"
+          className="mt-3 mb-3 md:sticky md:top-[110px] z-20 px-4 mx-auto max-w-7xl"
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
