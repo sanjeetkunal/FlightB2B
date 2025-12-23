@@ -233,33 +233,38 @@ export default function FromToBar({ onSearch }) {
   };
 
   /* ---------------- RENDER ---------------- */
-  return (
-    <div className="space-y-4 relative">
+   return (
+    <div className="relative">
       {/* Error Toast */}
       {errorMsg && (
-        <div className="absolute right-0 top-0 z-10">
-          <div className="rounded-lg bg-red-500 px-4 py-2 text-sm text-white shadow">
+        <div className="absolute right-0 top-0 z-20">
+          <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-700 shadow">
             {errorMsg}
           </div>
         </div>
       )}
 
       {/* Trip Type */}
-      <div className="flex gap-3">
-        {["oneway", "round"].map((k) => (
-          <button
-            key={k}
-            onClick={() => setTrip(k)}
-            className={`rounded-full border px-4 py-1 text-sm font-medium cursor-pointer ${
-              trip === k ? "bg-black text-white border-black" : "bg-white border-gray-400"
-            }`}
-          >
-            {k === "oneway" ? "One Way" : "Round Trip"}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 shadow-sm">
+          {["oneway", "round"].map((k) => (
+            <button
+              key={k}
+              onClick={() => setTrip(k)}
+              className={[
+                "rounded-full px-4 py-1.5 text-sm font-semibold transition",
+                trip === k
+                  ? "bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow"
+                  : "text-slate-600 hover:text-slate-900",
+              ].join(" ")}
+            >
+              {k === "oneway" ? "One Way" : "Round Trip"}
+            </button>
+          ))}
+        </div>
 
         {trip === "round" && sector === "intl" && (
-          <label className="ml-4 flex items-center gap-2 text-sm font-medium">
+          <label className="ml-2 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm">
             <input
               type="checkbox"
               checked={specialFare}
@@ -271,70 +276,83 @@ export default function FromToBar({ onSearch }) {
         )}
       </div>
 
-      {/* Fields */}
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-[2fr_0.1fr_2fr_1.2fr_1.2fr_1.6fr_auto]">
-        <AirportSelect label="From" value={fromAP} onChange={setFromAP} />
+      {/* Fields wrapper (enterprise) */}
+      <div className="mt-3 rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 via-white to-blue-50 p-3 shadow-[0_10px_26px_rgba(2,6,23,0.08)]">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-[2fr_0.12fr_2fr_1.2fr_1.2fr_1.6fr_auto]">
+          <AirportSelect label="From" value={fromAP} onChange={setFromAP} />
 
-        <div className="relative hidden md:block">
-          <div className="mx-auto h-8 w-px bg-gray-300" />
+          {/* Swap */}
+          <div className="relative hidden md:block">
+            <div className="mx-auto h-9 w-px bg-slate-200" />
+            <button
+              onClick={swap}
+              type="button"
+              className="
+                absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+                h-10 w-10 rounded-full border border-slate-200 bg-white
+                shadow-sm hover:shadow-md hover:border-blue-200 transition
+                text-slate-700
+              "
+              title="Swap"
+            >
+              ⇄
+            </button>
+          </div>
+
+          <AirportSelect label="To" value={toAP} onChange={setToAP} />
+
+          <DateField label="Departure" value={depart} onChange={setDepart} offsetDays={0} />
+
+          <DateField
+            label="Return"
+            value={ret}
+            onChange={setRet}
+            disabled={trip !== "round"}
+            offsetDays={1}
+          />
+
+          <div className="relative">
+            <TravellersField
+              label="Travellers & Class"
+              text={travellersLabel}
+              onClick={() => setOpenTC((v) => !v)}
+            />
+            <TravellerClassPicker
+              open={openTC}
+              value={tc}
+              onChange={setTc}
+              onClose={() => setOpenTC(false)}
+            />
+          </div>
+
+          {/* Search button */}
           <button
-            onClick={swap}
-            className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full border bg-white shadow"
+            onClick={handleSearch}
+            aria-label="Search flights"
+            title="Search"
+            className="
+              flex h-[56px] w-[56px] items-center justify-center rounded-2xl
+              bg-gradient-to-br from-blue-600 to-indigo-600 text-white
+              shadow-[0_10px_20px_rgba(37,99,235,0.25)]
+              hover:from-blue-700 hover:to-indigo-700 transition
+            "
           >
-            ⇄
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+              stroke="currentColor"
+              className="h-6 w-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-4.35-4.35m1.1-5.4a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z"
+              />
+            </svg>
           </button>
         </div>
-
-        <AirportSelect label="To" value={toAP} onChange={setToAP} />
-
-        {/* ✅ default today */}
-        <DateField label="Departure" value={depart} onChange={setDepart} offsetDays={0} />
-
-        {/* ✅ round trip => default next day (only when enabled & value empty) */}
-        <DateField
-          label="Return"
-          value={ret}
-          onChange={setRet}
-          disabled={trip !== "round"}
-          offsetDays={1}
-        />
-
-        <div className="relative">
-          <TravellersField
-            label="Travellers & Class"
-            text={travellersLabel}
-            onClick={() => setOpenTC((v) => !v)}
-          />
-          <TravellerClassPicker
-            open={openTC}
-            value={tc}
-            onChange={setTc}
-            onClose={() => setOpenTC(false)}
-          />
-        </div>
-
-        <button
-          onClick={handleSearch}
-          aria-label="Search flights"
-          title="Search"
-          className="flex h-[56px] w-[56px] items-center justify-center rounded-xl
-             bg-blue-600 text-white hover:bg-blue-700 transition cursor-pointer"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="2"
-            stroke="currentColor"
-            className="h-6 w-6"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 21l-4.35-4.35m1.1-5.4a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z"
-            />
-          </svg>
-        </button>
       </div>
     </div>
   );
