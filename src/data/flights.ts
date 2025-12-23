@@ -1132,3 +1132,28 @@ export function searchRoundTrip(input: RoundTripInput): RoundTripResult {
     }),
   };
 }
+
+export function getMinFareByDate(input: SearchInput): Map<string, number> {
+  const from = input.fromIata.toUpperCase();
+  const to = input.toIata.toUpperCase();
+  const cabin = normCabin(input.cabin);
+
+  // route+optional cabin match karke date-wise min fare nikalo
+  const map = new Map<string, number>();
+
+  for (const row of FLIGHTS) {
+    if (row.fromIata !== from || row.toIata !== to) continue;
+
+    const fares = cabin ? row.fares.filter((f) => f.cabin === cabin) : row.fares;
+    if (!fares.length) continue;
+
+    const rowMin = Math.min(...fares.map((f) => f.totalINR));
+    const d = row.departDate;
+
+    const prev = map.get(d);
+    if (prev == null || rowMin < prev) map.set(d, rowMin);
+  }
+
+  return map;
+}
+

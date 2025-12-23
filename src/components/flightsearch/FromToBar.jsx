@@ -1,19 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { AIRPORTS } from "../../data/airports";
 import AirportSelect from "../flightsearch/AirportSelect";
 import DateField from "../flightsearch/DateField";
 import TravellersField from "../flightsearch/TravellersField";
 import TravellerClassPicker from "../flightsearch/TravellerClassPicker";
 
-
-
 /* ---------------- RECENT SEARCH HELPERS ---------------- */
 const RECENT_KEY = "flight_recent_searches";
 
 const getRecentSearches = () => {
   try {
-    return JSON.parse(localStorage.getItem(RECENT_KEY)) || [];
+    return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
   } catch {
     return [];
   }
@@ -21,8 +19,6 @@ const getRecentSearches = () => {
 
 const saveRecentSearch = (item) => {
   const prev = getRecentSearches();
-
-  // remove exact duplicates
   const filtered = prev.filter(
     (x) =>
       !(
@@ -39,17 +35,14 @@ const saveRecentSearch = (item) => {
 
 export default function FromToBar({ onSearch }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   /* ---------------- STATES ---------------- */
   const [trip, setTrip] = useState("oneway"); // oneway | round
   const [sector, setSector] = useState("dom"); // dom | intl
 
-  const [fromAP, setFromAP] = useState(
-    AIRPORTS.find((a) => a.code === "DEL") || null
-  );
-  const [toAP, setToAP] = useState(
-    AIRPORTS.find((a) => a.code === "BOM") || null
-  );
+  const [fromAP, setFromAP] = useState(AIRPORTS.find((a) => a.code === "DEL") || null);
+  const [toAP, setToAP] = useState(AIRPORTS.find((a) => a.code === "BOM") || null);
 
   const [depart, setDepart] = useState("");
   const [ret, setRet] = useState("");
@@ -68,10 +61,7 @@ export default function FromToBar({ onSearch }) {
   const [recentSearches, setRecentSearches] = useState([]);
 
   /* ---------------- CONSTANTS ---------------- */
-  const INDIA_IATAS = [
-    "DEL","BOM","BLR","MAA","HYD","CCU",
-    "AMD","COK","GOI","PNQ","GAU","TRV",
-  ];
+  const INDIA_IATAS = ["DEL","BOM","BLR","MAA","HYD","CCU","AMD","COK","GOI","PNQ","GAU","TRV"];
 
   /* ---------------- DERIVED ---------------- */
   const total = tc.adults + tc.children + tc.infants;
@@ -83,18 +73,67 @@ export default function FromToBar({ onSearch }) {
 
   /* ---------------- EFFECTS ---------------- */
 
-  // Load recent searches on mount
+  // ✅ 1) Load recent searches on mount
   useEffect(() => {
     setRecentSearches(getRecentSearches());
   }, []);
+
+  // ✅ 2) HYDRATE STATE FROM URL (Modify Search binding fix)
+  useEffect(() => {
+    const qs = new URLSearchParams(location.search);
+    if (![...qs.keys()].length) return;
+
+    const tripParam = qs.get("trip"); // on results page: oneway | roundtrip
+    const isRound = tripParam === "roundtrip";
+    setTrip(isRound ? "round" : "oneway");
+
+    const from = qs.get("from");
+    const to = qs.get("to");
+    const fromObj = from ? AIRPORTS.find((a) => a.code === from) : null;
+    const toObj = to ? AIRPORTS.find((a) => a.code === to) : null;
+    if (fromObj) setFromAP(fromObj);
+    if (toObj) setToAP(toObj);
+
+    // dates
+    if (isRound) {
+      const d = qs.get("depart") || "";
+      const r = qs.get("return") || "";
+      setDepart(d);
+      setRet(r);
+    } else {
+      const d = qs.get("date") || "";
+      setDepart(d);
+      setRet("");
+    }
+
+    // pax + cabin
+    const adt = Number(qs.get("adt") || "1");
+    const chd = Number(qs.get("chd") || "0");
+    const inf = Number(qs.get("inf") || "0");
+    const cabin = qs.get("cabin") || "Economy";
+    setTc((prev) => ({
+      ...prev,
+      adults: Number.isFinite(adt) ? adt : 1,
+      children: Number.isFinite(chd) ? chd : 0,
+      infants: Number.isFinite(inf) ? inf : 0,
+      cabin,
+    }));
+
+    // sector (if present), else auto detect will handle below
+    const sec = qs.get("sector"); // dom|intl (your code uses dom/intl)
+    if (sec === "dom" || sec === "intl") setSector(sec);
+
+    // special fare (intl roundtrip)
+    const fare = qs.get("fare"); // "special"
+    setSpecialFare(fare === "special");
+  }, [location.search]);
 
   // Detect sector + auto special fare
   useEffect(() => {
     if (!fromAP || !toAP) return;
 
     const isInternational =
-      !INDIA_IATAS.includes(fromAP.code) ||
-      !INDIA_IATAS.includes(toAP.code);
+      !INDIA_IATAS.includes(fromAP.code) || !INDIA_IATAS.includes(toAP.code);
 
     if (isInternational) {
       setSector("intl");
@@ -163,15 +202,12 @@ export default function FromToBar({ onSearch }) {
       params.set("return", ret);
       dateLabel = `${depart} → ${ret}`;
 
-      if (sector === "intl" && specialFare) {
-        params.set("fare", "special");
-      }
+      if (sector === "intl" && specialFare) params.set("fare", "special");
     } else {
       params.set("date", depart);
       dateLabel = depart;
     }
 
-    // SAVE RECENT SEARCH
     saveRecentSearch({
       from: fromAP.code,
       to: toAP.code,
@@ -215,9 +251,7 @@ export default function FromToBar({ onSearch }) {
             key={k}
             onClick={() => setTrip(k)}
             className={`rounded-full border px-4 py-1 text-sm font-medium cursor-pointer ${
-              trip === k
-                ? "bg-black text-white border-black"
-                : "bg-white border-gray-400"
+              trip === k ? "bg-black text-white border-black" : "bg-white border-gray-400"
             }`}
           >
             {k === "oneway" ? "One Way" : "Round Trip"}
@@ -252,8 +286,18 @@ export default function FromToBar({ onSearch }) {
         </div>
 
         <AirportSelect label="To" value={toAP} onChange={setToAP} />
-        <DateField label="Departure" value={depart} onChange={setDepart} />
-        <DateField label="Return" value={ret} onChange={setRet} disabled={trip !== "round"} />
+
+        {/* ✅ default today */}
+        <DateField label="Departure" value={depart} onChange={setDepart} offsetDays={0} />
+
+        {/* ✅ round trip => default next day (only when enabled & value empty) */}
+        <DateField
+          label="Return"
+          value={ret}
+          onChange={setRet}
+          disabled={trip !== "round"}
+          offsetDays={1}
+        />
 
         <div className="relative">
           <TravellersField
@@ -270,31 +314,28 @@ export default function FromToBar({ onSearch }) {
         </div>
 
         <button
-  onClick={handleSearch}
-  aria-label="Search flights"
-  title="Search"
-  className="flex h-[56px] w-[56px] items-center justify-center rounded-xl
+          onClick={handleSearch}
+          aria-label="Search flights"
+          title="Search"
+          className="flex h-[56px] w-[56px] items-center justify-center rounded-xl
              bg-blue-600 text-white hover:bg-blue-700 transition cursor-pointer"
->
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth="2"
-    stroke="currentColor"
-    className="h-6 w-6"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M21 21l-4.35-4.35m1.1-5.4a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z"
-    />
-  </svg>
-</button>
-
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+            stroke="currentColor"
+            className="h-6 w-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 21l-4.35-4.35m1.1-5.4a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z"
+            />
+          </svg>
+        </button>
       </div>
-
-   
     </div>
   );
 }

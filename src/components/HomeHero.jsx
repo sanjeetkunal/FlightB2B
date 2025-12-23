@@ -93,12 +93,7 @@ export default function HomeHero() {
                 className="hidden sm:block w-70 object-contain transform transition-transform duration-300 ease-out hover:scale-105 relative z-10"
               />
 
-              {/* Mobile fallback image */}
-              <img
-                src={ifs}
-                alt="world landmarks collage"
-                className="block sm:hidden w-full h-full object-cover relative z-10"
-              />
+            
             </motion.div>
           </div>
         </div>

@@ -1,5 +1,5 @@
-// src/components/layout/Header.jsx (or wherever your Header lives)
-import { useEffect, useRef, useState } from "react";
+// src/components/layout/Header.jsx
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/media/logo.png";
 
@@ -18,6 +18,18 @@ export default function Header({ variant = "private" }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
 
+  // ✅ detect desktop for hover behavior
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(min-width: 768px)").matches : true
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const onChange = (e) => setIsDesktop(e.matches);
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
+  }, []);
+
   const walletRef = useRef(null);
   const profileRef = useRef(null);
   const notifRef = useRef(null);
@@ -28,41 +40,37 @@ export default function Header({ variant = "private" }) {
     setNotifOpen(false);
   };
 
-  // ✅ Close dropdowns on outside click
+  // ✅ Close dropdowns on outside click (useful for mobile click mode)
   useEffect(() => {
     const onDoc = (e) => {
-      if (walletRef.current && !walletRef.current.contains(e.target)) {
-        setWalletOpen(false);
-      }
-      if (profileRef.current && !profileRef.current.contains(e.target)) {
-        setProfileOpen(false);
-      }
-      if (notifRef.current && !notifRef.current.contains(e.target)) {
-        setNotifOpen(false);
-      }
+      if (walletRef.current && !walletRef.current.contains(e.target)) setWalletOpen(false);
+      if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
+      if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
     };
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
-  // ✅ Close dropdowns on route change (THIS fixes your issue)
+  // ✅ Close dropdowns on route change
   useEffect(() => {
     closeAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
-  const tabs = [
-    { key: "flights", label: "Flights", icon: AirplaneIcon },
-    { key: "hotels", label: "Hotels", icon: HotelIcon },
-    { key: "trains", label: "Trains", icon: TrainIcon },
-    { key: "buses", label: "Buses", icon: BusIcon },
-  ];
+  const tabs = useMemo(
+    () => [
+      { key: "flights", label: "Flights", icon: AirplaneIcon },
+      { key: "hotels", label: "Hotels", icon: HotelIcon },
+      { key: "trains", label: "Trains", icon: TrainIcon },
+      { key: "buses", label: "Buses", icon: BusIcon },
+    ],
+    []
+  );
 
   // mock data — wire to real later
   const agency = { name: "Sanjeet Kunal", agentId: "V2A-2217", kyc: "Verified" };
   const wallet = { balance: 45230.0, currency: "₹", creditLimit: 200000 };
 
-  // Logout -> clear storage + go to login
   const handleLogout = () => {
     try {
       localStorage.removeItem("tyb_user");
@@ -72,11 +80,43 @@ export default function Header({ variant = "private" }) {
     navigate("/login", { replace: true });
   };
 
-  // public top links trimmed (top bar anyway hidden on public)
   const topLinks = isPublic ? ["Support", "Help"] : ["Manage", "Reports", "Support", "Help"];
 
-  // ✅ Mutually exclusive toggles
+  // ✅ Safe navigate wrapper that closes dropdowns first
+  const go = (path, opts) => {
+    closeAll();
+    navigate(path, opts);
+  };
+
+  // ✅ desktop hover handlers
+  const hoverOpen = (which) => {
+    if (!isDesktop) return;
+    if (which === "wallet") {
+      setWalletOpen(true);
+      setProfileOpen(false);
+      setNotifOpen(false);
+    }
+    if (which === "profile") {
+      setProfileOpen(true);
+      setWalletOpen(false);
+      setNotifOpen(false);
+    }
+    if (which === "notif") {
+      setNotifOpen(true);
+      setWalletOpen(false);
+      setProfileOpen(false);
+    }
+  };
+  const hoverClose = (which) => {
+    if (!isDesktop) return;
+    if (which === "wallet") setWalletOpen(false);
+    if (which === "profile") setProfileOpen(false);
+    if (which === "notif") setNotifOpen(false);
+  };
+
+  // ✅ mobile click toggles
   const toggleWallet = () => {
+    if (isDesktop) return;
     setWalletOpen((v) => {
       const next = !v;
       if (next) {
@@ -87,6 +127,7 @@ export default function Header({ variant = "private" }) {
     });
   };
   const toggleProfile = () => {
+    if (isDesktop) return;
     setProfileOpen((v) => {
       const next = !v;
       if (next) {
@@ -97,6 +138,7 @@ export default function Header({ variant = "private" }) {
     });
   };
   const toggleNotif = () => {
+    if (isDesktop) return;
     setNotifOpen((v) => {
       const next = !v;
       if (next) {
@@ -107,12 +149,6 @@ export default function Header({ variant = "private" }) {
     });
   };
 
-  // ✅ Safe navigate wrapper that closes dropdowns first
-  const go = (path, opts) => {
-    closeAll();
-    navigate(path, opts);
-  };
-
   return (
     <header className="bg-white sticky top-0 z-30">
       {/* TOP BAR – only after login */}
@@ -120,13 +156,11 @@ export default function Header({ variant = "private" }) {
         <div className="hidden sm:block bg-black text-white">
           <div className="mx-auto max-w-7xl px-0 sm:px-0 lg:px-0">
             <div className="h-11 flex items-center justify-between gap-3 px-4">
-              {/* Contact Info */}
               <div className="flex items-center gap-6 text-sm">
                 <span>📞 +91-9876543210</span>
                 <span>✉️ support@yourdomain.com</span>
               </div>
 
-              {/* Quick links */}
               <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
                 {topLinks.map((l) => (
                   <a key={l} href="#" className="hover:text-blue-400 transition-colors">
@@ -135,7 +169,6 @@ export default function Header({ variant = "private" }) {
                 ))}
               </nav>
 
-              {/* Mobile chip */}
               <button className="md:hidden h-8 px-3 rounded-full border border-white text-xs font-semibold">
                 Menu
               </button>
@@ -148,16 +181,18 @@ export default function Header({ variant = "private" }) {
       <div className="border border-gray-200">
         <div className="mx-auto max-w-7xl px-0 sm:px-0 lg:px-0">
           <div className="h-16 flex items-center justify-between px-4">
-            {/* Left: Logo */}
+            {/* Left: Logo (✅ mobile also visible) */}
             <div className="flex items-center gap-3 min-w-0">
               <button
                 onClick={() => go(isPublic ? "/login" : "/")}
                 className="flex items-center gap-3"
                 aria-label="Go home"
               >
-                <div className="text-2xl font-extrabold text-orange-500 tracking-tight hidden sm:block">
-                  <img src={logo} className="w-[260px]" alt="Logo" />
-                </div>
+                <img
+                  src={logo}
+                  className="w-36 sm:w-[260px] object-contain"
+                  alt="Logo"
+                />
                 <div className="hidden sm:block w-px h-6 bg-gray-200" />
               </button>
             </div>
@@ -165,7 +200,6 @@ export default function Header({ variant = "private" }) {
             {/* Right section */}
             <div className="flex items-center gap-4">
               {isPublic ? (
-                /* 🔸 BEFORE LOGIN: Only "Become an Agent" button */
                 <button
                   onClick={() => go("/agent-register")}
                   className="h-10 px-4 inline-flex items-center justify-center rounded-full bg-orange-500 text-white text-sm font-semibold shadow-sm hover:bg-orange-600"
@@ -174,7 +208,7 @@ export default function Header({ variant = "private" }) {
                 </button>
               ) : (
                 <>
-                  {/* Tabs moved to RIGHT side (only after login) */}
+                  {/* ✅ Tabs show only on desktop, hidden on mobile */}
                   <nav className="hidden md:flex items-center gap-3 overflow-x-auto">
                     {tabs.map((t) => {
                       const isActive = active === t.key;
@@ -190,31 +224,38 @@ export default function Header({ variant = "private" }) {
                           ].join(" ")}
                         >
                           <span className="whitespace-nowrap">{t.label}</span>
-                          {t.badge && (
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-600 text-white">
-                              {t.badge}
-                            </span>
-                          )}
                         </button>
                       );
                     })}
                   </nav>
 
-                  {/* Wallet, Notifications, Profile — only after login */}
+                  {/* Wallet, Notifications, Profile */}
                   <div className="flex items-center gap-2">
-                    {/* Wallet */}
-                    <div className="relative" ref={walletRef}>
+                    {/* Wallet (✅ mobile icon only, desktop full) */}
+                    <div
+                      className="relative"
+                      ref={walletRef}
+                      onMouseEnter={() => hoverOpen("wallet")}
+                      onMouseLeave={() => hoverClose("wallet")}
+                    >
                       <button
                         onClick={toggleWallet}
                         className="h-10 px-3 inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer"
                         title="Wallet"
+                        type="button"
                       >
                         <WalletIcon className="w-4 h-4" />
-                        <span className="text-sm font-semibold">
-                          {wallet.currency}
-                          {formatMoney(wallet.balance)}
-                        </span>
-                        <span className="text-[10px] text-gray-500 hidden sm:inline">Wallet</span>
+                        {isDesktop && (
+                          <>
+                            <span className="text-sm font-semibold">
+                              {wallet.currency}
+                              {formatMoney(wallet.balance)}
+                            </span>
+                            <span className="text-[10px] text-gray-500 hidden sm:inline">
+                              Wallet
+                            </span>
+                          </>
+                        )}
                       </button>
 
                       {walletOpen && (
@@ -230,6 +271,7 @@ export default function Header({ variant = "private" }) {
                             <button
                               className="px-3 py-2 rounded-lg bg-blue-500 text-white text-sm font-semibold hover:bg-gray-700"
                               onClick={() => go("/admin/wallet/add-funds")}
+                              type="button"
                             >
                               Add Funds
                             </button>
@@ -259,11 +301,17 @@ export default function Header({ variant = "private" }) {
                     </div>
 
                     {/* Notifications */}
-                    <div className="relative" ref={notifRef}>
+                    <div
+                      className="relative"
+                      ref={notifRef}
+                      onMouseEnter={() => hoverOpen("notif")}
+                      onMouseLeave={() => hoverClose("notif")}
+                    >
                       <button
                         onClick={toggleNotif}
                         className="h-10 w-10 inline-grid place-items-center rounded-xl border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer"
                         aria-label="Notifications"
+                        type="button"
                       >
                         <BellIcon className="w-4 h-4" />
                       </button>
@@ -280,21 +328,29 @@ export default function Header({ variant = "private" }) {
                       )}
                     </div>
 
-                    {/* Profile */}
-                    <div className="relative" ref={profileRef}>
+                    {/* Profile (✅ mobile avatar only, desktop full + hover dropdown) */}
+                    <div
+                      className="relative"
+                      ref={profileRef}
+                      onMouseEnter={() => hoverOpen("profile")}
+                      onMouseLeave={() => hoverClose("profile")}
+                    >
                       <button
                         onClick={toggleProfile}
-                        className="h-10 px-3 inline-flex items-center gap-3 rounded-xl bg-white hover:bg-gray-50 cursor-pointer"
+                        className="h-10 px-0 md:px-3 inline-flex items-center gap-3 rounded-xl bg-white hover:bg-gray-50 cursor-pointer"
+                        type="button"
                       >
                         <Avatar />
-                        <div className="text-left">
-                          <div className="text-sm font-semibold leading-tight truncate max-w-[10rem]">
-                            {agency.name}
+                        {isDesktop && (
+                          <div className="text-left">
+                            <div className="text-sm font-semibold leading-tight truncate max-w-[10rem]">
+                              {agency.name}
+                            </div>
+                            <div className="text-[11px] text-gray-500 leading-tight">
+                              ID: {agency.agentId}
+                            </div>
                           </div>
-                          <div className="text-[11px] text-gray-500 leading-tight">
-                            ID: {agency.agentId}
-                          </div>
-                        </div>
+                        )}
                       </button>
 
                       {profileOpen && (
@@ -314,9 +370,7 @@ export default function Header({ variant = "private" }) {
                           </div>
 
                           <div className="border-t my-2 border-gray-200" />
-                          <MenuLink onClick={() => go("/agency-settings")}>
-                            My Profile
-                          </MenuLink>
+                          <MenuLink onClick={() => go("/agency-settings")}>My Profile</MenuLink>
                           <MenuLink onClick={() => go("/agency-settings")}>
                             Agency Settings
                           </MenuLink>
@@ -335,30 +389,7 @@ export default function Header({ variant = "private" }) {
             </div>
           </div>
 
-          {/* Mobile product scroller – only after login */}
-          {!isPublic && (
-            <div className="md:hidden py-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
-              {tabs.map((t) => {
-                const Icon = t.icon;
-                const isActive = active === t.key;
-                return (
-                  <button
-                    key={t.key}
-                    onClick={() => setActive(t.key)}
-                    className={[
-                      "px-3 h-8 inline-flex items-center gap-2 rounded-full border text-xs font-semibold",
-                      isActive
-                        ? "border-blue-600 text-blue-700 bg-blue-50"
-                        : "border-gray-200 text-gray-700",
-                    ].join(" ")}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {t.label}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          {/* ✅ REMOVED: Mobile tabs scroller (Flights/Hotels/Trains/Buses hide on mobile) */}
         </div>
       </div>
     </header>

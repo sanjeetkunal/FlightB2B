@@ -1,10 +1,38 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import FieldShell from "../flightsearch/FieldShell";
 import MultiMonthDatePicker from "../flightsearch/MultiMonthDatePicker";
 
-export default function DateField({ label, value, onChange, disabled }) {
+const toYMD = (d) => {
+  const y = d.getFullYear();
+  const m = `${d.getMonth() + 1}`.padStart(2, "0");
+  const day = `${d.getDate()}`.padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
+// ✅ safer parse for "YYYY-MM-DD" (avoid timezone/Invalid Date issues)
+const parseYMD = (v) => {
+  if (!v) return null;
+  const d = new Date(`${v}T00:00:00`);
+  return Number.isNaN(d.getTime()) ? null : d;
+};
+
+export default function DateField({ label, value, onChange, disabled, offsetDays = 0 }) {
   const [open, setOpen] = useState(false);
-  const valDate = value ? new Date(value) : null;
+
+  // ✅ set default date only once when value empty and not disabled
+  useEffect(() => {
+    if (disabled) return;
+    if (value) return;
+
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + offsetDays);
+    onChange(toYMD(d));
+    // intentionally omit onChange from deps (parent may pass new ref)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, disabled, offsetDays]);
+
+  const valDate = useMemo(() => parseYMD(value), [value]);
 
   const fmt = useMemo(
     () =>
@@ -20,12 +48,10 @@ export default function DateField({ label, value, onChange, disabled }) {
 
   const handlePick = (d) => {
     if (!d) return;
-    const y = d.getFullYear();
-    const m = `${d.getMonth() + 1}`.padStart(2, "0");
-    const day = `${d.getDate()}`.padStart(2, "0");
-
-    onChange(`${y}-${m}-${day}`);
-    setOpen(false); // date pick hote hi calendar close
+    const x = new Date(d);
+    x.setHours(0, 0, 0, 0);
+    onChange(toYMD(x));
+    setOpen(false);
   };
 
   return (
@@ -43,14 +69,13 @@ export default function DateField({ label, value, onChange, disabled }) {
         <span className="ml-2" />
       </FieldShell>
 
-      {/* Multi-month calendar popover */}
       <MultiMonthDatePicker
         open={open && !disabled}
         value={valDate}
         onChange={handlePick}
         onClose={() => setOpen(false)}
-        months={2}            // 3 karna ho to yahan change
-        minDate={new Date()}  // aaj se pehle sab block
+        months={2}
+        minDate={new Date()}
         className="right-0 z-30"
       />
     </div>

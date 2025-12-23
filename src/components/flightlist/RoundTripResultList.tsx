@@ -104,7 +104,6 @@ function safeStopsLabel(row: RowRT) {
 
 function pickCurrentFare(row: RowRT, selected: Selected) {
   if (selected?.flightId === row.id) return selected.fare;
-  // ✅ intentionally NO default selection per card
   return undefined;
 }
 
@@ -159,10 +158,72 @@ function InfoDot({ title }: { title: string }) {
   );
 }
 
+/* ================= SHARE ICONS (NO DROPDOWN) ================= */
+
+function IconButton({
+  title,
+  onClick,
+  children,
+  disabled,
+}: {
+  title: string;
+  onClick: () => void;
+  children: React.ReactNode;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className={cn(
+        "h-9 w-9 rounded-lg border border-gray-300 bg-white grid place-items-center hover:bg-gray-50",
+        disabled && "opacity-50 cursor-not-allowed"
+      )}
+      aria-label={title}
+    >
+      {children}
+    </button>
+  );
+}
+
+function WhatsAppIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M12 2a10 10 0 0 0-8.7 15l-1.1 4 4.1-1.1A10 10 0 1 0 12 2zm5.8 14.5c-.2.6-1 1.1-1.6 1.2-.4.1-.9.1-1.5-.1-.4-.1-.9-.3-1.6-.6-2.7-1.2-4.4-4-4.5-4.2-.1-.2-1.1-1.4-1.1-2.7 0-1.2.6-1.8.8-2 .2-.2.5-.3.7-.3h.5c.1 0 .3 0 .4.4.2.5.6 1.7.7 1.8.1.2.1.3 0 .5-.1.2-.2.3-.3.4-.2.2-.3.3-.5.5-.2.2-.3.4-.1.7.2.3.8 1.3 1.7 2.1 1.2 1 2.2 1.3 2.5 1.5.3.1.5.1.7-.1.2-.2.8-.9 1-1.2.2-.3.4-.2.6-.1.2.1 1.5.7 1.8.8.3.1.5.2.6.3.1.1.1.6-.1 1.2z"
+      />
+    </svg>
+  );
+}
+
+function MailIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5L4 8V6l8 5 8-5v2z"
+      />
+    </svg>
+  );
+}
+
+function CopyIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M16 1H4c-1.1 0-2 .9-2 2v12h2V3h12V1zm4 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h12v14z"
+      />
+    </svg>
+  );
+}
+
 /* ================= TIMELINE (SCREENSHOT STYLE) ================= */
 
 function StopsRail({ stops }: { stops: number }) {
-  // ✅ Non-stop => NO dot
   if (stops <= 0) {
     return (
       <div className="relative flex items-center justify-center">
@@ -199,7 +260,6 @@ function StopsRail({ stops }: { stops: number }) {
 function TimelineRow({ row }: { row: RowRT }) {
   return (
     <div className="flex items-start gap-3 min-w-0">
-      {/* Left */}
       <div className="shrink-0">
         <div className="text-[12px] leading-none font-extrabold text-gray-900">{row.departTime}</div>
         <div className="mt-1 text-[12px] text-gray-700">
@@ -208,7 +268,6 @@ function TimelineRow({ row }: { row: RowRT }) {
         {row.departDate && <div className="mt-0.5 text-[11px] text-gray-500">{row.departDate}</div>}
       </div>
 
-      {/* Middle */}
       <div className="min-w-[140px] flex-1">
         <div className="text-center">
           <div className="text-[11px] font-semibold text-gray-700">{safeStopsLabel(row)}</div>
@@ -225,7 +284,6 @@ function TimelineRow({ row }: { row: RowRT }) {
         </div>
       </div>
 
-      {/* Right */}
       <div className="shrink-0 text-right">
         <div className="text-[12px] leading-none font-extrabold text-gray-900">{row.arriveTime}</div>
         <div className="mt-1 text-[12px] text-gray-700">
@@ -244,11 +302,13 @@ function FareRadioList({
   currentFare,
   onPickFare,
   limit = 4,
+  groupName,
 }: {
   row: RowRT;
   currentFare?: FareRT | null;
   onPickFare: (fare: FareRT) => void;
   limit?: number;
+  groupName: string;
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -272,7 +332,7 @@ function FareRadioList({
               <div className="flex items-center gap-3">
                 <input
                   type="radio"
-                  name={`fare-${row.id}`}
+                  name={groupName}
                   checked={checked}
                   onChange={() => onPickFare(f)}
                   className="h-4 w-4"
@@ -313,11 +373,22 @@ function LegCard({
   selected,
   onPickFare,
   showCommission,
+  groupName,
+
+  // ✅ Share props
+  shareMode,
+  isSelected,
+  onToggleSelect,
 }: {
   row: RowRT;
   selected: Selected;
   onPickFare: (fare: FareRT) => void;
   showCommission: boolean;
+  groupName: string;
+
+  shareMode: boolean;
+  isSelected: boolean;
+  onToggleSelect: (rowId: string) => void;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -334,8 +405,26 @@ function LegCard({
     .join(" • ");
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
-      {/* Header */}
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md relative">
+      {/* ✅ Share checkbox (top-left) */}
+      {shareMode && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSelect(row.id);
+          }}
+          className={cn(
+            "absolute left-3 top-3 z-10 h-6 w-6 rounded-md border grid place-items-center text-xs font-extrabold",
+            isSelected ? "border-indigo-600 bg-indigo-600 text-white" : "border-gray-300 bg-white text-gray-300"
+          )}
+          aria-label="Select to share"
+          title="Select to share"
+        >
+          ✓
+        </button>
+      )}
+
       <div className="border-b border-gray-100 px-4 py-3">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3 min-w-0">
@@ -346,24 +435,20 @@ function LegCard({
             </div>
           </div>
 
-          {/* timeline in header area (as per your current UI) */}
           <div className="min-w-0">
             <TimelineRow row={row} />
           </div>
         </div>
       </div>
 
-      {/* Body */}
       <div className="px-4 py-4">
         <div className="grid grid-cols-12 gap-4 items-start">
-          {/* Left: fare radios (only 2 visible by default) */}
           <div className="col-span-12 lg:col-span-7">
             <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-500">Fare option</div>
 
-            <FareRadioList row={row} currentFare={currentFare} onPickFare={onPickFare} limit={2} />
+            <FareRadioList row={row} currentFare={currentFare} onPickFare={onPickFare} limit={2} groupName={groupName} />
           </div>
 
-          {/* Right: Refundable + View details (+ B2B) */}
           <div className="col-span-12 lg:col-span-5">
             <div className="flex items-start justify-between gap-3 lg:flex-col lg:items-end">
               <div className="w-full lg:w-auto lg:text-right">
@@ -372,17 +457,12 @@ function LegCard({
                     <span
                       className={cn(
                         "font-semibold",
-                        (currentFare?.refundable ?? row.refundable) === "Refundable"
-                          ? "text-emerald-700"
-                          : "text-red-600"
+                        (currentFare?.refundable ?? row.refundable) === "Refundable" ? "text-emerald-700" : "text-red-600"
                       )}
                     >
                       {currentFare?.refundable ?? row.refundable}
                     </span>
                   </div>
-
-                  {/* (as per your last instruction, meal/baggage can be added here later if you want;
-                      right now we keep UI same and only removed unused code) */}
                 </div>
 
                 <button
@@ -417,7 +497,6 @@ function LegCard({
         </div>
       </div>
 
-      {/* Details panel */}
       {open && (
         <div className="border-t border-gray-100 bg-white px-4 py-4">
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
@@ -596,7 +675,7 @@ export function SummaryBar({ out, inn, showCommission, onBookNow, onLockPrice }:
 
   return (
     <div className="sticky bottom-0 z-30 mt-6">
-      <div className="rounded-2xl border border-slate-800 bg-slate-900 text-white shadow-lg overflow-hidden">
+      <div className="rounded-1xl border border-slate-800 bg-slate-900 text-white shadow-lg overflow-hidden">
         {expanded && (
           <div className="border-b border-slate-800 bg-slate-900/95">
             <div className="flex items-center justify-between px-4 pt-3">
@@ -779,6 +858,69 @@ export function SummaryBar({ out, inn, showCommission, onBookNow, onLockPrice }:
 
 /* ================= MAIN ================= */
 
+// ✅ helper: rows change par selected re-validate
+function syncSelection(rows: RowRT[], selected: Selected, onSelect: (rowId: string, fare: FareRT) => void) {
+  if (!rows.length) return;
+  const first = rows[0];
+  const firstFare = first?.fares?.[0];
+  if (!firstFare) return;
+
+  if (!selected) {
+    onSelect(first.id, firstFare);
+    return;
+  }
+
+  const row = rows.find((r) => r.id === selected.flightId);
+  if (!row) {
+    onSelect(first.id, firstFare);
+    return;
+  }
+
+  const fares = row.fares ?? [];
+  if (!fares.length) return;
+
+  const matched = fares.find((f) => f.code === selected.fare.code);
+  if (!matched) {
+    onSelect(row.id, fares[0]);
+    return;
+  }
+
+  const changed =
+    matched.price !== selected.fare.price ||
+    matched.refundable !== selected.fare.refundable ||
+    matched.cabin !== selected.fare.cabin ||
+    matched.meal !== selected.fare.meal;
+
+  if (changed) onSelect(row.id, matched);
+}
+
+/* ================= SHARE HELPERS ================= */
+
+function buildShareText(items: Array<{ leg: "Outbound" | "Inbound"; row: RowRT; fare: FareRT }>) {
+  const lines: string[] = [];
+  lines.push("✈️ Round Trip Options");
+
+  for (const it of items) {
+    const r = it.row;
+    const f = it.fare;
+    lines.push("");
+    lines.push(`— ${it.leg} —`);
+    lines.push(`${r.airline} ${r.flightNos}`);
+    lines.push(`${r.fromIata} (${r.fromCity}) → ${r.toIata} (${r.toCity})`);
+    lines.push(`Time: ${r.departTime} - ${r.arriveTime} | Stops: ${safeStopsLabel(r)}`);
+    if (r.departDate) lines.push(`Date: ${r.departDate}`);
+    lines.push(`Fare: ${f.label} | ${f.refundable}`);
+    lines.push(`Price: ${nfIN.format(f.price)}`);
+  }
+
+  return lines.join("\n");
+}
+
+function buildShareMessage(text: string, url?: string) {
+  const parts = [text.trim(), url ? `\n\nLink: ${url}` : ""].filter(Boolean);
+  return parts.join("");
+}
+
 export default function RoundTripResultList({
   outboundRows,
   returnRows,
@@ -790,17 +932,13 @@ export default function RoundTripResultList({
   emptyReturnNode,
   showCommission = false,
 }: Props) {
-  // ✅ Default select ONLY first result fare (outbound + inbound)
+  // ✅ selection sync
   useEffect(() => {
-    if (!selectedOutbound && outboundRows.length && outboundRows[0]?.fares?.length) {
-      onSelectOutboundFare(outboundRows[0].id, outboundRows[0].fares[0]);
-    }
+    syncSelection(outboundRows, selectedOutbound, onSelectOutboundFare);
   }, [outboundRows, selectedOutbound, onSelectOutboundFare]);
 
   useEffect(() => {
-    if (!selectedReturn && returnRows.length && returnRows[0]?.fares?.length) {
-      onSelectReturnFare(returnRows[0].id, returnRows[0].fares[0]);
-    }
+    syncSelection(returnRows, selectedReturn, onSelectReturnFare);
   }, [returnRows, selectedReturn, onSelectReturnFare]);
 
   const pickedOut = useMemo(() => {
@@ -817,8 +955,174 @@ export default function RoundTripResultList({
     return { row, fare: selectedReturn.fare };
   }, [returnRows, selectedReturn]);
 
+  /* ✅ SHARE MODE */
+  const [shareMode, setShareMode] = useState(false);
+  const [selectedOutIds, setSelectedOutIds] = useState<Set<string>>(new Set());
+  const [selectedInIds, setSelectedInIds] = useState<Set<string>>(new Set());
+
+  const [copyDone, setCopyDone] = useState(false);
+
+  const clearShareSelection = () => {
+    setSelectedOutIds(new Set());
+    setSelectedInIds(new Set());
+  };
+
+  const toggleOut = (id: string) => {
+    setSelectedOutIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleIn = (id: string) => {
+    setSelectedInIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const selectAll = () => {
+    setSelectedOutIds(new Set(outboundRows.map((r) => r.id)));
+    setSelectedInIds(new Set(returnRows.map((r) => r.id)));
+  };
+
+  const selectedCount = selectedOutIds.size + selectedInIds.size;
+
+  const shareItems = useMemo(() => {
+    const items: Array<{ leg: "Outbound" | "Inbound"; row: RowRT; fare: FareRT }> = [];
+
+    for (const r of outboundRows) {
+      if (!selectedOutIds.has(r.id)) continue;
+      const f = pickCurrentFare(r, selectedOutbound) ?? r.fares?.[0];
+      if (f) items.push({ leg: "Outbound", row: r, fare: f });
+    }
+
+    for (const r of returnRows) {
+      if (!selectedInIds.has(r.id)) continue;
+      const f = pickCurrentFare(r, selectedReturn) ?? r.fares?.[0];
+      if (f) items.push({ leg: "Inbound", row: r, fare: f });
+    }
+
+    return items;
+  }, [outboundRows, returnRows, selectedOutIds, selectedInIds, selectedOutbound, selectedReturn]);
+
+  const sharePayload = useMemo(() => {
+    return {
+      title: "Round Trip Options",
+      text: shareItems.length ? buildShareText(shareItems) : "No flights selected.",
+      url: window.location.href,
+    };
+  }, [shareItems]);
+
+  const shareMessage = useMemo(
+    () => buildShareMessage(sharePayload.text, sharePayload.url),
+    [sharePayload.text, sharePayload.url]
+  );
+
+  const onShareWhatsApp = () => {
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(shareMessage)}`;
+    window.open(waUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const onShareEmail = () => {
+    const subject = sharePayload.title;
+    const body = shareMessage;
+    const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailto;
+  };
+
+  const onCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(shareMessage);
+      setCopyDone(true);
+      window.setTimeout(() => setCopyDone(false), 1200);
+    } catch {
+      // fallback
+      const ta = document.createElement("textarea");
+      ta.value = shareMessage;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        document.execCommand("copy");
+        setCopyDone(true);
+        window.setTimeout(() => setCopyDone(false), 1200);
+      } finally {
+        document.body.removeChild(ta);
+      }
+    }
+  };
+
   return (
     <div className="space-y-5">
+      {/* ✅ Share top bar */}
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-gray-200 bg-white px-3 py-2">
+        <div className="text-sm font-semibold text-gray-900">Round Trip Results</div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setShareMode((s) => !s);
+              clearShareSelection();
+            }}
+            className={cn(
+              "rounded-lg border px-3 py-1.5 text-xs font-semibold",
+              shareMode ? "border-indigo-600 bg-indigo-600 text-white" : "border-gray-300 bg-white text-gray-800 hover:bg-gray-50"
+            )}
+          >
+            {shareMode ? "Exit Share Mode" : "Share"}
+          </button>
+
+          {shareMode && (
+            <>
+              <button
+                type="button"
+                onClick={selectAll}
+                className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 hover:bg-gray-50"
+              >
+                Select All
+              </button>
+
+              <button
+                type="button"
+                onClick={clearShareSelection}
+                className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 hover:bg-gray-50"
+              >
+                Clear
+              </button>
+
+              <div className="text-xs text-gray-600">
+                Selected: <span className="font-semibold">{selectedCount}</span>
+              </div>
+
+              {/* ✅ icons appear as soon as at least 1 selected */}
+              {selectedCount > 0 && (
+                <div className="ml-2 flex items-center gap-2">
+                  <IconButton title="Share via WhatsApp" onClick={onShareWhatsApp}>
+                    <WhatsAppIcon />
+                  </IconButton>
+
+                  <IconButton title="Share via Email" onClick={onShareEmail}>
+                    <MailIcon />
+                  </IconButton>
+
+                  <IconButton title={copyDone ? "Copied!" : "Copy"} onClick={onCopy}>
+                    <CopyIcon />
+                  </IconButton>
+
+                  {copyDone && <span className="text-[12px] font-semibold text-emerald-700">Copied!</span>}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-12 md:col-span-6 space-y-3">
           <div className="flex items-end justify-between gap-3">
@@ -831,9 +1135,7 @@ export default function RoundTripResultList({
 
           {outboundRows.length === 0 &&
             (emptyOutboundNode ?? (
-              <div className="rounded-2xl border border-gray-200 bg-white p-4 text-sm text-gray-600">
-                No outbound flights found.
-              </div>
+              <div className="rounded-2xl border border-gray-200 bg-white p-4 text-sm text-gray-600">No outbound flights found.</div>
             ))}
 
           {outboundRows.map((r) => (
@@ -843,6 +1145,10 @@ export default function RoundTripResultList({
               selected={selectedOutbound}
               onPickFare={(f) => onSelectOutboundFare(r.id, f)}
               showCommission={showCommission}
+              groupName={`out-fare-${r.id}`}
+              shareMode={shareMode}
+              isSelected={selectedOutIds.has(r.id)}
+              onToggleSelect={toggleOut}
             />
           ))}
         </div>
@@ -858,9 +1164,7 @@ export default function RoundTripResultList({
 
           {returnRows.length === 0 &&
             (emptyReturnNode ?? (
-              <div className="rounded-2xl border border-gray-200 bg-white p-4 text-sm text-gray-600">
-                No return flights found.
-              </div>
+              <div className="rounded-2xl border border-gray-200 bg-white p-4 text-sm text-gray-600">No return flights found.</div>
             ))}
 
           {returnRows.map((r) => (
@@ -870,6 +1174,10 @@ export default function RoundTripResultList({
               selected={selectedReturn}
               onPickFare={(f) => onSelectReturnFare(r.id, f)}
               showCommission={showCommission}
+              groupName={`in-fare-${r.id}`}
+              shareMode={shareMode}
+              isSelected={selectedInIds.has(r.id)}
+              onToggleSelect={toggleIn}
             />
           ))}
         </div>

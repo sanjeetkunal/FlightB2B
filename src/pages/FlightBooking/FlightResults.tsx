@@ -839,6 +839,106 @@ export default function FlightResults() {
   const returnLbl = retISO ? formatDateLabel(retISO) : "";
   const totalPaxLabel = `${pax} Traveller${pax > 1 ? "s" : ""}`;
 
+  const nfIN = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  maximumFractionDigits: 0,
+});
+
+  const baseUrl = window.location.origin;
+
+  const buildDeepLink = (extra: Record<string, string>) => {
+    const next = new URLSearchParams(qp.toString());
+    Object.entries(extra).forEach(([k, v]) => next.set(k, v));
+    return `${baseUrl}/flight-results?${next.toString()}`;
+  };
+
+  // For header share (selected / current view)
+  const buildHeaderSharePayload = () => {
+    const msg = [
+      "✈️ Flight Search",
+      `Route: ${sectorLabel}`,
+      departLbl ? `Depart: ${departLbl}` : "",
+      isRound && returnLbl ? `Return: ${returnLbl}` : "",
+      `Pax: ${totalPaxLabel}`,
+    ].filter(Boolean).join("\n");
+
+    return {
+      title: "Flight Search",
+      text: msg,
+      url: `${baseUrl}/flight-results?${qp.toString()}`
+    };
+  };
+
+
+// ✅ Use your existing types for rows/fares
+type ShareLeg = {
+  airline: string;
+  flightNos: string;
+  fromIata: string;
+  toIata: string;
+  departDate?: string;
+  departTime: string;
+  arriveTime: string;
+  stops?: number;
+  refundable?: string;
+  fareLabel?: string;
+  price?: number;
+};
+
+function buildShareText({
+  isRound,
+  out,
+  inn,
+  bookingUrl,
+}: {
+  isRound: boolean;
+  out?: ShareLeg;
+  inn?: ShareLeg;
+  bookingUrl?: string;
+}) {
+  const lines: string[] = [];
+
+  lines.push("✈️ Flight Option");
+
+  if (out) {
+    lines.push(
+      `\nOutbound: ${out.fromIata} → ${out.toIata} (${out.departDate ?? ""})`,
+      `${out.airline} ${out.flightNos}`,
+      `Time: ${out.departTime} - ${out.arriveTime} | Stops: ${out.stops ?? 0}`,
+      `Fare: ${out.fareLabel ?? "-"} | ${out.refundable ?? "-"}`,
+      out.price != null ? `Price: ${nfIN.format(out.price)}` : ""
+    );
+  }
+
+  if (isRound && inn) {
+    lines.push(
+      `\nReturn: ${inn.fromIata} → ${inn.toIata} (${inn.departDate ?? ""})`,
+      `${inn.airline} ${inn.flightNos}`,
+      `Time: ${inn.departTime} - ${inn.arriveTime} | Stops: ${inn.stops ?? 0}`,
+      `Fare: ${inn.fareLabel ?? "-"} | ${inn.refundable ?? "-"}`,
+      inn.price != null ? `Price: ${nfIN.format(inn.price)}` : ""
+    );
+  }
+
+  if (bookingUrl) {
+    lines.push(`\n🔗 Link: ${bookingUrl}`);
+  }
+
+  return lines.filter(Boolean).join("\n");
+}
+
+function shareOnWhatsApp(text: string) {
+  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+function shareOnEmail(text: string) {
+  const subject = "Flight Option";
+  const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+  window.location.href = mailto;
+}
+
   return (
     <div className="mx-auto">
       <div className="min-h-screen">
