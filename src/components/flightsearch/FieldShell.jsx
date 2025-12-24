@@ -1,14 +1,18 @@
-export default function FieldShell({ label, children }) {
+// components/flightsearch/FieldShell.jsx
+export default function FieldShell({
+  label,
+  children,
+  className = "",
+}) {
   return (
-    <div className="relative">
-      <span className="absolute -top-2 left-3 text-[11px] px-2 py-[2px] rounded-full
-                        border border-gray-400  shadow-sm select-none bg-white">
-        {label}
-      </span>
+    <div className={`min-w-0 ${className}`}>
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm px-4 py-3">
+        <div className="text-[11px] font-semibold text-slate-500">
+          {label}
+        </div>
 
-      <div className="bg-gray-100 rounded-xl h-[56px] flex items-center px-3 
-                      ring-1 ring-transparent focus-within:ring-2 focus-within:ring-blue-500 cursor-pointer">
-        {children}
+        {/* IMPORTANT: min-w-0 so text doesn't push layout */}
+        <div className="min-w-0">{children}</div>
       </div>
     </div>
   );

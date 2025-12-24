@@ -468,7 +468,7 @@ function RowTabs({
     { id: "itinerary", label: "FLIGHT DETAILS" },
     { id: "fare", label: "FARE SUMMARY" },
     { id: "cancellation", label: "CANCELLATION" },
-    { id: "baggage", label: "DATE CHANGE" },
+    { id: "baggage", label: "BAGGAGE" },
   ];
 
   return (

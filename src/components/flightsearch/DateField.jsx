@@ -1,6 +1,7 @@
+// components/flightsearch/DateField.jsx
 import { useEffect, useMemo, useState } from "react";
-import FieldShell from "../flightsearch/FieldShell";
-import MultiMonthDatePicker from "../flightsearch/MultiMonthDatePicker";
+import FieldShell from "./FieldShell";
+import MultiMonthDatePicker from "./MultiMonthDatePicker";
 
 const toYMD = (d) => {
   const y = d.getFullYear();
@@ -9,42 +10,44 @@ const toYMD = (d) => {
   return `${y}-${m}-${day}`;
 };
 
-// ✅ safer parse for "YYYY-MM-DD" (avoid timezone/Invalid Date issues)
 const parseYMD = (v) => {
   if (!v) return null;
   const d = new Date(`${v}T00:00:00`);
   return Number.isNaN(d.getTime()) ? null : d;
 };
 
-export default function DateField({ label, value, onChange, disabled, offsetDays = 0 }) {
+export default function DateField({
+  label,
+  value,
+  onChange,
+  disabled,
+  offsetDays = 0,
+  minDate, // ✅ NEW
+}) {
   const [open, setOpen] = useState(false);
 
-  // ✅ set default date only once when value empty and not disabled
   useEffect(() => {
     if (disabled) return;
     if (value) return;
 
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    d.setDate(d.getDate() + offsetDays);
-    onChange(toYMD(d));
-    // intentionally omit onChange from deps (parent may pass new ref)
+    const base = minDate ? new Date(minDate) : new Date(); // ✅ NEW
+    base.setHours(0, 0, 0, 0);
+    base.setDate(base.getDate() + offsetDays);
+
+    onChange(toYMD(base));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, disabled, offsetDays]);
+  }, [value, disabled, offsetDays, minDate]); // ✅ NEW (minDate)
 
   const valDate = useMemo(() => parseYMD(value), [value]);
 
-  const fmt = useMemo(
-    () =>
-      new Intl.DateTimeFormat(undefined, {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }),
+  const fmtDate = useMemo(
+    () => new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "short", year: "2-digit" }),
     []
   );
+  const fmtDay = useMemo(() => new Intl.DateTimeFormat(undefined, { weekday: "long" }), []);
 
-  const display = valDate ? fmt.format(valDate) : "Select date";
+  const display = valDate ? fmtDate.format(valDate) : "Select date";
+  const dayName = valDate ? fmtDay.format(valDate) : disabled ? "Disabled" : "";
 
   const handlePick = (d) => {
     if (!d) return;
@@ -55,18 +58,16 @@ export default function DateField({ label, value, onChange, disabled, offsetDays
   };
 
   return (
-    <div className="relative">
+    <div className="relative min-w-0">
       <FieldShell label={label}>
         <button
           type="button"
           onClick={() => !disabled && setOpen((v) => !v)}
-          className={`w-full text-left bg-transparent text-[16px] font-semibold outline-none ${
-            disabled ? "opacity-50 cursor-not-allowed" : ""
-          }`}
+          className={`w-full text-left min-w-0 cursor-pointer ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
         >
-          {display}
+          <div className="text-[18px] leading-6 font-bold text-slate-900 truncate">{display}</div>
+          <div className="text-[12px] text-slate-500 truncate">{dayName}</div>
         </button>
-        <span className="ml-2" />
       </FieldShell>
 
       <MultiMonthDatePicker
@@ -75,8 +76,8 @@ export default function DateField({ label, value, onChange, disabled, offsetDays
         onChange={handlePick}
         onClose={() => setOpen(false)}
         months={2}
-        minDate={new Date()}
-        className="right-0 z-30"
+        minDate={minDate || new Date()} // ✅ NEW
+        className="right-0 z-40"
       />
     </div>
   );
