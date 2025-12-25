@@ -200,12 +200,14 @@ export default function Header({ variant = "private" }) {
             {/* Right section */}
             <div className="flex items-center gap-4">
               {isPublic ? (
-                <button
-                  onClick={() => go("/agent-register")}
-                  className="h-10 px-4 inline-flex items-center justify-center rounded-full bg-orange-500 text-white text-sm font-semibold shadow-sm hover:bg-orange-600"
-                >
-                  Become an Agent
-                </button>
+             <button
+  onClick={() => go("/agent-register")}
+  className="h-10 px-4 inline-flex items-center justify-center rounded-full
+             bg-[#004aad] text-white text-sm font-semibold shadow-sm
+             hover:bg-[#003b87] focus:outline-none focus:ring-2 focus:ring-[#004aad]/30"
+>
+  Become an Agent
+</button>
               ) : (
                 <>
                   {/* ✅ Tabs show only on desktop, hidden on mobile */}

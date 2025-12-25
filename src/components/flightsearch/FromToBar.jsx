@@ -75,7 +75,6 @@ const isBeforeOrSame = (aYmd, bYmd) => {
   return a.getTime() <= b.getTime();
 };
 
-
 /* ---------------- PAX RULE HELPERS ---------------- */
 const MAX_PAX = 9;
 
@@ -117,7 +116,6 @@ const paxErrorMessage = (tc) => {
   if (tc.infants > tc.adults) return "Number of infants cannot exceed adults.";
   return "";
 };
-
 
 /* ---------------- UI BITS ---------------- */
 function Pill({ active, children, onClick, icon: Icon }) {
@@ -194,6 +192,30 @@ function QuickBtn({ children, onClick, icon: Icon }) {
   );
 }
 
+/* ---------- Mobile compact display chips ---------- */
+function CompactBox({ label, value, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="
+        w-full text-left
+        rounded-2xl border border-slate-200 bg-white/90 backdrop-blur
+        px-4 py-3
+        shadow-[0_10px_22px_rgba(2,6,23,0.06)]
+        hover:border-emerald-200 hover:bg-emerald-50/30
+        transition
+        focus:outline-none focus:ring-2 focus:ring-emerald-200
+      "
+    >
+      <div className="text-[11px] font-extrabold text-slate-500">{label}</div>
+      <div className="mt-0.5 text-sm font-black text-slate-900 tracking-tight">
+        {value}
+      </div>
+    </button>
+  );
+}
+
 export default function FromToBar({ onSearch }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -221,10 +243,7 @@ export default function FromToBar({ onSearch }) {
   const [openTC, setOpenTC] = useState(false);
 
   const [specialFare, setSpecialFare] = useState(false);
-
-  // ✅ Fare preset strip
   const [farePreset, setFarePreset] = useState("regular"); // regular | work | student | senior | defence
-
   const [errorMsg, setErrorMsg] = useState("");
 
   /* ---------------- DERIVED ---------------- */
@@ -385,19 +404,19 @@ export default function FromToBar({ onSearch }) {
     setToAP(fromAP);
   };
 
- const validate = () => {
-  if (!fromAP) return "Please select From airport";
-  if (!toAP) return "Please select To airport";
-  if (fromAP.code === toAP.code) return "From and To cannot be same";
-  if (!depart) return "Please select Departure date";
-  if (trip === "round" && !ret) return "Please select Return date";
+  const validate = () => {
+    if (!fromAP) return "Please select From airport";
+    if (!toAP) return "Please select To airport";
+    if (fromAP.code === toAP.code) return "From and To cannot be same";
+    if (!depart) return "Please select Departure date";
+    if (trip === "round" && !ret) return "Please select Return date";
 
-  // Pax validation (final gate)
-  const paxMsg = paxErrorMessage(tc);
-  if (paxMsg) return paxMsg;
+    // Pax validation (final gate)
+    const paxMsg = paxErrorMessage(tc);
+    if (paxMsg) return paxMsg;
 
-  return "";
-};
+    return "";
+  };
 
   const handleSearch = useCallback(() => {
     const msg = validate();
@@ -471,38 +490,34 @@ export default function FromToBar({ onSearch }) {
   // ✅ Enter key = Search (helpful for agents)
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === "Enter") {
-        // avoid triggering while traveller picker open? (optional)
-        handleSearch();
-      }
+      if (e.key === "Enter") handleSearch();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [handleSearch]);
 
   /* ---------------- QUICK AGENT CONTROLS ---------------- */
-const bump = (key, delta) => {
-  setTc((prev) => {
-    const next = {
-      ...prev,
-      [key]: (prev[key] || 0) + delta,
-    };
+  const bump = (key, delta) => {
+    setTc((prev) => {
+      const next = {
+        ...prev,
+        [key]: (prev[key] || 0) + delta,
+      };
 
-    const fixed = normalizePax(next);
+      const fixed = normalizePax(next);
 
-    if (fixed.infants !== next.infants) {
-      setErrorMsg("Infants cannot be more than Adults.");
-    } else if (
-      fixed.adults + fixed.children + fixed.infants === MAX_PAX &&
-      next.adults + next.children + next.infants > MAX_PAX
-    ) {
-      setErrorMsg(`Maximum ${MAX_PAX} passengers allowed.`);
-    }
+      if (fixed.infants !== next.infants) {
+        setErrorMsg("Infants cannot be more than Adults.");
+      } else if (
+        fixed.adults + fixed.children + fixed.infants === MAX_PAX &&
+        next.adults + next.children + next.infants > MAX_PAX
+      ) {
+        setErrorMsg(`Maximum ${MAX_PAX} passengers allowed.`);
+      }
 
-    return fixed;
-  });
-};
-
+      return fixed;
+    });
+  };
 
   const resetPax = () => {
     setTc((prev) => ({
@@ -563,7 +578,11 @@ const bump = (key, delta) => {
           <span className="hidden sm:inline text-[11px] font-extrabold text-slate-500">
             Cabin:
           </span>
-          <Chip active={tc.cabin === "Economy"} onClick={() => setCabin("Economy")} icon={Armchair}>
+          <Chip
+            active={tc.cabin === "Economy"}
+            onClick={() => setCabin("Economy")}
+            icon={Armchair}
+          >
             Economy
           </Chip>
           <Chip
@@ -572,7 +591,10 @@ const bump = (key, delta) => {
           >
             Premium
           </Chip>
-          <Chip active={tc.cabin === "Business"} onClick={() => setCabin("Business")}>
+          <Chip
+            active={tc.cabin === "Business"}
+            onClick={() => setCabin("Business")}
+          >
             Business
           </Chip>
           <Chip active={tc.cabin === "First"} onClick={() => setCabin("First")}>
@@ -581,12 +603,222 @@ const bump = (key, delta) => {
         </div>
       </div>
 
-      {/* Main area (space for half-outside button on home) */}
+      {/* Main area */}
       <div className={["mt-3 relative", !isModifySearch ? "pb-14" : ""].join(" ")}>
-        {/* Grid: From+To grouped (no extra swap column) */}
+        {/* =========================
+            MOBILE COMPACT LAYOUT
+            - From+To in one row showing only "DEL → BOM"
+            - Dates in next row together
+            - Hide full AirportSelect & DateField on mobile
+           ========================= */}
+        <div className="md:hidden space-y-3">
+          {/* Row 1: FROM-TO compact (only codes) */}
+          <div className="grid grid-cols-[1fr_44px_1fr] gap-2 items-stretch">
+            <CompactBox
+              label="From"
+              value={fromAP?.code || "—"}
+              onClick={() => {}}
+            />
+            <button
+              type="button"
+              onClick={swap}
+              title="Swap"
+              className="
+                h-full rounded-2xl
+                border border-slate-200 bg-white/90
+                shadow-[0_10px_22px_rgba(2,6,23,0.06)]
+                grid place-items-center
+                hover:border-emerald-200 hover:bg-emerald-50/30
+                transition
+                focus:outline-none focus:ring-2 focus:ring-emerald-200
+              "
+            >
+              ⇄
+            </button>
+            <CompactBox
+              label="To"
+              value={toAP?.code || "—"}
+              onClick={() => {}}
+            />
+          </div>
+
+          {/* Actually keep selectors available but compact (optional):
+              Tap on the compact boxes opens the original selectors below (accordion style) */}
+          <div className="rounded-2xl border border-slate-200 bg-white/70 p-2">
+            <div className="grid grid-cols-2 gap-2">
+              <AirportSelect label="From" value={fromAP} onChange={setFromAP} />
+              <AirportSelect label="To" value={toAP} onChange={setToAP} />
+            </div>
+          </div>
+
+          {/* Row 2: Dates together */}
+          <div className="grid grid-cols-2 gap-2">
+            <DateField
+              label="Departure"
+              value={depart}
+              onChange={setDepart}
+              offsetDays={0}
+              minDate={new Date()}
+            />
+            <DateField
+              label="Return"
+              value={ret}
+              onChange={setRet}
+              disabled={trip !== "round"}
+              minDate={returnMinDate}
+              offsetDays={1}
+            />
+          </div>
+
+          {/* Row 3: Travellers */}
+          <div className="relative">
+            <TravellersField
+              label="Travellers & Class"
+              text={travellersLabel}
+              onClick={() => setOpenTC((v) => !v)}
+            />
+            <TravellerClassPicker
+              open={openTC}
+              value={tc}
+              onChange={(next) => {
+                const fixed = normalizePax(next);
+
+                if (next.infants > next.adults) {
+                  setErrorMsg("Infants cannot be more than Adults.");
+                } else if (next.adults + next.children + next.infants > MAX_PAX) {
+                  setErrorMsg(`Maximum ${MAX_PAX} passengers allowed.`);
+                }
+
+                setTc(fixed);
+              }}
+              onClose={() => setOpenTC(false)}
+            />
+          </div>
+
+          {/* Mobile search button */}
+          <button
+            type="button"
+            onClick={handleSearch}
+            className="
+              w-full h-11 rounded-2xl
+              bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600
+              text-white text-sm font-extrabold
+              shadow-[0_14px_26px_rgba(16,185,129,0.24)]
+              hover:brightness-95 active:scale-[0.99]
+              transition
+              focus:outline-none focus:ring-4 focus:ring-emerald-200/70
+              inline-flex items-center justify-center gap-2
+            "
+          >
+            <SearchIcon className="h-4 w-4" />
+            SEARCH
+          </button>
+
+          {/* keep home extras on mobile too */}
+          {!isModifySearch && (
+            <>
+              {/* Quick PAX controls */}
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-extrabold text-slate-500">
+                  Quick PAX:
+                </span>
+                <QuickBtn onClick={() => bump("adults", 1)} icon={UserPlus}>
+                  +1 Adult
+                </QuickBtn>
+                <QuickBtn onClick={() => bump("children", 1)} icon={Baby}>
+                  +1 Child
+                </QuickBtn>
+                <QuickBtn onClick={() => bump("infants", 1)} icon={Baby}>
+                  +1 Infant
+                </QuickBtn>
+                <QuickBtn onClick={resetPax} icon={RotateCcw}>
+                  Reset
+                </QuickBtn>
+              </div>
+
+              {/* Fare preferences strip */}
+              <div className="mt-3 rounded-2xl border border-slate-200 bg-white/85 backdrop-blur px-4 py-3">
+                <div className="flex items-start gap-3">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-600 via-teal-600 to-emerald-600 text-white shadow-sm">
+                    <BadgePercent className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0">
+                    <div className="text-sm font-extrabold text-slate-900">
+                      Fare Preferences
+                    </div>
+                    <div className="text-[11px] font-medium text-slate-500">
+                      {presetHint}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Pill
+                    active={farePreset === "regular"}
+                    onClick={() => setFarePreset("regular")}
+                    icon={BadgePercent}
+                  >
+                    Regular
+                  </Pill>
+                  <Pill
+                    active={farePreset === "work"}
+                    onClick={() => setFarePreset("work")}
+                    icon={Briefcase}
+                  >
+                    Work Travel
+                  </Pill>
+                  <Pill
+                    active={farePreset === "student"}
+                    onClick={() => setFarePreset("student")}
+                    icon={GraduationCap}
+                  >
+                    Student
+                  </Pill>
+                  <Pill
+                    active={farePreset === "senior"}
+                    onClick={() => setFarePreset("senior")}
+                    icon={ShieldCheck}
+                  >
+                    Senior
+                  </Pill>
+                  <Pill
+                    active={farePreset === "defence"}
+                    onClick={() => setFarePreset("defence")}
+                    icon={ShieldCheck}
+                  >
+                    Defence
+                  </Pill>
+                </div>
+
+                <div className="mt-3">
+                  <button
+                    type="button"
+                    className="
+                      inline-flex items-center gap-2
+                      rounded-xl border border-slate-200
+                      bg-white px-4 py-2
+                      text-sm font-extrabold text-slate-800
+                      hover:border-emerald-200 hover:bg-emerald-50/40
+                      transition
+                      focus:outline-none focus:ring-2 focus:ring-emerald-200
+                    "
+                    title="Track flights & schedules"
+                  >
+                    <Radar className="h-4 w-4 text-emerald-700" />
+                    Flight Tracker
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* =========================
+            DESKTOP / TABLET (your original layout)
+           ========================= */}
         <div
           className={[
-            "grid grid-cols-1 gap-3 items-stretch",
+            "hidden md:grid grid-cols-1 gap-3 items-stretch",
             isModifySearch
               ? "md:grid-cols-[4.6fr_1.25fr_1.25fr_1.7fr_56px]"
               : "md:grid-cols-[4.6fr_1.25fr_1.25fr_1.7fr]",
@@ -645,13 +877,9 @@ const bump = (key, delta) => {
               onChange={(next) => {
                 const fixed = normalizePax(next);
 
-                // toast messages (agent feedback)
                 if (next.infants > next.adults) {
                   setErrorMsg("Infants cannot be more than Adults.");
-                } else if (
-                  next.adults + next.children + next.infants >
-                  MAX_PAX
-                ) {
+                } else if (next.adults + next.children + next.infants > MAX_PAX) {
                   setErrorMsg(`Maximum ${MAX_PAX} passengers allowed.`);
                 }
 
@@ -683,10 +911,9 @@ const bump = (key, delta) => {
           )}
         </div>
 
-        {/* Home only: Agent quick controls + Fare strip + half-outside search */}
+        {/* Home only: half-outside button (desktop only) */}
         {!isModifySearch && (
-          <>
-            {/* Quick PAX controls (agent-friendly) */}
+          <div className="hidden md:block">
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <span className="text-[11px] font-extrabold text-slate-500">
                 Quick PAX:
@@ -705,7 +932,6 @@ const bump = (key, delta) => {
               </QuickBtn>
             </div>
 
-            {/* Fare preferences strip */}
             <div className="mt-4 rounded-2xl border border-slate-200 bg-white/85 backdrop-blur px-4 py-3">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div className="min-w-0">
@@ -783,7 +1009,6 @@ const bump = (key, delta) => {
               </div>
             </div>
 
-            {/* Half-outside button (smaller + a bit more down) */}
             <div className="absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-[98%] z-20">
               <button
                 type="button"
@@ -811,7 +1036,7 @@ const bump = (key, delta) => {
                 <span className="pointer-events-none absolute inset-0 rounded-full opacity-0 bg-white/10 group-hover:opacity-100 transition" />
               </button>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>

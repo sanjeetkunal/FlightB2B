@@ -88,156 +88,194 @@ export default function LoginLandingPro() {
     
 
       {/* ============== HERO (responsive) ============== */}
-      <section className="relative isolate overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50">
-        <div className="pointer-events-none absolute inset-0 opacity-40 [mask-image:radial-gradient(60%_60%_at_50%_30%,black,transparent)]">
-          <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-amber-200 blur-3xl" />
-          <div className="absolute -bottom-16 -right-16 h-72 w-72 rounded-full bg-blue-200 blur-3xl" />
+ <section className="relative isolate overflow-hidden bg-gradient-to-b from-white via-[#f6feff] to-white">
+  {/* background accents */}
+  <div
+    className="pointer-events-none absolute inset-0 -z-10 opacity-80"
+    aria-hidden="true"
+  >
+    {/* soft mesh */}
+    <div className="absolute inset-0 [background:radial-gradient(1200px_600px_at_20%_20%,rgba(25,184,223,.18),transparent_60%),radial-gradient(900px_500px_at_85%_35%,rgba(57,170,129,.16),transparent_55%),radial-gradient(700px_500px_at_50%_85%,rgba(125,59,150,.10),transparent_55%)]" />
+    {/* subtle grid */}
+    <div className="absolute inset-0 opacity-[0.22] [mask-image:radial-gradient(60%_60%_at_50%_35%,black,transparent)] [background-image:linear-gradient(to_right,rgba(15,23,42,.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,.08)_1px,transparent_1px)] [background-size:44px_44px]" />
+  </div>
+
+  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0 pt-10 pb-16">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
+      {/* Left copy */}
+      <div className="lg:col-span-8">
+        <p className="inline-flex items-center gap-2 text-xs font-medium text-slate-900 bg-white/70 backdrop-blur border border-slate-200 rounded-full px-3 py-1 shadow-sm">
+          <SparklesIcon className="w-4 h-4 text-[#19B8DF]" />
+          <span className="bg-gradient-to-r from-[#19B8DF] via-[#54C5CF] to-[#39AA81] bg-clip-text text-transparent">
+            Premium B2B Travel OS
+          </span>
+        </p>
+
+        <h1 className="mt-4 text-4xl sm:text-5xl font-semibold leading-tight text-slate-900">
+          All your{" "}
+          <span className="bg-gradient-to-r from-[#19B8DF] via-[#8BD0BD] to-[#39AA81] bg-clip-text text-transparent">
+            travel products
+          </span>{" "}
+          in one powerful dashboard
+        </h1>
+
+        <p className="mt-3 text-slate-600 max-w-2xl">
+          Book Flights, Hotels, Train, Bus & Visa with live markups, commission engine, GST invoicing,
+          wallet, credit control and deep reporting — crafted for distributors & sub-agents.
+        </p>
+
+        {/* Stats */}
+        <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {stats.map((s) => (
+            <div
+              key={s.k}
+              className="rounded-2xl border border-slate-200 bg-white/75 backdrop-blur px-4 py-3 text-center shadow-[0_10px_30px_rgba(2,6,23,0.06)]"
+            >
+              <div className="text-xl font-semibold text-slate-900">{s.k}</div>
+              <div className="text-[11px] uppercase tracking-wide text-slate-500">{s.v}</div>
+            </div>
+          ))}
         </div>
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-0 pt-10 pb-16">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
-            {/* Left copy */}
-            <div className="lg:col-span-8">
-              <p className="inline-flex items-center gap-2 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-full px-3 py-1">
-                <SparklesIcon className="w-4 h-4" /> Premium B2B Travel OS
-              </p>
-              <h1 className="mt-4 text-4xl sm:text-5xl font-semibold leading-tight text-slate-900">
-                All your <span className="text-blue-600">travel products</span> in one powerful dashboard
-              </h1>
-              <p className="mt-3 text-slate-600 max-w-2xl">
-                Book Flights, Hotels, Train, Bus & Visa with live markups, commission engine, GST invoicing,
-                wallet, credit control and deep reporting — crafted for distributors & sub-agents.
-              </p>
+        {/* Trust strip */}
+        <div className="mt-8">
+          <p className="text-xs text-slate-500">Trusted by leading suppliers & aggregators</p>
+          <PartnerMarquee items={partnerLogos} />
+        </div>
+      </div>
 
-              {/* Stats */}
-              <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {stats.map((s) => (
-                  <div key={s.k} className="rounded-2xl border border-slate-200 bg-white/80 backdrop-blur px-4 py-3 text-center">
-                    <div className="text-xl font-semibold text-slate-900">{s.k}</div>
-                    <div className="text-[11px] uppercase tracking-wide text-slate-500">{s.v}</div>
-                  </div>
-                ))}
-              </div>
+      {/* Right login card */}
+      <div className="lg:col-span-4">
+        {/* gradient border wrapper */}
+        <div className="relative rounded-3xl p-[1px] bg-gradient-to-br from-[#19B8DF]/55 via-[#8BD0BD]/35 to-[#39AA81]/55 shadow-[0_20px_60px_rgba(2,6,23,0.16)]">
+          <div className="relative rounded-3xl border border-white/60 bg-white/80 backdrop-blur-xl p-6 sm:p-8 overflow-hidden">
+            {/* subtle inner glow */}
+            <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[#19B8DF]/20 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-28 -left-24 h-64 w-64 rounded-full bg-[#39AA81]/18 blur-3xl" />
 
-              {/* Trust strip */}
-              <div className="mt-8">
-                <p className="text-xs text-slate-500">Trusted by leading suppliers & aggregators</p>
-                <PartnerMarquee items={partnerLogos} />
-              </div>
+            <div className="relative flex items-center justify-between gap-3">
+              <h2 className="text-xl font-semibold text-slate-900">Agent Login</h2>
+              <span className="text-xs text-slate-500">Demo access available</span>
             </div>
 
-            {/* Right login card */}
-            <div className="lg:col-span-4">
-              <div className="relative rounded-2xl border border-slate-200 bg-slate-900 text-white p-6 sm:p-8 shadow-lg">
-                <div className="flex items-center justify-between gap-3">
-                  <h2 className="text-xl font-semibold">Agent Login</h2>
-                  <span className="text-xs text-slate-400">Demo access available</span>
-                </div>
+            {/* Tabs */}
+            <div className="relative mt-4 grid grid-cols-2 rounded-full border border-slate-200 p-1 bg-white/70">
+              <button
+                type="button"
+                onClick={() => setTab("password")}
+                className={`text-sm rounded-full py-2 transition ${
+                  tab === "password"
+                    ? "bg-gradient-to-r from-[#19B8DF] via-[#54C5CF] to-[#39AA81] text-white shadow font-medium"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+                aria-pressed={tab === "password"}
+              >
+                Password
+              </button>
 
-                {/* Tabs */}
-                <div className="mt-4 grid grid-cols-2 rounded-full border border-slate-700 p-1 bg-slate-800/70">
-                  <button
-                    type="button"
-                    onClick={() => setTab("password")}
-                    className={`text-sm rounded-full py-2 transition ${
-                      tab === "password" ? "bg-white text-slate-900 shadow font-medium" : "text-slate-300 hover:text-white"
-                    }`}
-                    aria-pressed={tab === "password"}
-                  >
-                    Password
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setTab("otp")}
-                    className={`text-sm rounded-full py-2 transition ${
-                      tab === "otp" ? "bg-white text-slate-900 shadow font-medium" : "text-slate-300 hover:text-white"
-                    }`}
-                    aria-pressed={tab === "otp"}
-                  >
-                    OTP
-                  </button>
-                </div>
+              <button
+                type="button"
+                onClick={() => setTab("otp")}
+                className={`text-sm rounded-full py-2 transition ${
+                  tab === "otp"
+                    ? "bg-gradient-to-r from-[#19B8DF] via-[#54C5CF] to-[#39AA81] text-white shadow font-medium"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+                aria-pressed={tab === "otp"}
+              >
+                OTP
+              </button>
+            </div>
 
-                <form onSubmit={onSubmit} className="mt-5 space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium">Business Email</label>
-                    <div className="relative mt-1">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="agent@v2a.com"
-                        className="w-full rounded-sm border border-slate-700 bg-slate-800/80 text-white placeholder:text-slate-400 pl-9 pr-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500/40"
-                        required
-                      />
-                    </div>
+            <form onSubmit={onSubmit} className="relative mt-5 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-800">Business Email</label>
+                <div className="relative mt-1">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="agent@v2a.com"
+                    className="w-full rounded-xl border border-slate-200 bg-white/85 text-slate-900 placeholder:text-slate-400 pl-9 pr-3 py-2.5 outline-none focus:ring-2 focus:ring-[#19B8DF]/40"
+                    required
+                  />
+                </div>
+              </div>
+
+              {tab === "password" ? (
+                <div>
+                  <label className="block text-sm font-medium text-slate-800">Password</label>
+                  <div className="relative mt-1">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <input
+                      type={showPw ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Password123"
+                      className="w-full rounded-xl border border-slate-200 bg-white/85 text-slate-900 placeholder:text-slate-400 pl-9 pr-10 py-2.5 outline-none focus:ring-2 focus:ring-[#19B8DF]/40"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPw((s) => !s)}
+                      className="absolute inset-y-0 right-0 grid place-items-center px-3 text-slate-500 hover:text-slate-900 focus:outline-none"
+                      aria-label={showPw ? "Hide password" : "Show password"}
+                      aria-pressed={showPw}
+                    >
+                      {showPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
                   </div>
 
-                  {tab === "password" ? (
-                    <div>
-                      <label className="block text-sm font-medium">Password</label>
-                      <div className="relative mt-1">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                        <input
-                          type={showPw ? "text" : "password"}
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="Password123"
-                          className="w-full rounded-sm border border-slate-700 bg-slate-800/80 text-white placeholder:text-slate-400 pl-9 pr-10 py-2.5 outline-none focus:ring-2 focus:ring-blue-500/40"
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPw((s) => !s)}
-                          className="absolute inset-y-0 right-0 grid place-items-center px-3 text-slate-300 hover:text-white focus:outline-none"
-                          aria-label={showPw ? "Hide password" : "Show password"}
-                          aria-pressed={showPw}
-                        >
-                          {showPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                        </button>
-                      </div>
-                      <div className="mt-2 flex items-center justify-between text-xs text-slate-300">
-                        <label className="inline-flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" className="w-4 h-4 rounded border-slate-600 bg-slate-800" />
-                          <span>Remember me</span>
-                        </label>
-                        <button type="button" className="hover:underline">Forgot password?</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <label className="block text-sm font-medium">One-Time Password</label>
-                      <div className="mt-1 grid grid-cols-6 gap-2" role="group" aria-label="OTP inputs">
-                        <OtpInput value={otp} onChange={setOtp} />
-                      </div>
-                      <div className="mt-2 text-xs text-slate-400">
-                        Demo OTP: <span className="font-medium text-white">000000</span>
-                      </div>
-                    </div>
-                  )}
+                  <div className="mt-2 flex items-center justify-between text-xs text-slate-600">
+                    <label className="inline-flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" className="w-4 h-4 rounded border-slate-300 bg-white" />
+                      <span>Remember me</span>
+                    </label>
+                    <button type="button" className="hover:underline">
+                      Forgot password?
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-slate-800">One-Time Password</label>
+                  <div className="mt-1 grid grid-cols-6 gap-2" role="group" aria-label="OTP inputs">
+                    <OtpInput value={otp} onChange={setOtp} />
+                  </div>
+                  <div className="mt-2 text-xs text-slate-500">
+                    Demo OTP: <span className="font-medium text-slate-900">000000</span>
+                  </div>
+                </div>
+              )}
 
-                  {err && (
-                    <div className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-xl p-2.5">{err}</div>
-                  )}
+              {err && (
+                <div className="text-red-700 text-sm bg-red-50 border border-red-200 rounded-xl p-2.5">
+                  {err}
+                </div>
+              )}
 
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 font-medium disabled:opacity-60"
-                  >
-                    {loading ? "Signing in…" : "Sign in"}
-                  </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#19B8DF] via-[#54C5CF] to-[#39AA81] hover:brightness-[0.95] text-white px-5 py-2.5 font-medium disabled:opacity-60 shadow-sm"
+              >
+                {loading ? "Signing in…" : "Sign in"}
+              </button>
 
-                  <p className="text-xs text-slate-400 text-center">
-                    Demo credentials: <span className="font-medium text-white/90">agent@v2a.com / Password123</span>
-                  </p>
-                </form>
-              </div>
-            </div>
+              <p className="text-xs text-slate-500 text-center">
+                Demo credentials:{" "}
+                <span className="font-medium text-slate-900">agent@v2a.com / Password123</span>
+              </p>
+            </form>
           </div>
         </div>
-      </section>
+      </div>
+    </div>
+  </div>
+</section>
+
+
 
       {/* ============== PRODUCT SUITE (cards with full-cover images + bottom gradient) ============== */}
       {/* <section className="bg-white">

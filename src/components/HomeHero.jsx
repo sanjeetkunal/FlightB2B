@@ -98,7 +98,14 @@ export default function HomeHero() {
             "
           >
             {/* subtle inner gradient */}
-            <div className="pointer-events-none absolute inset-0 rounded-[22px] bg-gradient-to-br from-blue-50/90 via-white to-cyan-50/80 opacity-95" />
+<div className="pointer-events-none absolute inset-0 rounded-[22px] 
+  bg-gradient-to-br from-blue-50/90 via-white to-cyan-50/80 opacity-95" 
+/>
+
+<div className="pointer-events-none absolute bottom-0 left-0 right-0 h-1/2 rounded-b-[22px]
+  bg-gradient-to-t from-blue-300/30 via-blue-200/10 to-transparent" 
+/>
+
 
             <div className="relative p-4 sm:p-5">
               <FromToBar onSearch={onSearch} />
