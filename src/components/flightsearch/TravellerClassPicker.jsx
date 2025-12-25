@@ -15,12 +15,7 @@ function IconPlus() {
   );
 }
 
-export default function TravellerClassPicker({
-  open,
-  value,
-  onChange,
-  onClose,
-}) {
+export default function TravellerClassPicker({ open, value, onChange, onClose }) {
   const ref = useRef(null);
   const [anim, setAnim] = useState(false);
 
@@ -34,19 +29,23 @@ export default function TravellerClassPicker({
   useEffect(() => {
     if (!open) return;
 
+    // Use pointerdown so it works reliably on mobile as well
     const onDown = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) onClose?.();
+      const el = ref.current;
+      if (!el) return;
+      if (!el.contains(e.target)) onClose?.();
     };
+
     const onKey = (e) => {
       if (e.key === "Escape") onClose?.();
     };
 
-    document.addEventListener("mousedown", onDown);
+    document.addEventListener("pointerdown", onDown, true);
     document.addEventListener("keydown", onKey);
     setTimeout(() => setAnim(true), 0);
 
     return () => {
-      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("pointerdown", onDown, true);
       document.removeEventListener("keydown", onKey);
       setAnim(false);
     };
@@ -64,7 +63,10 @@ export default function TravellerClassPicker({
     } else if (field === "children") {
       next.children = Math.min(8, Math.max(0, value.children + delta));
     } else if (field === "infants") {
-      next.infants = Math.min(4, Math.max(0, Math.min(value.infants + delta, value.adults)));
+      next.infants = Math.min(
+        4,
+        Math.max(0, Math.min(value.infants + delta, value.adults))
+      );
     }
 
     let t = next.adults + next.children + next.infants;
@@ -80,7 +82,12 @@ export default function TravellerClassPicker({
   return (
     <>
       {/* ✅ Mobile backdrop */}
-      <div className="fixed inset-0 bg-black/30 z-40 md:hidden" onClick={onClose} />
+      <button
+        type="button"
+        className="fixed inset-0 bg-black/30 z-40 md:hidden"
+        onClick={onClose}
+        aria-label="Close"
+      />
 
       {/* ✅ Container */}
       <div
@@ -93,6 +100,8 @@ export default function TravellerClassPicker({
       >
         <div
           ref={ref}
+          // stop bubbling just in case
+          onClick={(e) => e.stopPropagation()}
           className={[
             "w-full md:w-[520px] max-w-[96vw]",
             "p-[1px] rounded-2xl",
@@ -122,16 +131,21 @@ export default function TravellerClassPicker({
                       <div className="font-medium">{r.title}</div>
                       <div className="text-xs text-gray-500">{r.sub}</div>
                     </div>
+
                     <div className="flex items-center gap-3">
                       <button
+                        type="button"
                         onClick={() => step(r.key, "dec")}
                         disabled={val <= r.min}
                         className="w-9 h-9 rounded-full border grid place-items-center disabled:opacity-40"
                       >
                         <IconMinus />
                       </button>
+
                       <div className="min-w-10 text-center font-semibold">{val}</div>
+
                       <button
+                        type="button"
                         onClick={() => step(r.key, "inc")}
                         disabled={isAtCap}
                         className="w-9 h-9 rounded-full border grid place-items-center disabled:opacity-40"
@@ -150,6 +164,7 @@ export default function TravellerClassPicker({
                   {CABINS.map((c) => (
                     <button
                       key={c}
+                      type="button"
                       onClick={() => onChange?.({ ...value, cabin: c })}
                       className={[
                         "px-3 py-1.5 rounded-full border text-sm",
@@ -170,7 +185,9 @@ export default function TravellerClassPicker({
               <div className="text-sm text-gray-600">
                 <strong>{total}</strong> Travellers • <strong>{value.cabin}</strong>
               </div>
+
               <button
+                type="button"
                 onClick={onClose}
                 className="h-10 px-5 rounded-xl bg-blue-600 text-white font-semibold"
               >

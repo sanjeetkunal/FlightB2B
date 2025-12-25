@@ -18,6 +18,13 @@ import {
   Armchair,
   Baby,
   Search as SearchIcon,
+  ArrowRight,
+  X,
+  CalendarDays,
+  Users,
+  PlaneTakeoff,
+  PlaneLanding,
+  ChevronRight,
 } from "lucide-react";
 
 /* ---------------- RECENT SEARCH HELPERS ---------------- */
@@ -192,33 +199,272 @@ function QuickBtn({ children, onClick, icon: Icon }) {
   );
 }
 
-/* ---------- Mobile compact display chips ---------- */
-function CompactBox({ label, value, onClick }) {
+/* ---------------- MOBILE SHEET (enterprise-like) ---------------- */
+function MobileSheet({ open, title, subtitle, onClose, children }) {
+  // lock body scroll
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose?.();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <div className="md:hidden fixed inset-0 z-[80]">
+      {/* backdrop */}
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close"
+        className="absolute inset-0 bg-slate-950/40"
+      />
+
+      {/* sheet */}
+      <div
+        className="
+          absolute inset-x-0 bottom-0
+          rounded-t-[26px]
+          border border-slate-200
+          bg-white
+          shadow-[0_-18px_60px_rgba(2,6,23,0.22)]
+          overflow-hidden
+        "
+      >
+        <div className="px-4 pt-4 pb-3 bg-gradient-to-b from-slate-50 to-white border-b border-slate-100">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-sm font-black text-slate-900">{title}</div>
+              {subtitle ? (
+                <div className="mt-0.5 text-[11px] font-semibold text-slate-500">
+                  {subtitle}
+                </div>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="
+                grid h-10 w-10 place-items-center
+                rounded-2xl border border-slate-200 bg-white
+                hover:bg-slate-50
+                transition
+                focus:outline-none focus:ring-2 focus:ring-emerald-200
+              "
+              aria-label="Close sheet"
+              title="Close"
+            >
+              <X className="h-5 w-5 text-slate-700" />
+            </button>
+          </div>
+
+          <div className="mt-3 flex justify-center">
+            <div className="h-1.5 w-12 rounded-full bg-slate-200" />
+          </div>
+        </div>
+
+        <div className="max-h-[72vh] overflow-auto px-4 py-4">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function MobileSummaryCard({ fromAP, toAP, trip, depart, ret, travellersLabel, onOpenRoute, onOpenDates, onOpenTravellers, onSwap }) {
+  const fromLine = fromAP ? `${fromAP.code}` : "—";
+  const toLine = toAP ? `${toAP.code}` : "—";
+  const fromCity = fromAP?.city || fromAP?.name || "";
+  const toCity = toAP?.city || toAP?.name || "";
+
+  const dateLine =
+    trip === "round"
+      ? depart && ret
+        ? `${depart} → ${ret}`
+        : depart
+        ? `${depart} → Select return`
+        : "Select dates"
+      : depart
+      ? depart
+      : "Select date";
+
+  return (
+    <div
       className="
-        w-full text-left
-        rounded-2xl border border-slate-200 bg-white/90 backdrop-blur
-        px-4 py-3
-        shadow-[0_10px_22px_rgba(2,6,23,0.06)]
-        hover:border-emerald-200 hover:bg-emerald-50/30
-        transition
-        focus:outline-none focus:ring-2 focus:ring-emerald-200
+        md:hidden
+        rounded-[22px]
+        border border-slate-200
+        bg-white/85 backdrop-blur
+        shadow-[0_18px_40px_rgba(2,6,23,0.10)]
+        overflow-hidden
       "
     >
-      <div className="text-[11px] font-extrabold text-slate-500">{label}</div>
-      <div className="mt-0.5 text-sm font-black text-slate-900 tracking-tight">
-        {value}
+      <div className="pointer-events-none absolute inset-0" />
+
+      {/* Row: From/To */}
+      <div className="px-4 pt-4">
+        <div className="flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={onOpenRoute}
+            className="
+              flex-1 text-left
+              rounded-2xl border border-slate-200 bg-white
+              px-3 py-3
+              hover:border-emerald-200 hover:bg-emerald-50/30
+              transition
+              focus:outline-none focus:ring-2 focus:ring-emerald-200
+            "
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <div className="text-[11px] font-extrabold text-slate-500 flex items-center gap-1">
+                  <PlaneTakeoff className="h-3.5 w-3.5" />
+                  From
+                </div>
+                <div className="mt-0.5 text-xl font-black text-slate-900 tracking-tight">
+                  {fromLine}
+                </div>
+                {fromCity ? (
+                  <div className="mt-0.5 text-[11px] font-semibold text-slate-500 truncate">
+                    {fromCity}
+                  </div>
+                ) : null}
+              </div>
+              <ChevronRight className="h-5 w-5 text-slate-400" />
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={onSwap}
+            title="Swap"
+            className="
+              grid h-[64px] w-[52px] place-items-center
+              rounded-2xl border border-slate-200 bg-white
+              hover:border-emerald-200 hover:bg-emerald-50/30
+              transition
+              focus:outline-none focus:ring-2 focus:ring-emerald-200
+            "
+          >
+            ⇄
+          </button>
+
+          <button
+            type="button"
+            onClick={onOpenRoute}
+            className="
+              flex-1 text-left
+              rounded-2xl border border-slate-200 bg-white
+              px-3 py-3
+              hover:border-emerald-200 hover:bg-emerald-50/30
+              transition
+              focus:outline-none focus:ring-2 focus:ring-emerald-200
+            "
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <div className="text-[11px] font-extrabold text-slate-500 flex items-center gap-1">
+                  <PlaneLanding className="h-3.5 w-3.5" />
+                  To
+                </div>
+                <div className="mt-0.5 text-xl font-black text-slate-900 tracking-tight">
+                  {toLine}
+                </div>
+                {toCity ? (
+                  <div className="mt-0.5 text-[11px] font-semibold text-slate-500 truncate">
+                    {toCity}
+                  </div>
+                ) : null}
+              </div>
+              <ChevronRight className="h-5 w-5 text-slate-400" />
+            </div>
+          </button>
+        </div>
       </div>
-    </button>
+
+      {/* Row: Dates + Travellers */}
+      <div className="px-4 pb-4 pt-3">
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={onOpenDates}
+            className="
+              rounded-2xl border border-slate-200 bg-white
+              px-3 py-3 text-left
+              hover:border-emerald-200 hover:bg-emerald-50/30
+              transition
+              focus:outline-none focus:ring-2 focus:ring-emerald-200
+            "
+          >
+            <div className="text-[11px] font-extrabold text-slate-500 flex items-center gap-1">
+              <CalendarDays className="h-3.5 w-3.5" />
+              Dates
+            </div>
+            <div className="mt-0.5 text-sm font-black text-slate-900">
+              {dateLine}
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={onOpenTravellers}
+            className="
+              rounded-2xl border border-slate-200 bg-white
+              px-3 py-3 text-left
+              hover:border-emerald-200 hover:bg-emerald-50/30
+              transition
+              focus:outline-none focus:ring-2 focus:ring-emerald-200
+            "
+          >
+            <div className="text-[11px] font-extrabold text-slate-500 flex items-center gap-1">
+              <Users className="h-3.5 w-3.5" />
+              Travellers
+            </div>
+            <div className="mt-0.5 text-sm font-black text-slate-900 line-clamp-1">
+              {travellersLabel}
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
 export default function FromToBar({ onSearch }) {
   const navigate = useNavigate();
   const location = useLocation();
+
+    // ✅ Prevent "open then instant close" due to document click handlers
+  const openTCDeferred = (e) => {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+
+    // if already open, just close
+    if (openTC) {
+      setOpenTC(false);
+      return;
+    }
+
+    // open in next tick so same click doesn't close it
+    setTimeout(() => setOpenTC(true), 0);
+  };
+
+  const stopEvent = (e) => {
+    e.preventDefault?.();
+    e.stopPropagation?.();
+  };
+
 
   /* ---------------- STATES ---------------- */
   const [trip, setTrip] = useState("oneway"); // oneway | round
@@ -245,6 +491,9 @@ export default function FromToBar({ onSearch }) {
   const [specialFare, setSpecialFare] = useState(false);
   const [farePreset, setFarePreset] = useState("regular"); // regular | work | student | senior | defence
   const [errorMsg, setErrorMsg] = useState("");
+
+  // Mobile sheets
+  const [mobileSheet, setMobileSheet] = useState(null); // "route" | "dates" | "travellers" | "prefs" | null
 
   /* ---------------- DERIVED ---------------- */
   const total = tc.adults + tc.children + tc.infants;
@@ -530,6 +779,8 @@ export default function FromToBar({ onSearch }) {
 
   const setCabin = (c) => setTc((prev) => ({ ...prev, cabin: c }));
 
+  const closeMobileSheet = () => setMobileSheet(null);
+
   /* ---------------- RENDER ---------------- */
   return (
     <div className="relative">
@@ -573,8 +824,8 @@ export default function FromToBar({ onSearch }) {
           </label>
         )}
 
-        {/* Quick cabin chips (Agents love this) */}
-        <div className="ml-auto flex flex-wrap items-center gap-2">
+        {/* Quick cabin chips (hide on mobile - we put inside travellers sheet) */}
+        <div className="ml-auto hidden sm:flex flex-wrap items-center gap-2">
           <span className="hidden sm:inline text-[11px] font-extrabold text-slate-500">
             Cabin:
           </span>
@@ -591,10 +842,7 @@ export default function FromToBar({ onSearch }) {
           >
             Premium
           </Chip>
-          <Chip
-            active={tc.cabin === "Business"}
-            onClick={() => setCabin("Business")}
-          >
+          <Chip active={tc.cabin === "Business"} onClick={() => setCabin("Business")}>
             Business
           </Chip>
           <Chip active={tc.cabin === "First"} onClick={() => setCabin("First")}>
@@ -606,137 +854,44 @@ export default function FromToBar({ onSearch }) {
       {/* Main area */}
       <div className={["mt-3 relative", !isModifySearch ? "pb-14" : ""].join(" ")}>
         {/* =========================
-            MOBILE COMPACT LAYOUT
-            - From+To in one row showing only "DEL → BOM"
-            - Dates in next row together
-            - Hide full AirportSelect & DateField on mobile
+            MOBILE (enterprise card + sheets)
            ========================= */}
         <div className="md:hidden space-y-3">
-          {/* Row 1: FROM-TO compact (only codes) */}
-          <div className="grid grid-cols-[1fr_44px_1fr] gap-2 items-stretch">
-            <CompactBox
-              label="From"
-              value={fromAP?.code || "—"}
-              onClick={() => {}}
-            />
+          <MobileSummaryCard
+            fromAP={fromAP}
+            toAP={toAP}
+            trip={trip}
+            depart={depart}
+            ret={ret}
+            travellersLabel={travellersLabel}
+            onOpenRoute={() => setMobileSheet("route")}
+            onOpenDates={() => setMobileSheet("dates")}
+            onOpenTravellers={() => setMobileSheet("travellers")}
+            onSwap={swap}
+          />
+
+          {/* Mobile: sticky primary action */}
+          <div className="md:hidden">
             <button
               type="button"
-              onClick={swap}
-              title="Swap"
+              onClick={handleSearch}
               className="
-                h-full rounded-2xl
-                border border-slate-200 bg-white/90
-                shadow-[0_10px_22px_rgba(2,6,23,0.06)]
-                grid place-items-center
-                hover:border-emerald-200 hover:bg-emerald-50/30
+                w-full h-12 rounded-2xl
+                bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600
+                text-white text-sm font-extrabold
+                shadow-[0_16px_30px_rgba(16,185,129,0.26)]
+                hover:brightness-95 active:scale-[0.99]
                 transition
-                focus:outline-none focus:ring-2 focus:ring-emerald-200
+                focus:outline-none focus:ring-4 focus:ring-emerald-200/70
+                inline-flex items-center justify-center gap-2
               "
             >
-              ⇄
+              <SearchIcon className="h-4 w-4" />
+              SEARCH FLIGHTS
+              <ArrowRight className="h-4 w-4" />
             </button>
-            <CompactBox
-              label="To"
-              value={toAP?.code || "—"}
-              onClick={() => {}}
-            />
-          </div>
 
-          {/* Actually keep selectors available but compact (optional):
-              Tap on the compact boxes opens the original selectors below (accordion style) */}
-          <div className="rounded-2xl border border-slate-200 bg-white/70 p-2">
-            <div className="grid grid-cols-2 gap-2">
-              <AirportSelect label="From" value={fromAP} onChange={setFromAP} />
-              <AirportSelect label="To" value={toAP} onChange={setToAP} />
-            </div>
-          </div>
-
-          {/* Row 2: Dates together */}
-          <div className="grid grid-cols-2 gap-2">
-            <DateField
-              label="Departure"
-              value={depart}
-              onChange={setDepart}
-              offsetDays={0}
-              minDate={new Date()}
-            />
-            <DateField
-              label="Return"
-              value={ret}
-              onChange={setRet}
-              disabled={trip !== "round"}
-              minDate={returnMinDate}
-              offsetDays={1}
-            />
-          </div>
-
-          {/* Row 3: Travellers */}
-          <div className="relative">
-            <TravellersField
-              label="Travellers & Class"
-              text={travellersLabel}
-              onClick={() => setOpenTC((v) => !v)}
-            />
-            <TravellerClassPicker
-              open={openTC}
-              value={tc}
-              onChange={(next) => {
-                const fixed = normalizePax(next);
-
-                if (next.infants > next.adults) {
-                  setErrorMsg("Infants cannot be more than Adults.");
-                } else if (next.adults + next.children + next.infants > MAX_PAX) {
-                  setErrorMsg(`Maximum ${MAX_PAX} passengers allowed.`);
-                }
-
-                setTc(fixed);
-              }}
-              onClose={() => setOpenTC(false)}
-            />
-          </div>
-
-          {/* Mobile search button */}
-          <button
-            type="button"
-            onClick={handleSearch}
-            className="
-              w-full h-11 rounded-2xl
-              bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600
-              text-white text-sm font-extrabold
-              shadow-[0_14px_26px_rgba(16,185,129,0.24)]
-              hover:brightness-95 active:scale-[0.99]
-              transition
-              focus:outline-none focus:ring-4 focus:ring-emerald-200/70
-              inline-flex items-center justify-center gap-2
-            "
-          >
-            <SearchIcon className="h-4 w-4" />
-            SEARCH
-          </button>
-
-          {/* keep home extras on mobile too */}
-          {!isModifySearch && (
-            <>
-              {/* Quick PAX controls */}
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span className="text-[11px] font-extrabold text-slate-500">
-                  Quick PAX:
-                </span>
-                <QuickBtn onClick={() => bump("adults", 1)} icon={UserPlus}>
-                  +1 Adult
-                </QuickBtn>
-                <QuickBtn onClick={() => bump("children", 1)} icon={Baby}>
-                  +1 Child
-                </QuickBtn>
-                <QuickBtn onClick={() => bump("infants", 1)} icon={Baby}>
-                  +1 Infant
-                </QuickBtn>
-                <QuickBtn onClick={resetPax} icon={RotateCcw}>
-                  Reset
-                </QuickBtn>
-              </div>
-
-              {/* Fare preferences strip */}
+            {!isModifySearch && (
               <div className="mt-3 rounded-2xl border border-slate-200 bg-white/85 backdrop-blur px-4 py-3">
                 <div className="flex items-start gap-3">
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-600 via-teal-600 to-emerald-600 text-white shadow-sm">
@@ -750,44 +905,21 @@ export default function FromToBar({ onSearch }) {
                       {presetHint}
                     </div>
                   </div>
-                </div>
-
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Pill
-                    active={farePreset === "regular"}
-                    onClick={() => setFarePreset("regular")}
-                    icon={BadgePercent}
-                  >
-                    Regular
-                  </Pill>
-                  <Pill
-                    active={farePreset === "work"}
-                    onClick={() => setFarePreset("work")}
-                    icon={Briefcase}
-                  >
-                    Work Travel
-                  </Pill>
-                  <Pill
-                    active={farePreset === "student"}
-                    onClick={() => setFarePreset("student")}
-                    icon={GraduationCap}
-                  >
-                    Student
-                  </Pill>
-                  <Pill
-                    active={farePreset === "senior"}
-                    onClick={() => setFarePreset("senior")}
-                    icon={ShieldCheck}
-                  >
-                    Senior
-                  </Pill>
-                  <Pill
-                    active={farePreset === "defence"}
-                    onClick={() => setFarePreset("defence")}
-                    icon={ShieldCheck}
-                  >
-                    Defence
-                  </Pill>
+                  <div className="ml-auto">
+                    <button
+                      type="button"
+                      onClick={() => setMobileSheet("prefs")}
+                      className="
+                        rounded-xl border border-slate-200 bg-white
+                        px-3 py-2 text-xs font-extrabold text-slate-800
+                        hover:border-emerald-200 hover:bg-emerald-50/40
+                        transition
+                        focus:outline-none focus:ring-2 focus:ring-emerald-200
+                      "
+                    >
+                      Change
+                    </button>
+                  </div>
                 </div>
 
                 <div className="mt-3">
@@ -808,9 +940,289 @@ export default function FromToBar({ onSearch }) {
                     Flight Tracker
                   </button>
                 </div>
+
+                {/* Quick PAX controls (compact) */}
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className="text-[11px] font-extrabold text-slate-500">
+                    Quick PAX:
+                  </span>
+                  <QuickBtn onClick={() => bump("adults", 1)} icon={UserPlus}>
+                    +1 Adult
+                  </QuickBtn>
+                  <QuickBtn onClick={() => bump("children", 1)} icon={Baby}>
+                    +1 Child
+                  </QuickBtn>
+                  <QuickBtn onClick={() => bump("infants", 1)} icon={Baby}>
+                    +1 Infant
+                  </QuickBtn>
+                  <QuickBtn onClick={resetPax} icon={RotateCcw}>
+                    Reset
+                  </QuickBtn>
+                </div>
               </div>
-            </>
-          )}
+            )}
+          </div>
+
+          {/* Route sheet */}
+          <MobileSheet
+            open={mobileSheet === "route"}
+            onClose={closeMobileSheet}
+            title="Select Route"
+            subtitle="Choose departure & arrival airports"
+          >
+            <div className="grid grid-cols-1 gap-3">
+              <AirportSelect label="From" value={fromAP} onChange={setFromAP} />
+              <AirportSelect label="To" value={toAP} onChange={setToAP} />
+
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={swap}
+                  className="
+                    inline-flex items-center justify-center gap-2
+                    w-full h-11 rounded-2xl
+                    border border-slate-200 bg-white
+                    text-sm font-extrabold text-slate-800
+                    hover:border-emerald-200 hover:bg-emerald-50/30
+                    transition
+                    focus:outline-none focus:ring-2 focus:ring-emerald-200
+                  "
+                >
+                  ⇄ Swap From / To
+                </button>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={closeMobileSheet}
+                  className="
+                    w-full h-11 rounded-2xl
+                    bg-slate-900 text-white
+                    text-sm font-extrabold
+                    hover:bg-slate-800
+                    transition
+                    focus:outline-none focus:ring-4 focus:ring-slate-200
+                  "
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </MobileSheet>
+
+          {/* Dates sheet */}
+          <MobileSheet
+            open={mobileSheet === "dates"}
+            onClose={closeMobileSheet}
+            title="Select Dates"
+            subtitle={trip === "round" ? "Departure & return" : "Departure date"}
+          >
+            <div className="grid grid-cols-1 gap-3">
+              <DateField
+                label="Departure"
+                value={depart}
+                onChange={setDepart}
+                offsetDays={0}
+                minDate={new Date()}
+              />
+
+              <DateField
+                label="Return"
+                value={ret}
+                onChange={setRet}
+                disabled={trip !== "round"}
+                minDate={returnMinDate}
+                offsetDays={1}
+              />
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={closeMobileSheet}
+                  className="
+                    w-full h-11 rounded-2xl
+                    bg-slate-900 text-white
+                    text-sm font-extrabold
+                    hover:bg-slate-800
+                    transition
+                    focus:outline-none focus:ring-4 focus:ring-slate-200
+                  "
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </MobileSheet>
+
+          {/* Travellers sheet */}
+          <MobileSheet
+            open={mobileSheet === "travellers"}
+            onClose={() => {
+              setOpenTC(false);
+              closeMobileSheet();
+            }}
+            title="Travellers & Cabin"
+            subtitle="Passengers (max 9) and class"
+          >
+            <div className="space-y-3">
+              {/* Cabin chips (mobile) */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-3">
+                <div className="text-xs font-extrabold text-slate-600">
+                  Cabin
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Chip
+                    active={tc.cabin === "Economy"}
+                    onClick={() => setCabin("Economy")}
+                    icon={Armchair}
+                  >
+                    Economy
+                  </Chip>
+                  <Chip
+                    active={tc.cabin === "Premium Economy"}
+                    onClick={() => setCabin("Premium Economy")}
+                  >
+                    Premium
+                  </Chip>
+                  <Chip
+                    active={tc.cabin === "Business"}
+                    onClick={() => setCabin("Business")}
+                  >
+                    Business
+                  </Chip>
+                  <Chip active={tc.cabin === "First"} onClick={() => setCabin("First")}>
+                    First
+                  </Chip>
+                </div>
+              </div>
+
+              {/* Existing travellers picker (keeps your business logic) */}
+              <div className="relative">
+                <TravellersField
+  label="Travellers"
+  text={travellersLabel}
+  onClick={openTCDeferred}
+/>
+                <TravellerClassPicker
+                  open={openTC}
+                  value={tc}
+                  onChange={(next) => {
+                    const fixed = normalizePax(next);
+
+                    if (next.infants > next.adults) {
+                      setErrorMsg("Infants cannot be more than Adults.");
+                    } else if (next.adults + next.children + next.infants > MAX_PAX) {
+                      setErrorMsg(`Maximum ${MAX_PAX} passengers allowed.`);
+                    }
+
+                    setTc(fixed);
+                  }}
+                  onClose={() => setOpenTC(false)}
+                />
+              </div>
+
+              <div className="pt-1 flex flex-wrap items-center gap-2">
+                <QuickBtn onClick={() => bump("adults", 1)} icon={UserPlus}>
+                  +1 Adult
+                </QuickBtn>
+                <QuickBtn onClick={() => bump("children", 1)} icon={Baby}>
+                  +1 Child
+                </QuickBtn>
+                <QuickBtn onClick={() => bump("infants", 1)} icon={Baby}>
+                  +1 Infant
+                </QuickBtn>
+                <QuickBtn onClick={resetPax} icon={RotateCcw}>
+                  Reset
+                </QuickBtn>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpenTC(false);
+                    closeMobileSheet();
+                  }}
+                  className="
+                    w-full h-11 rounded-2xl
+                    bg-slate-900 text-white
+                    text-sm font-extrabold
+                    hover:bg-slate-800
+                    transition
+                    focus:outline-none focus:ring-4 focus:ring-slate-200
+                  "
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </MobileSheet>
+
+          {/* Fare prefs sheet */}
+          <MobileSheet
+            open={mobileSheet === "prefs"}
+            onClose={closeMobileSheet}
+            title="Fare Preferences"
+            subtitle={presetHint}
+          >
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-2">
+                <Pill
+                  active={farePreset === "regular"}
+                  onClick={() => setFarePreset("regular")}
+                  icon={BadgePercent}
+                >
+                  Regular
+                </Pill>
+                <Pill
+                  active={farePreset === "work"}
+                  onClick={() => setFarePreset("work")}
+                  icon={Briefcase}
+                >
+                  Work Travel
+                </Pill>
+                <Pill
+                  active={farePreset === "student"}
+                  onClick={() => setFarePreset("student")}
+                  icon={GraduationCap}
+                >
+                  Student
+                </Pill>
+                <Pill
+                  active={farePreset === "senior"}
+                  onClick={() => setFarePreset("senior")}
+                  icon={ShieldCheck}
+                >
+                  Senior
+                </Pill>
+                <Pill
+                  active={farePreset === "defence"}
+                  onClick={() => setFarePreset("defence")}
+                  icon={ShieldCheck}
+                >
+                  Defence
+                </Pill>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={closeMobileSheet}
+                  className="
+                    w-full h-11 rounded-2xl
+                    bg-slate-900 text-white
+                    text-sm font-extrabold
+                    hover:bg-slate-800
+                    transition
+                    focus:outline-none focus:ring-4 focus:ring-slate-200
+                  "
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </MobileSheet>
         </div>
 
         {/* =========================
@@ -869,7 +1281,7 @@ export default function FromToBar({ onSearch }) {
             <TravellersField
               label="Travellers & Class"
               text={travellersLabel}
-              onClick={() => setOpenTC((v) => !v)}
+              onClick={() => setOpenTC(true)}
             />
             <TravellerClassPicker
               open={openTC}

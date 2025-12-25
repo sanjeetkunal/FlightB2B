@@ -87,7 +87,7 @@ export default function MultiMonthDatePicker({
       aria-label="Calendar"
       // position/visual container - still absolute in your layout
       className={[
-        "absolute top-[calc(100%+8px)] left-0 rounded-3xl border border-gray-200 bg-white",
+        "absolute top-[calc(100%+8px)] right-0 rounded-3xl border border-gray-200 bg-white",
         "shadow-[0_30px_60px_-20px_rgba(0,0,0,0.35)] p-4 z-30",
         "max-w-[98vw] sm:max-w-[92vw] md:max-w-[1000px]", // responsive cap
         className,
