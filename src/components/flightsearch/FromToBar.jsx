@@ -166,7 +166,7 @@ function Chip({ active, children, onClick, icon: Icon }) {
       onClick={onClick}
       className={[
         "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold transition",
-        "focus:outline-none focus:ring-2 focus:ring-emerald-200",
+        "focus:outline-none focus:ring-2 focus:ring-emerald-200 cursor-pointer",
         active
           ? "border-emerald-200 bg-emerald-50 text-emerald-800"
           : "border-slate-200 bg-white text-slate-700 hover:border-emerald-200 hover:bg-emerald-50/40",
@@ -190,7 +190,7 @@ function QuickBtn({ children, onClick, icon: Icon }) {
         px-3 py-2 text-xs font-extrabold text-slate-800
         hover:border-emerald-200 hover:bg-emerald-50/40
         transition
-        focus:outline-none focus:ring-2 focus:ring-emerald-200
+        focus:outline-none focus:ring-2 focus:ring-emerald-200 cursor-pointer
       "
     >
       {Icon ? <Icon className="h-4 w-4 text-emerald-700" /> : null}
@@ -281,7 +281,18 @@ function MobileSheet({ open, title, subtitle, onClose, children }) {
   );
 }
 
-function MobileSummaryCard({ fromAP, toAP, trip, depart, ret, travellersLabel, onOpenRoute, onOpenDates, onOpenTravellers, onSwap }) {
+function MobileSummaryCard({
+  fromAP,
+  toAP,
+  trip,
+  depart,
+  ret,
+  travellersLabel,
+  onOpenRoute,
+  onOpenDates,
+  onOpenTravellers,
+  onSwap,
+}) {
   const fromLine = fromAP ? `${fromAP.code}` : "—";
   const toLine = toAP ? `${toAP.code}` : "—";
   const fromCity = fromAP?.city || fromAP?.name || "";
@@ -292,11 +303,11 @@ function MobileSummaryCard({ fromAP, toAP, trip, depart, ret, travellersLabel, o
       ? depart && ret
         ? `${depart} → ${ret}`
         : depart
-        ? `${depart} → Select return`
-        : "Select dates"
+          ? `${depart} → Select return`
+          : "Select dates"
       : depart
-      ? depart
-      : "Select date";
+        ? depart
+        : "Select date";
 
   return (
     <div
@@ -445,7 +456,7 @@ export default function FromToBar({ onSearch }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-    // ✅ Prevent "open then instant close" due to document click handlers
+  // ✅ Prevent "open then instant close" due to document click handlers
   const openTCDeferred = (e) => {
     e?.preventDefault?.();
     e?.stopPropagation?.();
@@ -464,7 +475,6 @@ export default function FromToBar({ onSearch }) {
     e.preventDefault?.();
     e.stopPropagation?.();
   };
-
 
   /* ---------------- STATES ---------------- */
   const [trip, setTrip] = useState("oneway"); // oneway | round
@@ -823,32 +833,6 @@ export default function FromToBar({ onSearch }) {
             Special Round Trip Fare
           </label>
         )}
-
-        {/* Quick cabin chips (hide on mobile - we put inside travellers sheet) */}
-        <div className="ml-auto hidden sm:flex flex-wrap items-center gap-2">
-          <span className="hidden sm:inline text-[11px] font-extrabold text-slate-500">
-            Cabin:
-          </span>
-          <Chip
-            active={tc.cabin === "Economy"}
-            onClick={() => setCabin("Economy")}
-            icon={Armchair}
-          >
-            Economy
-          </Chip>
-          <Chip
-            active={tc.cabin === "Premium Economy"}
-            onClick={() => setCabin("Premium Economy")}
-          >
-            Premium
-          </Chip>
-          <Chip active={tc.cabin === "Business"} onClick={() => setCabin("Business")}>
-            Business
-          </Chip>
-          <Chip active={tc.cabin === "First"} onClick={() => setCabin("First")}>
-            First
-          </Chip>
-        </div>
       </div>
 
       {/* Main area */}
@@ -943,6 +927,37 @@ export default function FromToBar({ onSearch }) {
 
                 {/* Quick PAX controls (compact) */}
                 <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {/* Cabin */}
+                  <span className="text-[11px] font-extrabold text-slate-500">
+                    Cabin:
+                  </span>
+                  <Chip
+                    active={tc.cabin === "Economy"}
+                    onClick={() => setCabin("Economy")}
+                    icon={Armchair}
+                  >
+                    Economy
+                  </Chip>
+                  <Chip
+                    active={tc.cabin === "Premium Economy"}
+                    onClick={() => setCabin("Premium Economy")}
+                  >
+                    Premium
+                  </Chip>
+                  <Chip
+                    active={tc.cabin === "Business"}
+                    onClick={() => setCabin("Business")}
+                  >
+                    Business
+                  </Chip>
+                  <Chip active={tc.cabin === "First"} onClick={() => setCabin("First")}>
+                    First
+                  </Chip>
+
+                  {/* divider */}
+                  <span className="mx-1 h-6 w-px bg-slate-200" />
+
+                  {/* Quick PAX */}
                   <span className="text-[11px] font-extrabold text-slate-500">
                     Quick PAX:
                   </span>
@@ -1068,9 +1083,7 @@ export default function FromToBar({ onSearch }) {
             <div className="space-y-3">
               {/* Cabin chips (mobile) */}
               <div className="rounded-2xl border border-slate-200 bg-white p-3">
-                <div className="text-xs font-extrabold text-slate-600">
-                  Cabin
-                </div>
+                <div className="text-xs font-extrabold text-slate-600">Cabin</div>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <Chip
                     active={tc.cabin === "Economy"}
@@ -1100,10 +1113,10 @@ export default function FromToBar({ onSearch }) {
               {/* Existing travellers picker (keeps your business logic) */}
               <div className="relative">
                 <TravellersField
-  label="Travellers"
-  text={travellersLabel}
-  onClick={openTCDeferred}
-/>
+                  label="Travellers"
+                  text={travellersLabel}
+                  onClick={openTCDeferred}
+                />
                 <TravellerClassPicker
                   open={openTC}
                   value={tc}
@@ -1323,25 +1336,59 @@ export default function FromToBar({ onSearch }) {
           )}
         </div>
 
-        {/* Home only: half-outside button (desktop only) */}
+        {/* Home only: Quick PAX LEFT + Cabin RIGHT (desktop only) */}
         {!isModifySearch && (
           <div className="hidden md:block">
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="text-[11px] font-extrabold text-slate-500">
-                Quick PAX:
-              </span>
-              <QuickBtn onClick={() => bump("adults", 1)} icon={UserPlus}>
-                +1 Adult
-              </QuickBtn>
-              <QuickBtn onClick={() => bump("children", 1)} icon={Baby}>
-                +1 Child
-              </QuickBtn>
-              <QuickBtn onClick={() => bump("infants", 1)} icon={Baby}>
-                +1 Infant
-              </QuickBtn>
-              <QuickBtn onClick={resetPax} icon={RotateCcw}>
-                Reset
-              </QuickBtn>
+            {/* ✅ THIS ROW MATCHES YOUR SCREENSHOT NEED:
+                Quick PAX left, Cabin chips on right */}
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+              {/* Left: Quick PAX */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-extrabold text-slate-500">
+                  Quick PAX:
+                </span>
+                <QuickBtn onClick={() => bump("adults", 1)} icon={UserPlus}>
+                  +1 Adult
+                </QuickBtn>
+                <QuickBtn onClick={() => bump("children", 1)} icon={Baby}>
+                  +1 Child
+                </QuickBtn>
+                <QuickBtn onClick={() => bump("infants", 1)} icon={Baby}>
+                  +1 Infant
+                </QuickBtn>
+                <QuickBtn onClick={resetPax} icon={RotateCcw}>
+                  Reset
+                </QuickBtn>
+              </div>
+
+              {/* Right: Cabin */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-extrabold text-slate-500">
+                  Cabin:
+                </span>
+                <Chip
+                  active={tc.cabin === "Economy"}
+                  onClick={() => setCabin("Economy")}
+                  icon={Armchair}
+                >
+                  Economy
+                </Chip>
+                <Chip
+                  active={tc.cabin === "Premium Economy"}
+                  onClick={() => setCabin("Premium Economy")}
+                >
+                  Premium
+                </Chip>
+                <Chip
+                  active={tc.cabin === "Business"}
+                  onClick={() => setCabin("Business")}
+                >
+                  Business
+                </Chip>
+                <Chip active={tc.cabin === "First"} onClick={() => setCabin("First")}>
+                  First
+                </Chip>
+              </div>
             </div>
 
             <div className="mt-4 rounded-2xl border border-slate-200 bg-white/85 backdrop-blur px-4 py-3">
