@@ -88,9 +88,23 @@ export default function Header({ variant = "private" }) {
     navigate(path, opts);
   };
 
-  // ✅ desktop hover handlers
-  const hoverOpen = (which) => {
+  /* =========================
+     ✅ FIX: Hover Intent Timers
+     ========================= */
+  const hoverTimers = useRef({ wallet: null, profile: null, notif: null });
+  const HOVER_CLOSE_DELAY = 180;
+
+  const clearHoverTimer = (which) => {
+    if (hoverTimers.current[which]) {
+      clearTimeout(hoverTimers.current[which]);
+      hoverTimers.current[which] = null;
+    }
+  };
+
+  const openMenu = (which) => {
     if (!isDesktop) return;
+    clearHoverTimer(which);
+
     if (which === "wallet") {
       setWalletOpen(true);
       setProfileOpen(false);
@@ -107,11 +121,15 @@ export default function Header({ variant = "private" }) {
       setProfileOpen(false);
     }
   };
-  const hoverClose = (which) => {
+
+  const scheduleCloseMenu = (which) => {
     if (!isDesktop) return;
-    if (which === "wallet") setWalletOpen(false);
-    if (which === "profile") setProfileOpen(false);
-    if (which === "notif") setNotifOpen(false);
+    clearHoverTimer(which);
+    hoverTimers.current[which] = setTimeout(() => {
+      if (which === "wallet") setWalletOpen(false);
+      if (which === "profile") setProfileOpen(false);
+      if (which === "notif") setNotifOpen(false);
+    }, HOVER_CLOSE_DELAY);
   };
 
   // ✅ mobile click toggles
@@ -181,18 +199,14 @@ export default function Header({ variant = "private" }) {
       <div className="border border-gray-200">
         <div className="mx-auto max-w-7xl px-0 sm:px-0 lg:px-0">
           <div className="h-16 flex items-center justify-between px-4">
-            {/* Left: Logo (✅ mobile also visible) */}
+            {/* Left: Logo */}
             <div className="flex items-center gap-3 min-w-0">
               <button
                 onClick={() => go(isPublic ? "/login" : "/")}
                 className="flex items-center gap-3"
                 aria-label="Go home"
               >
-                <img
-                  src={logo}
-                  className="w-36 sm:w-[260px] object-contain"
-                  alt="Logo"
-                />
+                <img src={logo} className="w-36 sm:w-[260px] object-contain" alt="Logo" />
                 <div className="hidden sm:block w-px h-6 bg-gray-200" />
               </button>
             </div>
@@ -200,17 +214,16 @@ export default function Header({ variant = "private" }) {
             {/* Right section */}
             <div className="flex items-center gap-4">
               {isPublic ? (
-             <button
-  onClick={() => go("/agent-register")}
-  className="h-10 px-4 inline-flex items-center justify-center rounded-full
-             bg-[#004aad] text-white text-sm font-semibold shadow-sm
-             hover:bg-[#003b87] focus:outline-none focus:ring-2 focus:ring-[#004aad]/30"
->
-  Become an Agent
-</button>
+                <button
+                  onClick={() => go("/agent-register")}
+                  className="h-10 px-4 inline-flex items-center justify-center rounded-full
+                             bg-[#004aad] text-white text-sm font-semibold shadow-sm
+                             hover:bg-[#003b87] focus:outline-none focus:ring-2 focus:ring-[#004aad]/30"
+                >
+                  Become an Agent
+                </button>
               ) : (
                 <>
-                  {/* ✅ Tabs show only on desktop, hidden on mobile */}
                   <nav className="hidden md:flex items-center gap-3 overflow-x-auto">
                     {tabs.map((t) => {
                       const isActive = active === t.key;
@@ -231,14 +244,13 @@ export default function Header({ variant = "private" }) {
                     })}
                   </nav>
 
-                  {/* Wallet, Notifications, Profile */}
                   <div className="flex items-center gap-2">
-                    {/* Wallet (✅ mobile icon only, desktop full) */}
+                    {/* ✅ Wallet */}
                     <div
                       className="relative"
                       ref={walletRef}
-                      onMouseEnter={() => hoverOpen("wallet")}
-                      onMouseLeave={() => hoverClose("wallet")}
+                      onMouseEnter={() => openMenu("wallet")}
+                      onMouseLeave={() => scheduleCloseMenu("wallet")}
                     >
                       <button
                         onClick={toggleWallet}
@@ -261,7 +273,16 @@ export default function Header({ variant = "private" }) {
                       </button>
 
                       {walletOpen && (
-                        <div className="absolute left-0 sm:right-0 sm:left-0 mt-2 w-80 bg-white border border-gray-200 rounded-2xl shadow-xl p-3">
+                        <div
+                          onMouseEnter={() => openMenu("wallet")}
+                          onMouseLeave={() => scheduleCloseMenu("wallet")}
+                          className="
+                            absolute left-0 sm:right-0 sm:left-auto
+                            top-full translate-y-2
+                            w-80 bg-white border border-gray-200
+                            rounded-2xl shadow-xl p-3
+                          "
+                        >
                           <div className="flex items-center justify-between">
                             <div>
                               <div className="text-xs text-gray-500">Available Balance</div>
@@ -302,12 +323,12 @@ export default function Header({ variant = "private" }) {
                       )}
                     </div>
 
-                    {/* Notifications */}
+                    {/* ✅ Notifications */}
                     <div
                       className="relative"
                       ref={notifRef}
-                      onMouseEnter={() => hoverOpen("notif")}
-                      onMouseLeave={() => hoverClose("notif")}
+                      onMouseEnter={() => openMenu("notif")}
+                      onMouseLeave={() => scheduleCloseMenu("notif")}
                     >
                       <button
                         onClick={toggleNotif}
@@ -319,7 +340,16 @@ export default function Header({ variant = "private" }) {
                       </button>
 
                       {notifOpen && (
-                        <div className="absolute mt-2 w-80 left-1/2 -translate-x-1/2 sm:right-0 sm:left-auto sm:translate-x-0 bg-white border border-gray-200 rounded-2xl shadow-xl p-3">
+                        <div
+                          onMouseEnter={() => openMenu("notif")}
+                          onMouseLeave={() => scheduleCloseMenu("notif")}
+                          className="
+                            absolute top-full translate-y-2
+                            w-80 left-1/2 -translate-x-1/2
+                            sm:right-0 sm:left-auto sm:translate-x-0
+                            bg-white border border-gray-200 rounded-2xl shadow-xl p-3
+                          "
+                        >
                           <div className="px-2 py-1 text-sm font-semibold">Notifications</div>
                           <div className="divide-y max-h-80 overflow-auto">
                             <NotifItem title="PNR AD4K9Q ticketed" meta="Just now" />
@@ -330,12 +360,12 @@ export default function Header({ variant = "private" }) {
                       )}
                     </div>
 
-                    {/* Profile (✅ mobile avatar only, desktop full + hover dropdown) */}
+                    {/* ✅ Profile */}
                     <div
                       className="relative"
                       ref={profileRef}
-                      onMouseEnter={() => hoverOpen("profile")}
-                      onMouseLeave={() => hoverClose("profile")}
+                      onMouseEnter={() => openMenu("profile")}
+                      onMouseLeave={() => scheduleCloseMenu("profile")}
                     >
                       <button
                         onClick={toggleProfile}
@@ -356,7 +386,15 @@ export default function Header({ variant = "private" }) {
                       </button>
 
                       {profileOpen && (
-                        <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-xl p-2">
+                        <div
+                          onMouseEnter={() => openMenu("profile")}
+                          onMouseLeave={() => scheduleCloseMenu("profile")}
+                          className="
+                            absolute right-0 top-full translate-y-2
+                            w-72 bg-white border border-gray-200
+                            rounded-2xl shadow-xl p-2
+                          "
+                        >
                           <div className="px-3 py-2">
                             <div className="flex items-center justify-between">
                               <div>
@@ -391,7 +429,7 @@ export default function Header({ variant = "private" }) {
             </div>
           </div>
 
-          {/* ✅ REMOVED: Mobile tabs scroller (Flights/Hotels/Trains/Buses hide on mobile) */}
+          {/* ✅ REMOVED: Mobile tabs scroller */}
         </div>
       </div>
     </header>
