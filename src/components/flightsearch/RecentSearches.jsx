@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+// src/components/flightsearch/RecentSearches.jsx
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { PlaneTakeoff, Trash2, Star, Sparkles } from "lucide-react";
 
@@ -16,13 +17,104 @@ const getRecentSearches = () => {
 };
 
 const clearRecentSearches = () => {
-  localStorage.removeItem(RECENT_KEY);
+  try {
+    localStorage.removeItem(RECENT_KEY);
+  } catch {}
 };
 
+/* ---------------- Theme helpers ---------------- */
+function clampHex(hex) {
+  if (!hex) return null;
+  let h = String(hex).trim();
+  if (!h) return null;
+  if (!h.startsWith("#")) h = `#${h}`;
+  if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(h)) return null;
+  if (h.length === 4) {
+    const r = h[1],
+      g = h[2],
+      b = h[3];
+    h = `#${r}${r}${g}${g}${b}${b}`;
+  }
+  return h.toLowerCase();
+}
+
+function parseCssColor(input) {
+  const s = String(input || "").trim();
+  if (!s) return null;
+
+  const hx = clampHex(s);
+  if (hx) {
+    const h = hx.replace("#", "");
+    return {
+      r: parseInt(h.slice(0, 2), 16),
+      g: parseInt(h.slice(2, 4), 16),
+      b: parseInt(h.slice(4, 6), 16),
+    };
+  }
+
+  const m = s.match(
+    /rgba?\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)(?:\s*,\s*([0-9.]+)\s*)?\)/
+  );
+  if (m) {
+    return {
+      r: Math.max(0, Math.min(255, Number(m[1]))),
+      g: Math.max(0, Math.min(255, Number(m[2]))),
+      b: Math.max(0, Math.min(255, Number(m[3]))),
+    };
+  }
+
+  return null;
+}
+
+function rgba(rgb, a) {
+  if (!rgb) return `rgba(0,0,0,${a})`;
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${a})`;
+}
+
+function getVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+/* ---------------- Component ---------------- */
 export default function RecentSearches() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
+
+  // theme-driven aura gradients
+  const [aura, setAura] = useState({
+    left: "",
+    right: "",
+    bottom: "",
+    icon: "",
+    chipBg: "",
+    tagBg: "",
+    tagBorder: "",
+    tagText: "",
+  });
+
+  const recomputeAura = useCallback(() => {
+    const primary = parseCssColor(getVar("--primary")) || parseCssColor("#06b6d4");
+    const accent = parseCssColor(getVar("--accent")) || primary;
+    const surface = parseCssColor(getVar("--surface")) || parseCssColor("#ffffff");
+
+    const isDark = surface && surface.r < 40 && surface.g < 40 && surface.b < 60;
+
+    const L = isDark ? 0.20 : 0.14;
+    const R = isDark ? 0.18 : 0.12;
+    const B = isDark ? 0.08 : 0.035;
+
+    setAura({
+      left: `radial-gradient(75% 95% at 0% 50%, ${rgba(primary, L)}, transparent 66%)`,
+      right: `radial-gradient(75% 95% at 100% 50%, ${rgba(accent, R)}, transparent 64%)`,
+      bottom: `linear-gradient(to top, rgba(2,6,23,${B}), transparent 55%)`,
+      icon: `linear-gradient(135deg, ${rgba(primary, 1)}, ${rgba(accent, 1)})`,
+      chipBg: isDark ? "rgba(231,238,252,0.10)" : "rgba(2,6,23,0.05)",
+      tagBg: isDark ? "rgba(231,238,252,0.08)" : "rgba(2,6,23,0.04)",
+      tagBorder: isDark ? "rgba(231,238,252,0.16)" : "rgba(15,23,42,0.12)",
+      tagText: isDark ? "rgba(231,238,252,0.88)" : "rgba(2,6,23,0.72)",
+    });
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -36,15 +128,40 @@ export default function RecentSearches() {
     return () => clearTimeout(t);
   }, []);
 
+  // recompute aura on mount + whenever theme vars change
+  useEffect(() => {
+    recomputeAura();
+
+    const root = document.documentElement;
+    const obs = new MutationObserver(() => recomputeAura());
+    obs.observe(root, { attributes: true, attributeFilter: ["style", "class"] });
+
+    const onStorage = (e) => {
+      if (e.key && String(e.key).includes("theme")) recomputeAura();
+    };
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      obs.disconnect();
+      window.removeEventListener("storage", onStorage);
+    };
+  }, [recomputeAura]);
+
   const isEmpty = useMemo(() => !loading && items.length === 0, [loading, items]);
 
   if (isEmpty) {
     return (
-      <div className="mt-8 rounded-2xl border border-slate-200/70 bg-white/85 p-4 backdrop-blur shadow-[0_10px_25px_rgba(2,6,23,0.06)]">
+      <div
+        className="
+          mt-8 rounded-2xl border p-4 backdrop-blur
+          bg-[var(--surface)]/90 border-[var(--border)]
+          shadow-[0_10px_25px_rgba(2,6,23,0.06)]
+        "
+      >
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-semibold text-slate-900">Recent Searches</h4>
+          <h4 className="text-sm font-semibold text-[var(--text)]">Recent Searches</h4>
         </div>
-        <div className="mt-2 text-xs text-slate-500">No recent searches yet.</div>
+        <div className="mt-2 text-xs text-[var(--muted)]">No recent searches yet.</div>
       </div>
     );
   }
@@ -53,30 +170,32 @@ export default function RecentSearches() {
     <div
       className="
         relative mt-8 overflow-hidden rounded-2xl
-        border border-slate-200/70 bg-white/80 p-4 backdrop-blur
+        border p-4 backdrop-blur
+        bg-[var(--surface)]/85 border-[var(--border)]
         shadow-[0_12px_30px_rgba(2,6,23,0.08)]
       "
     >
-      {/* Logo-theme aura blobs */}
-      <div className="pointer-events-none absolute -top-16 -left-16 h-56 w-56 rounded-full bg-gradient-to-br from-cyan-200/60 via-sky-200/35 to-purple-200/45 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-20 -right-20 h-64 w-64 rounded-full bg-gradient-to-tr from-emerald-200/45 via-teal-200/30 to-cyan-200/40 blur-3xl" />
+      {/* ✅ BOTH SIDES theme wash */}
+      <div className="pointer-events-none absolute inset-0" style={{ background: aura.left }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background: aura.right }} />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2" style={{ background: aura.bottom }} />
 
       {/* Header */}
       <div className="relative mb-3 flex items-center justify-between">
         <div className="flex items-start gap-2">
           <div
-            className="
-              mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-xl
-              bg-gradient-to-br from-cyan-600 via-sky-600 to-emerald-500 text-white
-              shadow-[0_8px_18px_rgba(14,165,233,0.25)]
-            "
+            className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-xl text-white"
+            style={{
+              backgroundImage: aura.icon,
+              boxShadow: "0 8px 18px rgba(2,6,23,0.10)",
+            }}
           >
             <Sparkles className="h-4 w-4" />
           </div>
 
           <div>
-            <h4 className="text-sm font-semibold text-slate-900">Recent Searches</h4>
-            <div className="text-[11px] text-slate-500">Quick re-search in one click</div>
+            <h4 className="text-sm font-semibold text-[var(--text)]">Recent Searches</h4>
+            <div className="text-[11px] text-[var(--muted)]">Quick re-search in one click</div>
           </div>
         </div>
 
@@ -87,10 +206,9 @@ export default function RecentSearches() {
           }}
           className="
             inline-flex items-center gap-1.5 rounded-lg
-            border border-slate-200/80 bg-white/70 px-2.5 py-1.5
-            text-xs text-slate-600 backdrop-blur
-            hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200
-            transition
+            border px-2.5 py-1.5 text-xs backdrop-blur transition
+            border-[var(--border)] bg-[var(--surface)]/70 text-[var(--muted)]
+            hover:bg-[var(--surface2)] hover:text-[var(--text)]
           "
           title="Clear recent searches"
           type="button"
@@ -106,100 +224,121 @@ export default function RecentSearches() {
           {[...Array(5)].map((_, i) => (
             <div
               key={i}
-              className="
-                h-[78px] rounded-xl border border-slate-200/70
-                bg-gradient-to-br from-white via-slate-50 to-white
-                animate-pulse
-              "
+              className="h-[78px] rounded-xl border animate-pulse"
+              style={{
+                borderColor: "var(--border)",
+                background:
+                  "linear-gradient(135deg, rgba(255,255,255,0.65), rgba(255,255,255,0.35))",
+              }}
             />
           ))}
         </div>
       ) : (
         <div className="relative grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
-          {items.map((r, i) => (
-            <button
-              key={`${r.params}-${i}`}
-              type="button"
-              onClick={() => navigate(`/flight-results?${r.params}`)}
-              className="
-                group relative w-full overflow-hidden text-left
-                rounded-xl border border-slate-200/70
-                bg-white/75 backdrop-blur
-                px-3 py-2
-                shadow-[0_1px_0_rgba(255,255,255,0.85)_inset]
-                hover:border-cyan-200
-                hover:shadow-[0_16px_34px_rgba(2,6,23,0.12)]
-                transition cursor-pointer
-              "
-              title="Search again"
-            >
-              {/* hover wash (logo palette) */}
-              <div className="pointer-events-none absolute inset-0 opacity-0 bg-gradient-to-br from-cyan-50/90 via-sky-50/45 to-emerald-50/80 group-hover:opacity-100 transition" />
+          {items.map((r, i) => {
+            const primary = parseCssColor(getVar("--primary"));
+            const accent = parseCssColor(getVar("--accent")) || primary;
 
-              {/* glossy highlight */}
-              <div className="pointer-events-none absolute -top-10 -left-10 h-24 w-24 rounded-full bg-white/55 blur-2xl opacity-60" />
+            return (
+              <button
+                key={`${r.params}-${i}`}
+                type="button"
+                onClick={() => navigate(`/flight-results?${r.params}`)}
+                className="
+                  group relative w-full overflow-hidden text-left
+                  rounded-xl border px-3 py-2 backdrop-blur transition cursor-pointer
+                  bg-[var(--surface)]/75 border-[var(--border)]
+                  hover:shadow-[0_16px_34px_rgba(2,6,23,0.12)]
+                "
+                title="Search again"
+                style={{ boxShadow: "0 1px 0 rgba(255,255,255,0.75) inset" }}
+              >
+                {/* hover wash: primary + accent */}
+                <div
+                  className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition"
+                  style={{
+                    background: `linear-gradient(135deg, ${rgba(primary, 0.10)}, ${rgba(
+                      accent,
+                      0.08
+                    )} 45%, transparent 70%)`,
+                  }}
+                />
 
-              {/* Top row */}
-              <div className="relative flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5">
-                  {i === 0 && (
-                    <span className="inline-flex items-center gap-1 rounded-lg bg-purple-50 px-1.5 py-0.5 text-[10px] font-semibold text-purple-700 border border-purple-100">
-                      <Star className="h-3.5 w-3.5 text-purple-500" />
-                      TOP
+                {/* Top row */}
+                <div className="relative flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    {i === 0 && (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[10px] font-semibold border"
+                        style={{
+                          background: rgba(accent, 0.10),
+                          color: "var(--text)",
+                          borderColor: rgba(accent, 0.18),
+                        }}
+                      >
+                        <Star className="h-3.5 w-3.5" />
+                        TOP
+                      </span>
+                    )}
+
+                    <span
+                      className="inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold border"
+                      style={{
+                        background: rgba(primary, 0.10),
+                        color: "var(--text)",
+                        borderColor: rgba(primary, 0.18),
+                      }}
+                    >
+                      {(r.sector || "dom").toUpperCase()}
                     </span>
-                  )}
+                  </div>
 
                   <span
-                    className={[
-                      "inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold border",
-                      (r.sector || "dom") === "intl"
-                        ? "bg-purple-50 text-purple-700 border-purple-100"
-                        : "bg-teal-50 text-teal-700 border-teal-100",
-                    ].join(" ")}
+                    className="inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold border"
+                    style={{
+                      background: aura.chipBg,
+                      color: "var(--text)",
+                      borderColor: "var(--border)",
+                    }}
                   >
-                    {(r.sector || "dom").toUpperCase()}
+                    {r.trip === "roundtrip" ? "ROUND" : "ONEWAY"}
                   </span>
                 </div>
 
-                <span
-                  className="
-                    inline-flex items-center rounded-md
-                    bg-slate-900/5 px-1.5 py-0.5 text-[10px]
-                    font-semibold text-slate-700 border border-slate-200/80
-                  "
-                >
-                  {r.trip === "roundtrip" ? "ROUND" : "ONEWAY"}
-                </span>
-              </div>
+                {/* Route */}
+                <div className="relative mt-2 flex items-center gap-2">
+                  <span className="text-sm font-semibold text-[var(--text)]">{r.from}</span>
 
-              {/* Route */}
-              <div className="relative mt-2 flex items-center gap-2">
-                <span className="text-sm font-semibold text-slate-900">{r.from}</span>
+                  <span
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl text-white"
+                    style={{
+                      border: `1px solid ${rgba(primary, 0.22)}`,
+                      backgroundImage: aura.icon,
+                      boxShadow: "0 10px 22px rgba(2,6,23,0.10)",
+                      transform: "translateZ(0)",
+                    }}
+                  >
+                    <PlaneTakeoff className="h-4 w-4 -rotate-12 group-hover:translate-x-0.5 transition" />
+                  </span>
 
-                <span
-                  className="
-                    inline-flex h-8 w-8 items-center justify-center rounded-xl
-                    border border-cyan-100
-                    bg-gradient-to-br from-cyan-600 via-sky-600 to-emerald-500
-                    text-white shadow-[0_10px_22px_rgba(6,182,212,0.22)]
-                    group-hover:scale-[1.03] transition
-                  "
-                >
-                  <PlaneTakeoff className="h-4 w-4 -rotate-12 group-hover:translate-x-0.5 transition" />
-                </span>
+                  <span className="text-sm font-semibold text-[var(--text)]">{r.to}</span>
+                </div>
 
-                <span className="text-sm font-semibold text-slate-900">{r.to}</span>
-              </div>
+                {/* Date */}
+                <div className="relative mt-1 text-[11px] font-medium text-[var(--muted)] truncate">
+                  {r.dateLabel || "—"}
+                </div>
 
-              {/* Date */}
-              <div className="relative mt-1 text-[11px] font-medium text-slate-600 truncate">
-                {r.dateLabel || "—"}
-              </div>
-
-              {/* bottom active line (logo palette) */}
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-0.5 bg-transparent group-hover:bg-gradient-to-r group-hover:from-cyan-600 group-hover:via-sky-600 group-hover:to-emerald-500 transition" />
-            </button>
-          ))}
+                {/* bottom active line */}
+                <div
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-0.5 opacity-0 group-hover:opacity-100 transition"
+                  style={{
+                    background: `linear-gradient(90deg, var(--primary), var(--accent))`,
+                  }}
+                />
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

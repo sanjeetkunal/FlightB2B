@@ -1,13 +1,16 @@
 // components/flightsearch/FieldShell.jsx
-export default function FieldShell({
-  label,
-  children,
-  className = "",
-}) {
+export default function FieldShell({ label, children, className = "" }) {
   return (
     <div className={`min-w-0 ${className}`}>
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm px-4 py-3">
-        <div className="text-[11px] font-semibold text-slate-500">
+      <div
+        className="
+          rounded-2xl border border-[var(--border)]
+          bg-[var(--surface)]
+          shadow-sm px-4 py-3
+          text-[var(--text)]
+        "
+      >
+        <div className="text-[11px] font-semibold text-[var(--muted)]">
           {label}
         </div>
 

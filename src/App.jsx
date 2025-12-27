@@ -87,5 +87,7 @@ export default function App() {
       {/* FALLBACK */}
       <Route path="*" element={<Navigate to={isAuthed() ? "/" : "/login"} replace />} />
     </Routes>
+
+    
   );
 }

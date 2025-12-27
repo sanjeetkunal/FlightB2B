@@ -1,4 +1,3 @@
-// components/flightsearch/DateField.jsx
 import { useEffect, useMemo, useState } from "react";
 import FieldShell from "./FieldShell";
 import MultiMonthDatePicker from "./MultiMonthDatePicker";
@@ -22,7 +21,7 @@ export default function DateField({
   onChange,
   disabled,
   offsetDays = 0,
-  minDate, // ✅ NEW
+  minDate,
 }) {
   const [open, setOpen] = useState(false);
 
@@ -30,21 +29,29 @@ export default function DateField({
     if (disabled) return;
     if (value) return;
 
-    const base = minDate ? new Date(minDate) : new Date(); // ✅ NEW
+    const base = minDate ? new Date(minDate) : new Date();
     base.setHours(0, 0, 0, 0);
     base.setDate(base.getDate() + offsetDays);
 
     onChange(toYMD(base));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, disabled, offsetDays, minDate]); // ✅ NEW (minDate)
+  }, [value, disabled, offsetDays, minDate]);
 
   const valDate = useMemo(() => parseYMD(value), [value]);
 
   const fmtDate = useMemo(
-    () => new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "short", year: "2-digit" }),
+    () =>
+      new Intl.DateTimeFormat(undefined, {
+        day: "2-digit",
+        month: "short",
+        year: "2-digit",
+      }),
     []
   );
-  const fmtDay = useMemo(() => new Intl.DateTimeFormat(undefined, { weekday: "long" }), []);
+  const fmtDay = useMemo(
+    () => new Intl.DateTimeFormat(undefined, { weekday: "long" }),
+    []
+  );
 
   const display = valDate ? fmtDate.format(valDate) : "Select date";
   const dayName = valDate ? fmtDay.format(valDate) : disabled ? "Disabled" : "";
@@ -63,10 +70,17 @@ export default function DateField({
         <button
           type="button"
           onClick={() => !disabled && setOpen((v) => !v)}
-          className={`w-full text-left min-w-0 cursor-pointer ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+          className={[
+            "w-full text-left min-w-0 cursor-pointer",
+            disabled ? "opacity-50 cursor-not-allowed" : "",
+          ].join(" ")}
         >
-          <div className="text-[18px] leading-6 font-bold text-slate-900 truncate">{display}</div>
-          <div className="text-[12px] text-slate-500 truncate">{dayName}</div>
+          <div className="text-[18px] leading-6 font-bold text-[var(--text)] truncate">
+            {display}
+          </div>
+          <div className="text-[12px] text-[var(--muted)] truncate">
+            {dayName}
+          </div>
         </button>
       </FieldShell>
 
@@ -76,7 +90,7 @@ export default function DateField({
         onChange={handlePick}
         onClose={() => setOpen(false)}
         months={2}
-        minDate={minDate || new Date()} // ✅ NEW
+        minDate={minDate || new Date()}
         className="right-0 z-40"
       />
     </div>

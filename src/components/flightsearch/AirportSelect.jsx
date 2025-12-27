@@ -2,6 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AIRPORTS } from "../../data/airports";
 import FieldShell from "./FieldShell";
 
+/**
+ * Theme vars used:
+ * --surface, --surface2, --text, --muted, --border,
+ * --primary, --primaryHover, --primarySoft
+ */
 export default function AirportSelect({ label, value, onChange }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -21,10 +26,7 @@ export default function AirportSelect({ label, value, onChange }) {
 
   // focus input when open
   useEffect(() => {
-    if (open) {
-      // small delay so DOM stable
-      setTimeout(() => inputRef.current?.focus(), 0);
-    }
+    if (open) setTimeout(() => inputRef.current?.focus(), 0);
   }, [open]);
 
   const list = useMemo(() => {
@@ -93,10 +95,7 @@ export default function AirportSelect({ label, value, onChange }) {
     }
   };
 
-  const primary = value
-    ? `${value.city}`
-    : "";
-
+  const primary = value ? `${value.city}` : "";
   const secondary = value ? `${value.airport} • ${value.code}` : "";
 
   return (
@@ -115,8 +114,8 @@ export default function AirportSelect({ label, value, onChange }) {
                 placeholder="City, airport or code"
                 className="
                   w-full bg-transparent outline-none
-                  text-[18px] leading-6 font-bold text-slate-900
-                  placeholder:text-slate-300
+                  text-[18px] leading-6 font-bold text-[var(--text)]
+                  placeholder:text-[var(--muted)]/50
                 "
               />
             ) : (
@@ -128,14 +127,14 @@ export default function AirportSelect({ label, value, onChange }) {
                 }}
                 className="w-full text-left min-w-0 cursor-pointer"
               >
-                <div className="text-[18px] leading-6 font-bold text-slate-900 truncate">
+                <div className="text-[18px] leading-6 font-bold text-[var(--text)] truncate">
                   {primary || "Select city"}
                 </div>
               </button>
             )}
 
-            {/* secondary line always visible (but show hint when empty) */}
-            <div className="text-[12px] text-slate-500 truncate">
+            {/* secondary line always visible */}
+            <div className="text-[12px] text-[var(--muted)] truncate">
               {secondary || "City / Airport / Code"}
             </div>
           </div>
@@ -146,8 +145,8 @@ export default function AirportSelect({ label, value, onChange }) {
               onClick={clear}
               className="
                 shrink-0 h-8 w-8 grid place-items-center rounded-full
-                border border-slate-200 text-slate-500
-                hover:text-slate-900 hover:bg-slate-50
+                border border-[var(--border)] text-[var(--muted)]
+                hover:text-[var(--text)] hover:bg-[var(--surface2)]
               "
               aria-label="Clear"
               title="Clear"
@@ -164,13 +163,14 @@ export default function AirportSelect({ label, value, onChange }) {
           className="
             absolute z-40 mt-2
             w-[min(520px,96vw)]
-            rounded-3xl border border-slate-200 bg-white
+            rounded-3xl border border-[var(--border)]
+            bg-[var(--surface)]
             shadow-[0_24px_60px_-18px_rgba(0,0,0,0.35)]
             p-2
           "
         >
           {!q && (
-            <div className="px-4 py-2 text-xs font-semibold text-slate-600">
+            <div className="px-4 py-2 text-xs font-semibold text-[var(--muted)]">
               Popular Airports
             </div>
           )}
@@ -183,33 +183,43 @@ export default function AirportSelect({ label, value, onChange }) {
                   onMouseEnter={() => setActive(i)}
                   onClick={() => pick(a)}
                   className={[
-                    "w-full text-left px-4 py-3 flex gap-3 items-start rounded-2xl",
-                    i === active ? "bg-blue-50" : "hover:bg-slate-50",
+                    "w-full text-left px-4 py-3 flex gap-3 items-start rounded-2xl transition",
+                    i === active
+                      ? "bg-[var(--primarySoft)]"
+                      : "hover:bg-[var(--surface2)]",
                   ].join(" ")}
                 >
-                  <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 font-bold bg-slate-50">
+                  <span
+                    className="
+                      inline-flex items-center justify-center w-10 h-10 rounded-xl
+                      border border-[var(--border)]
+                      font-bold
+                      bg-[var(--surface2)]
+                      text-[var(--text)]
+                    "
+                  >
                     {a.code}
                   </span>
 
                   <div className="min-w-0">
-                    <div className="font-semibold text-[14px] truncate">
+                    <div className="font-semibold text-[14px] text-[var(--text)] truncate">
                       {a.city}
                       {a.state ? `, ${a.state}` : ""}, {a.country}
                     </div>
-                    <div className="text-xs text-slate-500 truncate">
+                    <div className="text-xs text-[var(--muted)] truncate">
                       {a.airport}
                     </div>
                   </div>
                 </button>
 
                 {i < list.length - 1 && (
-                  <div className="mx-4 h-px bg-slate-100" />
+                  <div className="mx-4 h-px bg-[var(--border)]/40" />
                 )}
               </li>
             ))}
 
             {list.length === 0 && (
-              <li className="px-4 py-3 text-sm text-slate-500">
+              <li className="px-4 py-3 text-sm text-[var(--muted)]">
                 No airports found
               </li>
             )}

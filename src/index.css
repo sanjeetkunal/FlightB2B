@@ -14,6 +14,29 @@
   }
 }
 
+:root{
+  --surface:#ffffff;
+  --surface2:#f6f8fb;
+  --text:#0b1220;
+  --muted:#667085;
+  --border:rgba(15, 23, 42, 0.12);
+
+  --primary:#10b6d9;
+  --primaryHover:#0ea5c3;
+  --primarySoft:rgba(16, 182, 217, 0.14);
+}
+
+/* smooth theme switching */
+html, body, #root {
+  background: var(--surface);
+  color: var(--text);
+}
+
+*{
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+
+
 /* ===============================
    Components
 ================================ */
