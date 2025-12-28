@@ -320,20 +320,6 @@ function ActionCard({ a, onClick, focusRing }) {
             <Icon size={20} />
           </span>
 
-          {a.primary ? (
-            <span
-              className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold"
-              style={{
-                borderColor: getVar("--primary") || "#10b6d9",
-                background: getVar("--primarySoft") || "rgba(16,182,217,0.14)",
-                color: getVar("--text") || "#0b1220",
-              }}
-            >
-              Recommended
-            </span>
-          ) : (
-            <span className="h-6" />
-          )}
         </div>
 
         {/* Title */}

@@ -501,7 +501,7 @@ export default function FromToBar({ onSearch }) {
   }, [location.search]);
 
   const INDIA_IATAS = [
-    "DEL","BOM","BLR","MAA","HYD","CCU","AMD","COK","GOI","PNQ","GAU","TRV",
+    "DEL", "BOM", "BLR", "MAA", "HYD", "CCU", "AMD", "COK", "GOI", "PNQ", "GAU", "TRV",
   ];
 
   const isInternational = useMemo(() => {
@@ -764,18 +764,7 @@ export default function FromToBar({ onSearch }) {
           ))}
         </div>
 
-        {trip === "round" && sector === "intl" && (
-          <label className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--text)] shadow-sm">
-            <input
-              type="checkbox"
-              checked={specialFare}
-              onChange={(e) => setSpecialFare(e.target.checked)}
-              className="h-4 w-4"
-              style={{ accentColor: "var(--primary)" }}
-            />
-            Special Round Trip Fare
-          </label>
-        )}
+
       </div>
 
       {/* Main area */}
@@ -849,6 +838,8 @@ export default function FromToBar({ onSearch }) {
                       Change
                     </button>
                   </div>
+
+
                 </div>
 
                 <div className="mt-3">
@@ -1181,62 +1172,106 @@ export default function FromToBar({ onSearch }) {
               </div>
             </div>
 
-            <div
-              className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3"
-              style={{ boxShadow: shadowSoft }}
-            >
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-start gap-3">
-                    <span
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-2xl"
-                      style={{ ...gradientStyle, color: "var(--surface)" }}
-                    >
-                      <BadgePercent className="h-5 w-5" />
-                    </span>
-                    <div className="min-w-0">
-                      <div className="text-sm font-extrabold text-[var(--text)]">
-                        Fare Preferences
-                      </div>
-                      <div className="text-[11px] font-medium text-[var(--muted)]">{presetHint}</div>
-                    </div>
-                  </div>
+           <div
+  className="relative mt-4 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3"
+  style={{ boxShadow: shadowSoft }}
+>
+  {/* ===== Right side plane image (FULL opacity) ===== */}
+  <div
+    className="
+      pointer-events-none
+      absolute inset-y-0 right-0
+      w-[46%] hidden md:block
+      bg-no-repeat bg-right bg-contain
+    "
+    style={{
+      backgroundImage: "url('https://img.freepik.com/premium-photo/passenger-airplane-is-flying_105428-5456.jpg",
+      backgroundSize: "cover",
+    }}
+  />
 
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Pill active={farePreset === "regular"} onClick={() => setFarePreset("regular")} icon={BadgePercent}>
-                      Regular
-                    </Pill>
-                    <Pill active={farePreset === "work"} onClick={() => setFarePreset("work")} icon={Briefcase}>
-                      Work Travel
-                    </Pill>
-                    <Pill active={farePreset === "student"} onClick={() => setFarePreset("student")} icon={GraduationCap}>
-                      Student
-                    </Pill>
-                    <Pill active={farePreset === "senior"} onClick={() => setFarePreset("senior")} icon={ShieldCheck}>
-                      Senior
-                    </Pill>
-                    <Pill active={farePreset === "defence"} onClick={() => setFarePreset("defence")} icon={ShieldCheck}>
-                      Defence
-                    </Pill>
-                  </div>
-                </div>
+  {/* ===== Fade mask (this makes it look PART of card) ===== */}
+  <div
+    className="
+      pointer-events-none
+      absolute inset-y-0 right-0
+      w-[46%] hidden md:block
+      bg-gradient-to-l
+      from-transparent
+      via-[var(--surface)]
+      to-[var(--surface)]
+    "
+  />
 
-                <div className="flex justify-start lg:justify-end">
-                  <button
-                    type="button"
-                    className={[
-                      "inline-flex items-center gap-2 rounded-xl border bg-[var(--surface)] px-4 py-2 text-sm font-extrabold transition",
-                      "border-[var(--border)] text-[var(--text)] hover:bg-[var(--surface2)]",
-                      focusRing,
-                    ].join(" ")}
-                    title="Track flights & schedules"
-                  >
-                    <Radar className="h-4 w-4" style={{ color: "var(--primary)" }} />
-                    Flight Tracker
-                  </button>
-                </div>
-              </div>
-            </div>
+  {/* ===== Content ===== */}
+  <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div className="min-w-0">
+      <div className="flex items-start gap-3">
+        <span
+          className="inline-flex h-10 w-10 items-center justify-center rounded-2xl"
+          style={{ ...gradientStyle, color: "var(--surface)" }}
+        >
+          <BadgePercent className="h-5 w-5" />
+        </span>
+
+        <div className="min-w-0">
+          <div className="text-sm font-extrabold text-[var(--text)]">
+            Fare Preferences
+          </div>
+          <div className="text-[11px] font-medium text-[var(--muted)]">
+            {presetHint}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Pill active={farePreset === "regular"} onClick={() => setFarePreset("regular")} icon={BadgePercent}>
+          Regular
+        </Pill>
+        <Pill active={farePreset === "work"} onClick={() => setFarePreset("work")} icon={Briefcase}>
+          Work Travel
+        </Pill>
+        <Pill active={farePreset === "student"} onClick={() => setFarePreset("student")} icon={GraduationCap}>
+          Student
+        </Pill>
+        <Pill active={farePreset === "senior"} onClick={() => setFarePreset("senior")} icon={ShieldCheck}>
+          Senior
+        </Pill>
+        <Pill active={farePreset === "defence"} onClick={() => setFarePreset("defence")} icon={ShieldCheck}>
+          Defence
+        </Pill>
+
+        {trip === "round" && sector === "intl" && (
+          <Pill className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--text)] shadow-sm">
+            <input
+              type="checkbox"
+              checked={specialFare}
+              onChange={(e) => setSpecialFare(e.target.checked)}
+              className="h-4 w-4"
+              style={{ accentColor: "var(--primary)" }}
+            />
+            Special Round Trip Fare
+          </Pill>
+        )}
+      </div>
+    </div>
+
+    {/* <div className="flex justify-start lg:justify-end">
+      <button
+        type="button"
+        className={[
+          "inline-flex items-center gap-2 rounded-xl border bg-[var(--surface)] px-4 py-2 text-sm font-extrabold transition",
+          "border-[var(--border)] text-[var(--text)] hover:bg-[var(--surface2)]",
+          focusRing,
+        ].join(" ")}
+      >
+        <Radar className="h-4 w-4" style={{ color: "var(--primary)" }} />
+        Flight Tracker
+      </button>
+    </div> */}
+  </div>
+</div>
+
 
             <div className="absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-[98%] z-20">
               <button

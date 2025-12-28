@@ -48,8 +48,9 @@ export default function RecentBookings() {
   }, [recompute]);
 
   return (
-    <div className="relative rounded-3xl p-[1px] shadow-[0_18px_45px_rgba(0,0,0,0.08)]" style={{ backgroundImage: bg.frame }}>
-      <div className="relative rounded-3xl border border-white/50 bg-[var(--surface)]/85 backdrop-blur-xl p-5">
+
+      <div className="relative rounded-3xl border border-[var(--border)]
+          shadow-[0_18px_45px_rgba(0,0,0,0.08)] backdrop-blur-xl p-5">
         {/* BOTH SIDE LIGHT WASH */}
         <div className="pointer-events-none absolute inset-0 rounded-3xl" style={{ background: bg.left }} />
         <div className="pointer-events-none absolute inset-0 rounded-3xl" style={{ background: bg.right }} />
@@ -73,7 +74,7 @@ export default function RecentBookings() {
           </div>
         </div>
       </div>
-    </div>
+   
   );
 }
 

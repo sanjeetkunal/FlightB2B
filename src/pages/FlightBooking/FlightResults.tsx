@@ -89,19 +89,12 @@ function mapFareOW(f: FlightFare): OW_Fare {
     refundable: f.refundable ? "Refundable" : "Non-Refundable",
     cabin: f.cabin,
     meal: f.meal ? "Free Meal" : "Paid Meal",
-
-    // ✅ remove this (Published/Offer tags)
-    // badge: f.changeFeeINR === 0 ? { text: "Published", tone: "published" } : { text: "Offer Fare", tone: "offer" },
-
     baggage: { handKg: f.cabinBagKg, checkKg: f.baggageKg },
     seat: f.seatSelect ? "Preferred seat included" : "Seat selection (paid)",
     commissionINR: f.agentCommissionINR,
     agentFareINR: f.agentNetINR,
   };
 }
-
-
-
 
 function adaptRowsOW(rows: FlightRow[]): OW_Row[] {
   return rows.map((r) => {
@@ -157,7 +150,13 @@ function adaptRowsOW(rows: FlightRow[]): OW_Row[] {
       },
       cancellation: {
         refund: [{ when: "≥ 24h before departure", feeUSD: fares.some((f) => f.refundable) ? 0 : 200 }],
-        change: [{ when: "Date/Time change (per pax)", feeUSD: fares.some((f) => f.changeFeeINR === 0) ? 0 : 150, note: "Fare diff applies" }],
+        change: [
+          {
+            when: "Date/Time change (per pax)",
+            feeUSD: fares.some((f) => f.changeFeeINR === 0) ? 0 : 150,
+            note: "Fare diff applies",
+          },
+        ],
         noShowUSD: 250,
       },
       fares: fares.map(mapFareOW),
@@ -181,13 +180,17 @@ function useDatasetMetaOW(data: OW_Row[]) {
   const departAirports = useMemo(() => {
     const map = new Map<string, string>();
     data.forEach((r) => map.set(r.fromIata, `${r.fromCity} (${r.fromIata})`));
-    return Array.from(map.entries()).map(([code, label]) => ({ code, label })).sort((a, b) => a.code.localeCompare(b.code));
+    return Array.from(map.entries())
+      .map(([code, label]) => ({ code, label }))
+      .sort((a, b) => a.code.localeCompare(b.code));
   }, [data]);
 
   const arriveAirports = useMemo(() => {
     const map = new Map<string, string>();
     data.forEach((r) => map.set(r.toIata, `${r.toCity} (${r.toIata})`));
-    return Array.from(map.entries()).map(([code, label]) => ({ code, label })).sort((a, b) => a.code.localeCompare(b.code));
+    return Array.from(map.entries())
+      .map(([code, label]) => ({ code, label }))
+      .sort((a, b) => a.code.localeCompare(b.code));
   }, [data]);
 
   return { airlines, minPrice, maxPrice, airlineMinPrice, departAirports, arriveAirports };
@@ -263,13 +266,17 @@ function useDatasetMetaRT(data: RT_Row[]) {
   const departAirports = useMemo(() => {
     const map = new Map<string, string>();
     data.forEach((r) => map.set(r.fromIata, `${r.fromCity} (${r.fromIata})`));
-    return Array.from(map.entries()).map(([code, label]) => ({ code, label })).sort((a, b) => a.code.localeCompare(b.code));
+    return Array.from(map.entries())
+      .map(([code, label]) => ({ code, label }))
+      .sort((a, b) => a.code.localeCompare(b.code));
   }, [data]);
 
   const arriveAirports = useMemo(() => {
     const map = new Map<string, string>();
     data.forEach((r) => map.set(r.toIata, `${r.toCity} (${r.toIata})`));
-    return Array.from(map.entries()).map(([code, label]) => ({ code, label })).sort((a, b) => a.code.localeCompare(b.code));
+    return Array.from(map.entries())
+      .map(([code, label]) => ({ code, label }))
+      .sort((a, b) => a.code.localeCompare(b.code));
   }, [data]);
 
   return { airlines, minPrice, maxPrice, airlineMinPrice, departAirports, arriveAirports };
@@ -387,7 +394,10 @@ const buildSpecialRTRows = (fromIata: string, toIata: string, departDate: string
         id: `${out.id}__${back.id}`,
         airline: out.airline,
         logo: out.logo,
-        refundable: normalizeRefundable(out.refundable) === "Refundable" && normalizeRefundable(back.refundable) === "Refundable" ? "Refundable" : "Non-Refundable",
+        refundable:
+          normalizeRefundable(out.refundable) === "Refundable" && normalizeRefundable(back.refundable) === "Refundable"
+            ? "Refundable"
+            : "Non-Refundable",
         extras: ["Special Intl RT B2B Fare"],
         totalFareINR: total,
         outbound: toLegSummary(out),
@@ -418,7 +428,9 @@ function useDatasetMetaIntlRT(data: SpecialRTRow[]) {
       map.set(r.outbound.fromIata, `${r.outbound.fromCity} (${r.outbound.fromIata})`);
       map.set(r.inbound.fromIata, `${r.inbound.fromCity} (${r.inbound.fromIata})`);
     });
-    return Array.from(map.entries()).map(([code, label]) => ({ code, label })).sort((a, b) => a.code.localeCompare(b.code));
+    return Array.from(map.entries())
+      .map(([code, label]) => ({ code, label }))
+      .sort((a, b) => a.code.localeCompare(b.code));
   }, [data]);
 
   const arriveAirports = useMemo(() => {
@@ -427,7 +439,9 @@ function useDatasetMetaIntlRT(data: SpecialRTRow[]) {
       map.set(r.outbound.toIata, `${r.outbound.toCity} (${r.outbound.toIata})`);
       map.set(r.inbound.toIata, `${r.inbound.toCity} (${r.inbound.toIata})`);
     });
-    return Array.from(map.entries()).map(([code, label]) => ({ code, label })).sort((a, b) => a.code.localeCompare(b.code));
+    return Array.from(map.entries())
+      .map(([code, label]) => ({ code, label }))
+      .sort((a, b) => a.code.localeCompare(b.code));
   }, [data]);
 
   return { airlines, minPrice, maxPrice, airlineMinPrice, departAirports, arriveAirports };
@@ -755,8 +769,17 @@ export default function FlightResults() {
 
     return intlRaw.filter((r) => {
       const stopsVal = getStopsValueIntl(r);
-
-      return inAirline(r.airline) && inPrice(r) && inRefund(r) && inPayments(r) && inFrom(r) && inTo(r) && inDepSlot(r) && inArrSlot(r) && (f.nonstopOnly ? stopsVal === 0 : inStops(r));
+      return (
+        inAirline(r.airline) &&
+        inPrice(r) &&
+        inRefund(r) &&
+        inPayments(r) &&
+        inFrom(r) &&
+        inTo(r) &&
+        inDepSlot(r) &&
+        inArrSlot(r) &&
+        (f.nonstopOnly ? stopsVal === 0 : inStops(r))
+      );
     });
   }, [filtersIntl, intlRaw]);
 
@@ -840,10 +863,13 @@ export default function FlightResults() {
   const totalPaxLabel = `${pax} Traveller${pax > 1 ? "s" : ""}`;
 
   const nfIN = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-  maximumFractionDigits: 0,
-});
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  });
+
+  // theme-based overlay (no static black)
+  const overlayBg = "color-mix(in srgb, var(--text) 38%, transparent)";
 
   const baseUrl = window.location.origin;
 
@@ -861,83 +887,84 @@ export default function FlightResults() {
       departLbl ? `Depart: ${departLbl}` : "",
       isRound && returnLbl ? `Return: ${returnLbl}` : "",
       `Pax: ${totalPaxLabel}`,
-    ].filter(Boolean).join("\n");
+    ]
+      .filter(Boolean)
+      .join("\n");
 
     return {
       title: "Flight Search",
       text: msg,
-      url: `${baseUrl}/flight-results?${qp.toString()}`
+      url: `${baseUrl}/flight-results?${qp.toString()}`,
     };
   };
 
+  // ✅ Use your existing types for rows/fares
+  type ShareLeg = {
+    airline: string;
+    flightNos: string;
+    fromIata: string;
+    toIata: string;
+    departDate?: string;
+    departTime: string;
+    arriveTime: string;
+    stops?: number;
+    refundable?: string;
+    fareLabel?: string;
+    price?: number;
+  };
 
-// ✅ Use your existing types for rows/fares
-type ShareLeg = {
-  airline: string;
-  flightNos: string;
-  fromIata: string;
-  toIata: string;
-  departDate?: string;
-  departTime: string;
-  arriveTime: string;
-  stops?: number;
-  refundable?: string;
-  fareLabel?: string;
-  price?: number;
-};
+  function buildShareText({
+    isRound,
+    out,
+    inn,
+    bookingUrl,
+  }: {
+    isRound: boolean;
+    out?: ShareLeg;
+    inn?: ShareLeg;
+    bookingUrl?: string;
+  }) {
+    const lines: string[] = [];
 
-function buildShareText({
-  isRound,
-  out,
-  inn,
-  bookingUrl,
-}: {
-  isRound: boolean;
-  out?: ShareLeg;
-  inn?: ShareLeg;
-  bookingUrl?: string;
-}) {
-  const lines: string[] = [];
+    lines.push("✈️ Flight Option");
 
-  lines.push("✈️ Flight Option");
+    if (out) {
+      lines.push(
+        `\nOutbound: ${out.fromIata} → ${out.toIata} (${out.departDate ?? ""})`,
+        `${out.airline} ${out.flightNos}`,
+        `Time: ${out.departTime} - ${out.arriveTime} | Stops: ${out.stops ?? 0}`,
+        `Fare: ${out.fareLabel ?? "-"} | ${out.refundable ?? "-"}`,
+        out.price != null ? `Price: ${nfIN.format(out.price)}` : ""
+      );
+    }
 
-  if (out) {
-    lines.push(
-      `\nOutbound: ${out.fromIata} → ${out.toIata} (${out.departDate ?? ""})`,
-      `${out.airline} ${out.flightNos}`,
-      `Time: ${out.departTime} - ${out.arriveTime} | Stops: ${out.stops ?? 0}`,
-      `Fare: ${out.fareLabel ?? "-"} | ${out.refundable ?? "-"}`,
-      out.price != null ? `Price: ${nfIN.format(out.price)}` : ""
-    );
+    if (isRound && inn) {
+      lines.push(
+        `\nReturn: ${inn.fromIata} → ${inn.toIata} (${inn.departDate ?? ""})`,
+        `${inn.airline} ${inn.flightNos}`,
+        `Time: ${inn.departTime} - ${inn.arriveTime} | Stops: ${inn.stops ?? 0}`,
+        `Fare: ${inn.fareLabel ?? "-"} | ${inn.refundable ?? "-"}`,
+        inn.price != null ? `Price: ${nfIN.format(inn.price)}` : ""
+      );
+    }
+
+    if (bookingUrl) {
+      lines.push(`\n🔗 Link: ${bookingUrl}`);
+    }
+
+    return lines.filter(Boolean).join("\n");
   }
 
-  if (isRound && inn) {
-    lines.push(
-      `\nReturn: ${inn.fromIata} → ${inn.toIata} (${inn.departDate ?? ""})`,
-      `${inn.airline} ${inn.flightNos}`,
-      `Time: ${inn.departTime} - ${inn.arriveTime} | Stops: ${inn.stops ?? 0}`,
-      `Fare: ${inn.fareLabel ?? "-"} | ${inn.refundable ?? "-"}`,
-      inn.price != null ? `Price: ${nfIN.format(inn.price)}` : ""
-    );
+  function shareOnWhatsApp(text: string) {
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
   }
 
-  if (bookingUrl) {
-    lines.push(`\n🔗 Link: ${bookingUrl}`);
+  function shareOnEmail(text: string) {
+    const subject = "Flight Option";
+    const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+    window.location.href = mailto;
   }
-
-  return lines.filter(Boolean).join("\n");
-}
-
-function shareOnWhatsApp(text: string) {
-  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-  window.open(url, "_blank", "noopener,noreferrer");
-}
-
-function shareOnEmail(text: string) {
-  const subject = "Flight Option";
-  const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
-  window.location.href = mailto;
-}
 
   return (
     <div className="mx-auto">
@@ -948,7 +975,14 @@ function shareOnEmail(text: string) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
         >
-          <div className="border border-gray-200 bg-white rounded-2xl px-3 shadow-sm py-2">
+          {/* Header Card */}
+          <div
+            className="
+              rounded-2xl px-3 py-2 shadow-sm
+              border border-[var(--border)]
+              bg-[var(--surface)]
+            "
+          >
             <div
               className={[
                 "mb-4 origin-top transition-all duration-300 ease-out",
@@ -967,29 +1001,49 @@ function shareOnEmail(text: string) {
 
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div className="space-y-1">
-                <div className="text-[11px] font-semibold uppercase text-gray-500">
+                <div className="text-[11px] font-semibold uppercase text-[var(--muted)]">
                   {isSpecialIntlRT ? "International Round Trip • Sector Details" : isRound ? "Round Trip • Sector Details" : "Oneway • Sector Details"}
                 </div>
+
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   {sectorLabel && (
-                    <span className="rounded-full bg-gray-900 px-3 py-1 text-[13px] font-semibold text-white">
+                    <span className="rounded-full bg-[var(--text)] px-3 py-1 text-[13px] font-semibold text-[var(--surface)]">
                       {sectorLabel}
                     </span>
                   )}
-                  {departLbl && <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-700">{departLbl}</span>}
-                  {isRound && returnLbl && <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-700">{returnLbl}</span>}
-                  <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-700">{totalPaxLabel}</span>
-                  <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[12px] text-gray-500">{uniqueAirlines} Airlines</span>
+
+                  {departLbl && (
+                    <span className="rounded-full bg-[var(--surface2)] px-2.5 py-1 text-[12px] text-[var(--text)] border border-[var(--border)]">
+                      {departLbl}
+                    </span>
+                  )}
+
+                  {isRound && returnLbl && (
+                    <span className="rounded-full bg-[var(--surface2)] px-2.5 py-1 text-[12px] text-[var(--text)] border border-[var(--border)]">
+                      {returnLbl}
+                    </span>
+                  )}
+
+                  <span className="rounded-full bg-[var(--surface2)] px-2.5 py-1 text-[12px] text-[var(--text)] border border-[var(--border)]">
+                    {totalPaxLabel}
+                  </span>
+
+                  <span className="rounded-full bg-[var(--surface2)] px-2.5 py-1 text-[12px] text-[var(--muted)] border border-[var(--border)]">
+                    {uniqueAirlines} Airlines
+                  </span>
                 </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 text-xs md:justify-end">
+                {/* Commission Toggle */}
                 <button
                   type="button"
                   onClick={() => setShowCommission((v) => !v)}
                   className={[
-                    "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 font-medium",
-                    showCommission ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-gray-300 bg-white text-gray-700",
+                    "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 font-medium transition",
+                    showCommission
+                      ? "border-[var(--success)] bg-[color-mix(in_srgb,var(--success)_14%,transparent)] text-[var(--success)]"
+                      : "border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface2)]",
                   ].join(" ")}
                 >
                   <span>{showCommission ? "Net Fare" : "Agent Commission"}</span>
@@ -997,23 +1051,28 @@ function shareOnEmail(text: string) {
                   <span
                     className={[
                       "flex h-4 w-8 items-center rounded-full px-[2px] transition",
-                      showCommission ? "bg-emerald-500" : "bg-gray-300",
+                      showCommission ? "bg-[var(--success)]" : "bg-[var(--border)]",
                     ].join(" ")}
                   >
                     <span
                       className={[
-                        "h-3 w-3 transform rounded-full bg-white shadow transition",
+                        "h-3 w-3 transform rounded-full bg-[var(--surface)] shadow transition",
                         showCommission ? "translate-x-4" : "",
                       ].join(" ")}
                     />
                   </span>
                 </button>
 
+                {/* Sort */}
+                <div className="flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5">
+                  <span className="text-[11px] text-[var(--muted)]">Sort:</span>
 
-                <div className="flex items-center gap-1 rounded-full border border-gray-300 bg-white px-2.5 py-1.5">
-                  <span className="text-[11px] text-gray-500">Sort:</span>
                   {!isRound ? (
-                    <select value={sortOW} onChange={(e) => setSortOW(e.target.value as SortKey)} className="bg-transparent text-[12px] text-gray-800 outline-none">
+                    <select
+                      value={sortOW}
+                      onChange={(e) => setSortOW(e.target.value as SortKey)}
+                      className="bg-transparent text-[12px] text-[var(--text)] outline-none"
+                    >
                       <option value="price_low">Price (Lowest)</option>
                       <option value="price_high">Price (Highest)</option>
                       <option value="duration">Duration (Shortest)</option>
@@ -1021,7 +1080,11 @@ function shareOnEmail(text: string) {
                       <option value="arrive_late">Latest Arrival</option>
                     </select>
                   ) : !isSpecialIntlRT ? (
-                    <select value={sortRT} onChange={(e) => setSortRT(e.target.value as SortKey)} className="bg-transparent text-[12px] text-gray-800 outline-none">
+                    <select
+                      value={sortRT}
+                      onChange={(e) => setSortRT(e.target.value as SortKey)}
+                      className="bg-transparent text-[12px] text-[var(--text)] outline-none"
+                    >
                       <option value="price_low">Price (Lowest)</option>
                       <option value="price_high">Price (Highest)</option>
                       <option value="duration">Duration (Shortest)</option>
@@ -1029,7 +1092,11 @@ function shareOnEmail(text: string) {
                       <option value="arrive_late">Latest Arrival</option>
                     </select>
                   ) : (
-                    <select value={sortIntl} onChange={(e) => setSortIntl(e.target.value as SortKey)} className="bg-transparent text-[12px] text-gray-800 outline-none">
+                    <select
+                      value={sortIntl}
+                      onChange={(e) => setSortIntl(e.target.value as SortKey)}
+                      className="bg-transparent text-[12px] text-[var(--text)] outline-none"
+                    >
                       <option value="price_low">Price (Lowest)</option>
                       <option value="price_high">Price (Highest)</option>
                       <option value="duration">Duration (Shortest)</option>
@@ -1039,15 +1106,31 @@ function shareOnEmail(text: string) {
                   )}
                 </div>
 
+                {/* Modify Search */}
                 <button
                   type="button"
                   onClick={() => setShowModify((s) => !s)}
-                  className="inline-flex items-center gap-1 rounded-full border border-blue-500 bg-white px-3 py-1.5 text-[12px] font-medium text-blue-600 hover:bg-blue-50"
+                  className="
+                    inline-flex items-center gap-1 rounded-full border px-3 py-1.5
+                    text-[12px] font-medium transition
+                    border-[var(--primary)]
+                    bg-[var(--surface)]
+                    text-[var(--primary)]
+                    hover:bg-[var(--primarySoft)]
+                  "
                 >
                   Modify Search
                 </button>
 
-                <button onClick={() => setDrawer(true)} className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-sm shadow-sm md:hidden">
+                {/* Filters (mobile) */}
+                <button
+                  onClick={() => setDrawer(true)}
+                  className="
+                    rounded-lg border border-[var(--border)] bg-[var(--surface)]
+                    px-2.5 py-1.5 text-sm shadow-sm md:hidden
+                    text-[var(--text)] hover:bg-[var(--surface2)] transition
+                  "
+                >
                   Filters
                 </button>
               </div>
@@ -1086,7 +1169,6 @@ function shareOnEmail(text: string) {
                   showCommission={showCommission}
                   fareView={fOW.fareView}
                 />
-
               ) : !isSpecialIntlRT ? (
                 <RoundTripResultList
                   outboundRows={rowsOutRT}
@@ -1103,7 +1185,7 @@ function shareOnEmail(text: string) {
                   selectedGlobal={selectedIntl}
                   onSelectFare={(rowId, fare) => setSelectedIntl({ flightId: rowId, fare })}
                   paxConfig={paxConfigIntl}
-                 showCommission={showCommission}
+                  showCommission={showCommission}
                   onEmpty={
                     <span>
                       No special Intl RT fares found for <b>{fromIata} → {toIata}</b> on selected dates.
@@ -1115,12 +1197,21 @@ function shareOnEmail(text: string) {
           </motion.div>
         </motion.div>
 
+        {/* Mobile Drawer */}
         {drawer && (
           <div className="fixed inset-0 z-50 md:hidden">
-            <div className="absolute inset-0 bg-black/40" onClick={() => setDrawer(false)} />
+            <div
+              className="absolute inset-0"
+              style={{ background: overlayBg }}
+              onClick={() => setDrawer(false)}
+            />
 
             <motion.div
-              className="absolute inset-y-0 right-0 w-full max-w-sm overflow-y-auto bg-white p-4 shadow-2xl"
+              className="
+                absolute inset-y-0 right-0 w-full max-w-sm overflow-y-auto
+                bg-[var(--surface)] p-4 shadow-2xl
+                border-l border-[var(--border)]
+              "
               initial={{ x: "100%", opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
@@ -1141,14 +1232,28 @@ function shareOnEmail(text: string) {
               ) : !isSpecialIntlRT ? (
                 <>
                   <FilterPanel meta={metaForPanelRT} f={activeForPanelRT} setF={setFromPanelRT} onReset={resetByApplyToRT} mobile onClose={() => setDrawer(false)} showApplyTo />
-                  <button onClick={() => setDrawer(false)} className="mt-3 w-full rounded-lg bg-gray-900 px-3 py-2 text-sm font-semibold text-white">
+                  <button
+                    onClick={() => setDrawer(false)}
+                    className="
+                      mt-3 w-full rounded-lg px-3 py-2 text-sm font-semibold transition
+                      bg-[var(--primary)] text-[var(--surface)]
+                      hover:bg-[var(--primaryHover)]
+                    "
+                  >
                     Apply Filters
                   </button>
                 </>
               ) : (
                 <>
                   <FilterPanel meta={metaIntlForPanel} f={filtersIntl} setF={setFiltersIntl} onReset={handleResetIntl} mobile onClose={() => setDrawer(false)} showApplyTo />
-                  <button onClick={() => setDrawer(false)} className="mt-3 w-full rounded-lg bg-gray-900 px-3 py-2 text-sm font-semibold text-white">
+                  <button
+                    onClick={() => setDrawer(false)}
+                    className="
+                      mt-3 w-full rounded-lg px-3 py-2 text-sm font-semibold transition
+                      bg-[var(--primary)] text-[var(--surface)]
+                      hover:bg-[var(--primaryHover)]
+                    "
+                  >
                     Apply Filters
                   </button>
                 </>
@@ -1158,5 +1263,7 @@ function shareOnEmail(text: string) {
         )}
       </div>
     </div>
+
+    
   );
 }

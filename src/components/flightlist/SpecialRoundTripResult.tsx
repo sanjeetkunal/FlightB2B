@@ -860,7 +860,7 @@ function IntlB2BRow({
               <ImageLogo src={r.logo} alt={r.airline} />
               <div className="min-w-0">
                 <div className="truncate text-[16px] font-semibold text-gray-900">{r.airline}</div>
-                <div className="text-[11px] text-gray-500">Special Intl RT B2B Fare</div>
+                {/* <div className="text-[11px] text-gray-500">Special Intl RT B2B Fare</div> */}
               </div>
             </div>
 
@@ -893,7 +893,7 @@ function IntlB2BRow({
               <ImageLogo src={r.logo} alt={r.airline} />
               <div className="min-w-0">
                 <div className="truncate text-[16px] font-semibold text-gray-900">{r.airline}</div>
-                <div className="text-[11px] text-gray-500">Special Intl RT B2B Fare</div>
+                {/* <div className="text-[11px] text-gray-500">Special Intl RT B2B Fare</div> */}
               </div>
             </div>
 

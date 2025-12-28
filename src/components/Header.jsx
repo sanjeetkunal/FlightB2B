@@ -225,10 +225,10 @@ export default function Header({ variant = "private" }) {
               >
                 <img
                   src={logo}
-                  className="w-36 sm:w-[260px] object-contain"
+                  className="w-36 sm:w-[80px] object-contain"
                   alt="Logo"
                 />
-                <div className="hidden sm:block w-px h-6 bg-[var(--border)]" />
+                {/* <div className="hidden sm:block w-px h-6 bg-[var(--border)]" /> */}
               </button>
             </div>
 

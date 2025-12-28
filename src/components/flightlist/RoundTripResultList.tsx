@@ -824,16 +824,9 @@ export function SummaryBar({ out, inn, showCommission, onBookNow, onLockPrice }:
                   <button
                     type="button"
                     onClick={onBookNow}
-                    className="rounded-full bg-sky-500 px-4 py-2 text-[12px] font-extrabold text-white hover:bg-sky-400"
+                    className="rounded-1xl bg-sky-500 px-4 py-2 text-[12px] font-extrabold text-white hover:bg-sky-400"
                   >
                     BOOK NOW
-                  </button>
-                  <button
-                    type="button"
-                    onClick={onLockPrice}
-                    className="rounded-full border border-slate-600 bg-slate-800 px-4 py-2 text-[12px] font-extrabold text-white hover:bg-slate-700"
-                  >
-                    LOCK PRICE
                   </button>
                 </div>
 

@@ -99,12 +99,11 @@ export default function AirportSelect({ label, value, onChange }) {
   const secondary = value ? `${value.airport} • ${value.code}` : "";
 
   return (
-    <div className="relative min-w-0" ref={wrapRef}>
+    <div className="relative min-w-0 w-full" ref={wrapRef}>
       <FieldShell label={label}>
         {/* top row: big title + clear button */}
         <div className="flex items-start justify-between gap-2 min-w-0">
           <div className="min-w-0 flex-1">
-            {/* ✅ SAME LINE INPUT (only when open) */}
             {open ? (
               <input
                 ref={inputRef}
@@ -133,7 +132,6 @@ export default function AirportSelect({ label, value, onChange }) {
               </button>
             )}
 
-            {/* secondary line always visible */}
             <div className="text-[12px] text-[var(--muted)] truncate">
               {secondary || "City / Airport / Code"}
             </div>
@@ -161,21 +159,44 @@ export default function AirportSelect({ label, value, onChange }) {
       {open && (
         <div
           className="
-            absolute z-40 mt-2
-            w-[min(520px,96vw)]
+            absolute z-40 mt-2 left-0
+            w-full max-w-[420px]
             rounded-3xl border border-[var(--border)]
             bg-[var(--surface)]
             shadow-[0_24px_60px_-18px_rgba(0,0,0,0.35)]
             p-2
+            overflow-hidden
           "
         >
+          {/* ✅ thin scrollbar + theme colors (no static) */}
+          <style>{`
+            .airport-scroll {
+              scrollbar-width: thin;
+              scrollbar-color: var(--border) transparent;
+            }
+            .airport-scroll::-webkit-scrollbar {
+              width: 6px;
+              height: 6px;
+            }
+            .airport-scroll::-webkit-scrollbar-track {
+              background: transparent;
+            }
+            .airport-scroll::-webkit-scrollbar-thumb {
+              background: var(--border);
+              border-radius: 999px;
+            }
+            .airport-scroll::-webkit-scrollbar-thumb:hover {
+              background: var(--muted);
+            }
+          `}</style>
+
           {!q && (
             <div className="px-4 py-2 text-xs font-semibold text-[var(--muted)]">
               Popular Airports
             </div>
           )}
 
-          <ul className="max-h-96 overflow-auto">
+          <ul className="airport-scroll max-h-80 overflow-auto">
             {list.map((a, i) => (
               <li key={a.code + a.airport}>
                 <button
@@ -191,11 +212,15 @@ export default function AirportSelect({ label, value, onChange }) {
                 >
                   <span
                     className="
-                      inline-flex items-center justify-center w-10 h-10 rounded-xl
+                      inline-flex items-center justify-center w-10 h-10 rounded-xl p-2
                       border border-[var(--border)]
                       font-bold
                       bg-[var(--surface2)]
-                      text-[var(--text)]
+                      text-[var(--text)] Class
+Properties
+text-xs	font-size: 0.75rem;
+line-height: 1rem;
+text-sm
                     "
                   >
                     {a.code}
