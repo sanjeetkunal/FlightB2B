@@ -332,7 +332,7 @@ export default function FilterPanel({
                     });
                   }}
                 />
-                <span className="text-[14px] font-semibold">Non Stop</span>
+                <span className="text-[12px]">Non Stop</span>
               </span>
               <span className="text-[var(--muted)] text-[14px]">
                 <Money v={meta.minPrice} />
@@ -347,7 +347,7 @@ export default function FilterPanel({
                   checked={f.hideNearby}
                   onChange={() => setF({ ...f, hideNearby: !f.hideNearby })}
                 />
-                <span className="text-[14px] font-semibold">Hide Nearby Airports</span>
+                <span className="text-[12px]">Hide Nearby Airports</span>
               </span>
               <span className="text-[var(--muted)] text-[14px]">
                 <Money v={meta.minPrice} />
@@ -363,7 +363,7 @@ export default function FilterPanel({
                     checked={f.airlines.size !== 0 && f.airlines.has(al)}
                     onChange={() => setF({ ...f, airlines: toggleStringSet(f.airlines, al) })}
                   />
-                  <span className="text-[14px] font-semibold">{al}</span>
+                  <span className="text-[12px]">{al}</span>
                 </span>
                 <span className="text-[var(--muted)] text-[14px]">
                   <Money v={meta.airlineMinPrice[al] ?? meta.minPrice} />
@@ -404,57 +404,99 @@ export default function FilterPanel({
         </div>
 
         {/* Departure time */}
-        <div className="mb-3 border-b border-[var(--border)]/40 pb-3">
-          <div className="mb-3 text-[15px] font-bold">Departure Time</div>
+   <div className="mb-3 border-b border-[var(--border)]/40 pb-3">
+  <div className="mb-3 text-[15px] font-bold">Departure Time</div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {[
-              { key: "0-6" as TimeSlot, label: "Before 6 AM", icon: <IconBefore6 /> },
-              { key: "6-12" as TimeSlot, label: "6 AM – 12 PM", icon: <Icon6to12 /> },
-              { key: "12-18" as TimeSlot, label: "12 PM – 6 PM", icon: <Icon12to18 /> },
-              { key: "18-24" as TimeSlot, label: "After 6 PM", icon: <IconAfter6 /> },
-            ].map(({ key, label, icon }) => {
-              const active = f.depSlots.has(key);
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setF({ ...f, depSlots: toggleSlot(f.depSlots, key) })}
-                  className={[
-                    "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[12px] font-semibold transition",
-                    active
-                      ? "border-[var(--primary)] bg-[var(--primarySoft)] text-[var(--text)]"
-                      : "border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface2)]",
-                  ].join(" ")}
-                >
-                  <span className={active ? "text-[var(--primary)]" : "text-[var(--muted)]"}>{icon}</span>
-                  <span className="whitespace-nowrap">{label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+  {/* 4 in one row (no scroll) */}
+  <div className="grid grid-cols-4 gap-2">
+    {[
+      { key: "0-6" as TimeSlot, label: "Before\n6 AM", icon: <IconBefore6 /> },
+      { key: "6-12" as TimeSlot, label: "6 AM to\n12 PM", icon: <Icon6to12 /> },
+      { key: "12-18" as TimeSlot, label: "12 PM to\n6 PM", icon: <Icon12to18 /> },
+      { key: "18-24" as TimeSlot, label: "After\n6 PM", icon: <IconAfter6 /> },
+    ].map(({ key, label, icon }) => {
+      const active = f.depSlots.has(key);
 
-        {/* Arrival time */}
-        <div className="mb-3 border-b border-[var(--border)]/40 pb-3">
-          <div className="mb-3 text-[15px] font-bold">Arrival Time</div>
-          <div className="flex flex-wrap gap-2">
-            {[
-              { key: "0-6" as TimeSlot, top: "Before 6 AM", icon: <IconBefore6 /> },
-              { key: "6-12" as TimeSlot, top: "6 AM to 12 PM", icon: <Icon6to12 /> },
-              { key: "12-18" as TimeSlot, top: "12 PM to 6 PM", icon: <Icon12to18 /> },
-              { key: "18-24" as TimeSlot, top: "After 6 PM", icon: <IconAfter6 /> },
-            ].map(({ key, top, icon }) => (
-              <TimeCard
-                key={key}
-                selected={f.arrSlots.has(key)}
-                onClick={() => setF({ ...f, arrSlots: toggleSlot(f.arrSlots, key) })}
-                titleTop={top}
-                icon={icon}
-              />
-            ))}
-          </div>
-        </div>
+      return (
+        <button
+          key={key}
+          type="button"
+          onClick={() => setF({ ...f, depSlots: toggleSlot(f.depSlots, key) })}
+          className={[
+            "w-full rounded-xl border px-2 py-2.5 transition",
+            "flex flex-col items-center justify-center text-center",
+            "min-h-[74px]",
+
+            active
+              ? "border-[var(--primary)] bg-[var(--primarySoft)] shadow-[0_0_0_2px_rgba(0,0,0,0)]"
+              : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]",
+          ].join(" ")}
+        >
+          <span
+            className={[
+              "mb-1.5 text-[18px] leading-none",
+              active ? "text-[var(--primary)]" : "text-[var(--muted)]",
+            ].join(" ")}
+          >
+            {icon}
+          </span>
+
+          <span className="text-[9px] font-semibold leading-[1.1] text-[var(--text)] whitespace-pre-line">
+            {label}
+          </span>
+        </button>
+      );
+    })}
+  </div>
+</div>
+
+
+{/* Arrival time (same as Departure Time) */}
+<div className="mb-3 border-b border-[var(--border)]/40 pb-3">
+  <div className="mb-3 text-[15px] font-bold">Arrival Time</div>
+
+  <div className="grid grid-cols-4 gap-2">
+    {[
+      { key: "0-6" as TimeSlot, label: "Before\n6 AM", icon: <IconBefore6 /> },
+      { key: "6-12" as TimeSlot, label: "6 AM to\n12 PM", icon: <Icon6to12 /> },
+      { key: "12-18" as TimeSlot, label: "12 PM to\n6 PM", icon: <Icon12to18 /> },
+      { key: "18-24" as TimeSlot, label: "After\n6 PM", icon: <IconAfter6 /> },
+    ].map(({ key, label, icon }) => {
+      const active = f.arrSlots.has(key);
+
+      return (
+        <button
+          key={key}
+          type="button"
+          onClick={() => setF({ ...f, arrSlots: toggleSlot(f.arrSlots, key) })}
+          className={[
+            "w-full rounded-xl border px-2 py-2.5 transition",
+            "flex flex-col items-center justify-center text-center",
+            "min-h-[74px]",
+            active
+              ? "border-[var(--primary)] bg-[var(--primarySoft)] shadow-[0_0_0_2px_rgba(0,0,0,0)]"
+              : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]",
+          ].join(" ")}
+        >
+          <span
+            className={[
+              "mb-1.5 text-[18px] leading-none",
+              active ? "text-[var(--primary)]" : "text-[var(--muted)]",
+            ].join(" ")}
+          >
+            {icon}
+          </span>
+
+          <span className="text-[9px] font-semibold leading-[1.1] text-[var(--text)] whitespace-pre-line">
+            {label}
+          </span>
+        </button>
+      );
+    })}
+  </div>
+</div>
+
+
 
         {/* Departure Airports */}
         {meta.departAirports?.length > 0 && (
@@ -470,7 +512,7 @@ export default function FilterPanel({
                       checked={f.fromAirports.size !== 0 && f.fromAirports.has(a.code)}
                       onChange={() => setF({ ...f, fromAirports: toggleStringSet(f.fromAirports, a.code) })}
                     />
-                    <span className="text-[14px] font-semibold">{a.label}</span>
+                    <span className="text-[12px]">{a.label}</span>
                   </span>
                 </label>
               ))}
@@ -492,7 +534,7 @@ export default function FilterPanel({
                       checked={f.toAirports.size !== 0 && f.toAirports.has(a.code)}
                       onChange={() => setF({ ...f, toAirports: toggleStringSet(f.toAirports, a.code) })}
                     />
-                    <span className="text-[14px] font-semibold">{a.label}</span>
+                    <span className="text-[12px]">{a.label}</span>
                   </span>
                 </label>
               ))}
@@ -513,7 +555,7 @@ export default function FilterPanel({
                     checked={f.airlines.size !== 0 && f.airlines.has(a)}
                     onChange={() => setF({ ...f, airlines: toggleStringSet(f.airlines, a) })}
                   />
-                  <span className="text-[14px] font-semibold">{a}</span>
+                  <span className="text-[12px]">{a}</span>
                 </span>
                 <span className="text-[var(--muted)]">
                   <Money v={meta.airlineMinPrice[a] ?? meta.minPrice} />

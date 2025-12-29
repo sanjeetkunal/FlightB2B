@@ -40,6 +40,8 @@ export default function MultiMonthDatePicker({
   minDate,
   maxDate,
   className = "",
+  // ✅ NEW: optional mode for showing hint text
+  mode = "roundtrip", // "oneway" | "roundtrip"
 }) {
   const ref = useRef(null);
   const [anchor, setAnchor] = useState(() => sOD(value || new Date()));
@@ -111,6 +113,13 @@ export default function MultiMonthDatePicker({
         typeof window !== "undefined" && totalWidth < window.innerWidth ? { width: totalWidth } : undefined
       }
     >
+      {/* ✅ Hint text (replaces "disabled" vibe with friendly CTA) */}
+      {mode === "oneway" ? (
+        <div className="mb-2 text-center text-xs font-medium text-[var(--muted)]">
+          Click to select
+        </div>
+      ) : null}
+
       {/* edge arrows */}
       <button
         onClick={() => setAnchor((a) => addMonths(a, -1))}
@@ -169,6 +178,9 @@ export default function MultiMonthDatePicker({
               <div className="grid grid-cols-7 gap-1.5">
                 {cells.map((d, idx) => {
                   const disabled = isDisabled(d);
+
+                  // ✅ even in oneway, return-date picker should be clickable now:
+                  // We are NOT disabling based on "oneway" mode anymore.
                   const selected = d && sameDay(d, value);
                   const isToday = d && sameDay(d, today);
 
@@ -177,7 +189,7 @@ export default function MultiMonthDatePicker({
                       key={idx}
                       disabled={!d || disabled}
                       onClick={() => {
-                        if (d) {
+                        if (d && !disabled) {
                           onChange?.(d);
                           onClose?.();
                         }
@@ -194,6 +206,7 @@ export default function MultiMonthDatePicker({
                       ].join(" ")}
                       style={selected ? { background: "var(--primary)" } : undefined}
                       aria-pressed={selected ? "true" : "false"}
+                      title={disabled ? "Not available" : "Click to select"}
                     >
                       <div className="font-semibold leading-none text-sm">{d ? d.getDate() : ""}</div>
                     </button>

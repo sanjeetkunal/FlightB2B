@@ -22,6 +22,13 @@ export default function DateField({
   disabled,
   offsetDays = 0,
   minDate,
+
+  /** ✅ NEW: if disabled but user clicks, parent can switch trip etc */
+  onDisabledClick,
+
+  /** ✅ NEW: parent can force open after enabling */
+  forceOpen = false,
+  onForceOpenConsumed,
 }) {
   const [open, setOpen] = useState(false);
 
@@ -53,8 +60,18 @@ export default function DateField({
     []
   );
 
+  // ✅ force open (used when return click switches to round trip)
+  useEffect(() => {
+    if (!forceOpen) return;
+    setOpen(true);
+    onForceOpenConsumed?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [forceOpen]);
+
   const display = valDate ? fmtDate.format(valDate) : "Select date";
-  const dayName = valDate ? fmtDay.format(valDate) : disabled ? "Disabled" : "";
+
+  // ✅ change Disabled -> Click to select
+  const dayName = valDate ? fmtDay.format(valDate) : disabled ? "Click to select" : "";
 
   const handlePick = (d) => {
     if (!d) return;
@@ -64,27 +81,34 @@ export default function DateField({
     setOpen(false);
   };
 
+  const handleClick = () => {
+    if (disabled) {
+      onDisabledClick?.(); // ✅ parent will switch to round
+      return;
+    }
+    setOpen((v) => !v);
+  };
+
   return (
     <div className="relative min-w-0">
       <FieldShell label={label}>
         <button
           type="button"
-          onClick={() => !disabled && setOpen((v) => !v)}
+          onClick={handleClick}
           className={[
             "w-full text-left min-w-0 cursor-pointer",
-            disabled ? "opacity-50 cursor-not-allowed" : "",
+            disabled ? "opacity-60" : "",
           ].join(" ")}
         >
           <div className="text-[18px] leading-6 font-bold text-[var(--text)] truncate">
             {display}
           </div>
-          <div className="text-[12px] text-[var(--muted)] truncate">
-            {dayName}
-          </div>
+          <div className="text-[12px] text-[var(--muted)] truncate">{dayName}</div>
         </button>
       </FieldShell>
 
       <MultiMonthDatePicker
+        // ✅ calendar open only when not disabled
         open={open && !disabled}
         value={valDate}
         onChange={handlePick}

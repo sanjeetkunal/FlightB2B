@@ -1,3 +1,7 @@
+// TicketCopyPage.tsx (drop-in replacement)
+// ✅ Static colors removed (no bg-slate-*, text-slate-*, border-slate-* color classes)
+// ✅ Uses CSS variables (same pattern like your PaymentConfirmationPage VAR object)
+
 import React, { useMemo, useState } from "react";
 import {
   ArrowLeft,
@@ -14,24 +18,31 @@ import {
   Send,
   ShieldCheck,
   Tag,
-  Trash2,
   Wallet,
 } from "lucide-react";
 
-/**
- * B2B Ticket Copy Page
- * - Agent can view both Customer Copy and Agent Copy
- * - Agent can adjust markup / service fee / commission overlay
- * - Clean, printable layout inspired by the reference screenshot
- *
- * How to use:
- * <TicketCopyPage
- *   ticket={apiTicket}
- *   onSavePricing={async (payload) => ...}
- *   onEmailTicket={async (payload) => ...}
- *   onDownloadPdf={() => ...}
- * />
- */
+/** ================== Theme Vars (dynamic) ================== */
+const VAR = {
+  page: "var(--page, rgba(248,250,252,1))",
+  surface: "var(--surface, rgba(255,255,255,0.92))",
+  surface2: "var(--surface2, rgba(248,250,252,0.92))",
+  border: "var(--border, rgba(15,23,42,0.12))",
+  text: "var(--text, rgba(15,23,42,0.92))",
+  muted: "var(--muted, rgba(71,85,105,0.9))",
+  subtle: "var(--subtle, rgba(100,116,139,0.85))",
+  primary: "var(--primary, rgb(37,99,235))",
+  primarySoft: "var(--primarySoft, rgba(37,99,235,0.14))",
+  accent: "var(--accent, rgb(16,182,217))",
+  accentSoft: "var(--accentSoft, rgba(16,182,217,0.12))",
+  success: "var(--success, rgb(34,197,94))",
+  successSoft: "var(--successSoft, rgba(34,197,94,0.12))",
+  warn: "var(--warn, rgb(245,158,11))",
+  warnSoft: "var(--warnSoft, rgba(245,158,11,0.14))",
+  danger: "var(--danger, rgb(244,63,94))",
+  dangerSoft: "var(--dangerSoft, rgba(244,63,94,0.12))",
+};
+
+const nfIN = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
 
 /* ===================== Types ===================== */
 
@@ -40,9 +51,9 @@ export type Pax = {
   title?: string;
   firstName: string;
   lastName: string;
-  airline?: string; // marketing carrier
+  airline?: string;
   status: "CONFIRMED" | "HOLD" | "CANCELLED" | string;
-  sector: string; // e.g. DEL-BLR
+  sector: string;
   airlinePnr?: string;
   ticketNumber?: string;
   paxType?: "ADT" | "CHD" | "INF" | string;
@@ -53,62 +64,44 @@ export type Segment = {
   airlineName: string;
   airlineCode: string;
   flightNo: string;
-  from: {
-    code: string;
-    city: string;
-    terminal?: string;
-    time: string; // ISO or display string
-    date: string; // ISO or display string
-  };
-  to: {
-    code: string;
-    city: string;
-    terminal?: string;
-    time: string;
-    date: string;
-  };
+  from: { code: string; city: string; terminal?: string; time: string; date: string };
+  to: { code: string; city: string; terminal?: string; time: string; date: string };
   durationMins?: number;
   cabin?: string;
   refundable?: "Refundable" | "Non Refundable" | string;
-  baggage?: {
-    checkIn?: string; // e.g. 15KG
-    cabin?: string; // e.g. 7KG
-  };
+  baggage?: { checkIn?: string; cabin?: string };
 };
 
 export type FareBreakup = {
-  baseFare: number; // supplier base
+  baseFare: number;
   taxes: number;
   airlineCharges?: number;
   otherCharges?: number;
-  discount?: number; // positive number
+  discount?: number;
   insurance?: number;
   gst?: number;
   tds?: number;
 };
 
 export type AgentPricing = {
-  markup: number; // agent sells on top of gross
-  serviceFee: number; // convenience / handling
-  commissionOverride: number; // optional extra commission display
+  markup: number;
+  serviceFee: number;
+  commissionOverride: number;
   notes?: string;
 };
 
 export type TicketData = {
-  brand?: {
-    name: string;
-    tagline?: string;
-  };
+  brand?: { name: string; tagline?: string };
   bookingId: string;
   bookingStatus: "CONFIRMED" | "HOLD" | "CANCELLED" | string;
-  bookingDate: string; // display
-  bookingTime: string; // display
+  bookingDate: string;
+  bookingTime: string;
   tripType?: "ONEWAY" | "ROUND" | "MULTI" | string;
-  routeLabel: string; // e.g. Delhi - Bangalore
+  routeLabel: string;
   segments: Segment[];
   passengers: Pax[];
   fare: FareBreakup;
-  agentPricing?: Partial<AgentPricing>; // existing saved values
+  agentPricing?: Partial<AgentPricing>;
   cancellation?: {
     easeMyTripFeeLabel?: string;
     airlineFeeRules?: Array<{ label: string; amount: string }>;
@@ -119,11 +112,7 @@ export type TicketData = {
 export type SavePricingPayload = {
   bookingId: string;
   pricing: AgentPricing;
-  computed: {
-    supplierTotal: number;
-    agentNetTotal: number;
-    customerPayable: number;
-  };
+  computed: { supplierTotal: number; agentNetTotal: number; customerPayable: number };
 };
 
 export type EmailTicketPayload = {
@@ -134,12 +123,7 @@ export type EmailTicketPayload = {
 
 /* ===================== Helpers ===================== */
 
-const fmtINR = (n: number) =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(Math.round(n || 0));
+const fmtINR = (n: number) => `₹${nfIN.format(Math.round(n || 0))}`;
 
 const toMinsLabel = (mins?: number) => {
   if (!mins && mins !== 0) return "";
@@ -153,6 +137,14 @@ const toMinsLabel = (mins?: number) => {
 const safeNum = (v: any) => {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
+};
+
+const statusTone = (s: string) => {
+  const up = String(s || "").toUpperCase();
+  if (up.includes("CONF")) return { bg: VAR.successSoft, fg: VAR.success, border: VAR.border };
+  if (up.includes("HOLD")) return { bg: VAR.warnSoft, fg: VAR.warn, border: VAR.border };
+  if (up.includes("CANC")) return { bg: VAR.dangerSoft, fg: VAR.danger, border: VAR.border };
+  return { bg: VAR.surface2, fg: VAR.muted, border: VAR.border };
 };
 
 /* ===================== Demo data ===================== */
@@ -171,20 +163,8 @@ const DEMO_TICKET: TicketData = {
       airlineName: "Vistara",
       airlineCode: "UK",
       flightNo: "UK 817",
-      from: {
-        code: "DEL",
-        city: "Delhi",
-        terminal: "T3",
-        time: "16:05",
-        date: "Thu-02May2019",
-      },
-      to: {
-        code: "BLR",
-        city: "Bangalore",
-        terminal: "T1",
-        time: "18:30",
-        date: "Thu-02May2019",
-      },
+      from: { code: "DEL", city: "Delhi", terminal: "T3", time: "16:05", date: "Thu-02May2019" },
+      to: { code: "BLR", city: "Bangalore", terminal: "T1", time: "18:30", date: "Thu-02May2019" },
       durationMins: 145,
       cabin: "Economy",
       refundable: "Non Refundable",
@@ -214,16 +194,10 @@ const DEMO_TICKET: TicketData = {
     gst: 0,
     tds: 0,
   },
-  agentPricing: {
-    markup: 250,
-    serviceFee: 0,
-    commissionOverride: 0,
-  },
+  agentPricing: { markup: 250, serviceFee: 0, commissionOverride: 0 },
   cancellation: {
     easeMyTripFeeLabel: "Convenience fee: ₹ 250 per pax per sector",
-    airlineFeeRules: [
-      { label: "Before 4 hours of departure", amount: "₹ 3,180 (per pax per sector)" },
-    ],
+    airlineFeeRules: [{ label: "Before 4 hours of departure", amount: "₹ 3,180 (per pax per sector)" }],
   },
   terms: [
     "All passengers must present valid government ID at check-in.",
@@ -274,15 +248,11 @@ export default function TicketCopyPage({
     return base + taxes + airline + other + insurance + gst + tds - discount;
   }, [ticket.fare]);
 
-  const agentNetTotal = useMemo(() => {
-    // What agent pays to supplier (can later incorporate credit/commission logic)
-    return supplierTotal;
-  }, [supplierTotal]);
+  const agentNetTotal = useMemo(() => supplierTotal, [supplierTotal]);
 
   const customerPayable = useMemo(() => {
     const m = safeNum(pricing.markup);
     const sf = safeNum(pricing.serviceFee);
-    // Commission override is display-only in this UI (does not reduce payable)
     return supplierTotal + m + sf;
   }, [supplierTotal, pricing.markup, pricing.serviceFee]);
 
@@ -291,20 +261,12 @@ export default function TicketCopyPage({
     return [
       { label: "Base Fare", amount: safeNum(f.baseFare) },
       { label: "Taxes", amount: safeNum(f.taxes) },
-      ...(safeNum(f.airlineCharges)
-        ? [{ label: "Airline Charges", amount: safeNum(f.airlineCharges) }]
-        : []),
-      ...(safeNum(f.otherCharges)
-        ? [{ label: "Other Charges", amount: safeNum(f.otherCharges) }]
-        : []),
-      ...(safeNum(f.insurance)
-        ? [{ label: "Insurance", amount: safeNum(f.insurance) }]
-        : []),
+      ...(safeNum(f.airlineCharges) ? [{ label: "Airline Charges", amount: safeNum(f.airlineCharges) }] : []),
+      ...(safeNum(f.otherCharges) ? [{ label: "Other Charges", amount: safeNum(f.otherCharges) }] : []),
+      ...(safeNum(f.insurance) ? [{ label: "Insurance", amount: safeNum(f.insurance) }] : []),
       ...(safeNum(f.gst) ? [{ label: "GST", amount: safeNum(f.gst) }] : []),
       ...(safeNum(f.tds) ? [{ label: "TDS", amount: safeNum(f.tds) }] : []),
-      ...(safeNum(f.discount)
-        ? [{ label: "Discount", amount: -Math.abs(safeNum(f.discount)) }]
-        : []),
+      ...(safeNum(f.discount) ? [{ label: "Discount", amount: -Math.abs(safeNum(f.discount)) }] : []),
     ];
   }, [ticket.fare]);
 
@@ -331,11 +293,7 @@ export default function TicketCopyPage({
       const payload: SavePricingPayload = {
         bookingId: ticket.bookingId,
         pricing,
-        computed: {
-          supplierTotal,
-          agentNetTotal,
-          customerPayable,
-        },
+        computed: { supplierTotal, agentNetTotal, customerPayable },
       };
       await onSavePricing(payload);
       setEditPricing(false);
@@ -364,22 +322,24 @@ export default function TicketCopyPage({
     }
   };
 
-  const printTicket = () => {
-    // You can enhance this with a dedicated print stylesheet.
-    window.print();
-  };
+  const printTicket = () => window.print();
 
-  /* ===================== UI Blocks ===================== */
+  const titleGradient = `linear-gradient(90deg, ${VAR.primary}, ${VAR.accent})`;
+  const bookingTone = statusTone(ticket.bookingStatus);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen" >
       {/* ================= Top Bar ================= */}
-      <div className="sticky top-0 z-30 border-b border-slate-200 bg-white/80 backdrop-blur">
+      <div
+        className="sticky top-0 z-30 border-b backdrop-blur"
+        style={{ background: VAR.surface, borderColor: VAR.border }}
+      >
         <div className="mx-auto max-w-7xl px-4 py-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={onBack}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+              className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium"
+              style={{ borderColor: VAR.border, background: VAR.surface2, color: VAR.text }}
               title="Back"
               type="button"
             >
@@ -387,8 +347,10 @@ export default function TicketCopyPage({
               Back
             </button>
             <div>
-              <div className="text-xs text-slate-500">Ticket Copy</div>
-              <div className="text-sm md:text-base font-semibold text-slate-900">
+              <div className="text-xs" style={{ color: VAR.subtle }}>
+                Ticket Copy
+              </div>
+              <div className="text-sm md:text-base font-semibold" style={{ color: VAR.text }}>
                 {ticket.routeLabel}
               </div>
             </div>
@@ -396,31 +358,35 @@ export default function TicketCopyPage({
 
           <div className="flex flex-wrap items-center gap-2">
             {/* Mode switch */}
-            <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1">
+            <div className="inline-flex rounded-xl border p-1" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
               {([
                 { key: "CUSTOMER", label: "Customer Copy" },
                 { key: "AGENT", label: "Agent Copy" },
-              ] as const).map((m) => (
-                <button
-                  key={m.key}
-                  type="button"
-                  onClick={() => setMode(m.key)}
-                  className={`rounded-lg px-3 py-1.5 text-[11px] font-semibold transition ${
-                    mode === m.key
-                      ? "bg-slate-900 text-white"
-                      : "text-slate-600 hover:bg-slate-100"
-                  }`}
-                >
-                  {m.label}
-                </button>
-              ))}
+              ] as const).map((m) => {
+                const active = mode === m.key;
+                return (
+                  <button
+                    key={m.key}
+                    type="button"
+                    onClick={() => setMode(m.key)}
+                    className="rounded-lg px-3 py-1.5 text-[11px] font-semibold transition"
+                    style={{
+                      background: active ? VAR.primary : "transparent",
+                      color: active ? "white" : VAR.muted,
+                    }}
+                  >
+                    {m.label}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Actions */}
             <button
               type="button"
               onClick={printTicket}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+              className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium"
+              style={{ borderColor: VAR.border, background: VAR.surface2, color: VAR.text }}
             >
               <Printer className="h-4 w-4" />
               Print
@@ -429,7 +395,8 @@ export default function TicketCopyPage({
             <button
               type="button"
               onClick={doDownload}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+              className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium disabled:opacity-60"
+              style={{ borderColor: VAR.border, background: VAR.surface2, color: VAR.text }}
               disabled={!onDownloadPdf || busy === "pdf"}
             >
               <Download className="h-4 w-4" />
@@ -439,7 +406,8 @@ export default function TicketCopyPage({
             <button
               type="button"
               onClick={doEmail}
-              className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-700 disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold disabled:opacity-60"
+              style={{ background: VAR.primary, color: "white" }}
               disabled={!onEmailTicket || busy === "email"}
             >
               <Mail className="h-4 w-4" />
@@ -451,13 +419,16 @@ export default function TicketCopyPage({
 
       <div className="mx-auto max-w-7xl px-4 py-6 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
         {/* ================= Printable Ticket Sheet ================= */}
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="rounded-2xl shadow-sm overflow-hidden border" style={{ background: VAR.surface, borderColor: VAR.border }}>
           {/* Header strip */}
-          <div className="p-5 border-b border-slate-100">
+          <div className="p-5 border-b" style={{ borderColor: VAR.border }}>
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               {/* Brand */}
               <div className="flex items-start gap-3">
-                <div className="h-10 w-10 rounded-xl bg-slate-900 text-white flex items-center justify-center text-xs font-bold">
+                <div
+                  className="h-10 w-10 rounded-xl flex items-center justify-center text-xs font-bold"
+                  style={{ background: `linear-gradient(135deg, ${VAR.primary}, ${VAR.accent})`, color: "white" }}
+                >
                   {brandName
                     .split(" ")
                     .map((w) => w[0])
@@ -466,97 +437,108 @@ export default function TicketCopyPage({
                     .toUpperCase()}
                 </div>
                 <div>
-                  <div className="text-lg font-semibold text-slate-900">
-                    {brandName}
+                  <div className="text-lg font-semibold" style={{ color: VAR.text }}>
+                    <span style={{ backgroundImage: titleGradient, WebkitBackgroundClip: "text", color: "transparent" }}>
+                      {brandName}
+                    </span>
                   </div>
-                  <div className="text-xs text-slate-500">{brandTagline}</div>
+                  <div className="text-xs" style={{ color: VAR.subtle }}>
+                    {brandTagline}
+                  </div>
                 </div>
               </div>
 
               {/* Status & meta */}
               <div className="flex flex-col sm:items-end gap-2">
                 <div
-                  className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ${
-                    ticket.bookingStatus === "CONFIRMED"
-                      ? "bg-emerald-50 text-emerald-700"
-                      : ticket.bookingStatus === "HOLD"
-                      ? "bg-amber-50 text-amber-700"
-                      : "bg-rose-50 text-rose-700"
-                  }`}
+                  className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold border"
+                  style={{ background: bookingTone.bg, color: bookingTone.fg, borderColor: bookingTone.border }}
                 >
                   <BadgeCheck className="h-3.5 w-3.5" />
-                  {ticket.bookingStatus === "CONFIRMED"
-                    ? "Booking Confirmed"
-                    : ticket.bookingStatus}
+                  {String(ticket.bookingStatus).toUpperCase().includes("CONF") ? "Booking Confirmed" : ticket.bookingStatus}
                 </div>
 
-                <div className="flex flex-wrap gap-2 text-[11px] text-slate-600">
+                <div className="flex flex-wrap gap-2 text-[11px]" style={{ color: VAR.muted }}>
                   <span className="inline-flex items-center gap-1">
                     <CalendarDays className="h-3.5 w-3.5" />
-                    Booking Date: <span className="font-medium">{ticket.bookingDate}</span>
+                    Booking Date: <span className="font-medium" style={{ color: VAR.text }}>{ticket.bookingDate}</span>
                   </span>
                   <span className="inline-flex items-center gap-1">
                     <Clock className="h-3.5 w-3.5" />
-                    Time: <span className="font-medium">{ticket.bookingTime}</span>
+                    Time: <span className="font-medium" style={{ color: VAR.text }}>{ticket.bookingTime}</span>
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Greeting */}
-            <div className="mt-4 text-sm text-slate-700">
+            <div className="mt-4 text-sm" style={{ color: VAR.text }}>
               <span className="font-medium">Hi,</span>
-              <div className="mt-1 text-[13px] text-slate-600">
-                Your flight ticket for <span className="font-semibold">{ticket.routeLabel}</span> is
-                <span className="font-semibold"> {ticket.bookingStatus.toLowerCase()}</span>.
-                {" "}
+              <div className="mt-1 text-[13px]" style={{ color: VAR.muted }}>
+                Your flight ticket for <span className="font-semibold" style={{ color: VAR.text }}>{ticket.routeLabel}</span> is
+                <span className="font-semibold" style={{ color: VAR.text }}> {String(ticket.bookingStatus).toLowerCase()}</span>.{" "}
                 Please use this copy for communication with your customer or back-office.
               </div>
-              <div className="mt-2 text-[12px] text-slate-600">
-                Your Booking ID is <span className="font-semibold text-slate-900">{ticket.bookingId}</span>
+              <div className="mt-2 text-[12px]" style={{ color: VAR.muted }}>
+                Your Booking ID is <span className="font-semibold" style={{ color: VAR.text }}>{ticket.bookingId}</span>
               </div>
             </div>
           </div>
 
           {/* Segment summary */}
-          <div className="px-5 py-4 border-b border-slate-100">
+          <div className="px-5 py-4 border-b" style={{ borderColor: VAR.border }}>
             <div className="space-y-3">
               {ticket.segments.map((s, idx) => (
                 <div
                   key={s.id}
-                  className="rounded-xl border border-slate-100 bg-slate-50/40 p-4"
+                  className="rounded-xl border p-4"
+                  style={{ borderColor: VAR.border, background: VAR.surface2 }}
                 >
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-800">
+                      <div
+                        className="h-9 w-9 rounded-lg border flex items-center justify-center text-xs font-bold"
+                        style={{ background: VAR.surface, borderColor: VAR.border, color: VAR.text }}
+                      >
                         {s.airlineCode}
                       </div>
                       <div>
-                        <div className="text-sm font-semibold text-slate-900">
+                        <div className="text-sm font-semibold" style={{ color: VAR.text }}>
                           {s.airlineName}
-                          <span className="text-slate-400 font-normal"> · </span>
-                          <span className="text-slate-700">{s.airlineCode} {s.flightNo}</span>
+                          <span style={{ color: VAR.subtle, fontWeight: 400 }}> · </span>
+                          <span style={{ color: VAR.muted }}>{s.airlineCode} {s.flightNo}</span>
                         </div>
-                        <div className="text-[11px] text-slate-500">
+                        <div className="text-[11px]" style={{ color: VAR.subtle }}>
                           {ticket.tripType || "Trip"} · {s.cabin || "Cabin"}
                           {s.refundable ? ` · ${s.refundable}` : ""}
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 text-[11px] text-slate-600">
+                    <div className="flex items-center gap-2 text-[11px]" style={{ color: VAR.muted }}>
                       {s.durationMins ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-white border border-slate-200 px-2 py-1">
+                        <span
+                          className="inline-flex items-center gap-1 rounded-full border px-2 py-1"
+                          style={{ background: VAR.surface, borderColor: VAR.border, color: VAR.muted }}
+                        >
                           <Clock className="h-3 w-3" />
                           {toMinsLabel(s.durationMins)}
                         </span>
                       ) : null}
-                      <span className="inline-flex items-center gap-1 rounded-full bg-white border border-slate-200 px-2 py-1">
+
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full border px-2 py-1"
+                        style={{ background: VAR.surface, borderColor: VAR.border, color: bookingTone.fg }}
+                      >
                         <ShieldCheck className="h-3 w-3" />
                         {ticket.bookingStatus}
                       </span>
+
                       {idx === 0 && ticket.segments.length > 1 ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-white border border-slate-200 px-2 py-1">
+                        <span
+                          className="inline-flex items-center gap-1 rounded-full border px-2 py-1"
+                          style={{ background: VAR.surface, borderColor: VAR.border, color: VAR.muted }}
+                        >
                           <Tag className="h-3 w-3" />
                           Segment {idx + 1}
                         </span>
@@ -565,29 +547,36 @@ export default function TicketCopyPage({
                   </div>
 
                   <div className="mt-4 grid grid-cols-1 md:grid-cols-[1fr_120px_1fr] items-center gap-3">
-                    <div className="rounded-lg bg-white border border-slate-200 p-3">
-                      <div className="text-[10px] text-slate-500">Departure</div>
-                      <div className="mt-0.5 text-sm font-semibold text-slate-900">
-                        {s.from.city} <span className="text-slate-400">({s.from.code})</span>
+                    <div className="rounded-lg border p-3" style={{ background: VAR.surface, borderColor: VAR.border }}>
+                      <div className="text-[10px]" style={{ color: VAR.subtle }}>Departure</div>
+                      <div className="mt-0.5 text-sm font-semibold" style={{ color: VAR.text }}>
+                        {s.from.city} <span style={{ color: VAR.subtle }}>({s.from.code})</span>
                       </div>
-                      <div className="text-[12px] text-slate-700 font-medium">{s.from.time}</div>
-                      <div className="text-[10px] text-slate-500">{s.from.date}{s.from.terminal ? ` · ${s.from.terminal}` : ""}</div>
+                      <div className="text-[12px] font-medium" style={{ color: VAR.text }}>{s.from.time}</div>
+                      <div className="text-[10px]" style={{ color: VAR.subtle }}>
+                        {s.from.date}{s.from.terminal ? ` · ${s.from.terminal}` : ""}
+                      </div>
                     </div>
 
                     <div className="hidden md:flex flex-col items-center justify-center">
-                      <div className="h-[2px] w-full bg-slate-200" />
-                      <div className="-mt-2 rounded-full bg-white px-2 text-[10px] text-slate-500">
+                      <div className="h-[2px] w-full" style={{ background: `linear-gradient(90deg, transparent, ${VAR.border}, transparent)` }} />
+                      <div
+                        className="-mt-2 rounded-full px-2 text-[10px]"
+                        style={{ background: VAR.surface, border: `1px solid ${VAR.border}`, color: VAR.subtle }}
+                      >
                         Non-stop
                       </div>
                     </div>
 
-                    <div className="rounded-lg bg-white border border-slate-200 p-3">
-                      <div className="text-[10px] text-slate-500">Arrival</div>
-                      <div className="mt-0.5 text-sm font-semibold text-slate-900">
-                        {s.to.city} <span className="text-slate-400">({s.to.code})</span>
+                    <div className="rounded-lg border p-3" style={{ background: VAR.surface, borderColor: VAR.border }}>
+                      <div className="text-[10px]" style={{ color: VAR.subtle }}>Arrival</div>
+                      <div className="mt-0.5 text-sm font-semibold" style={{ color: VAR.text }}>
+                        {s.to.city} <span style={{ color: VAR.subtle }}>({s.to.code})</span>
                       </div>
-                      <div className="text-[12px] text-slate-700 font-medium">{s.to.time}</div>
-                      <div className="text-[10px] text-slate-500">{s.to.date}{s.to.terminal ? ` · ${s.to.terminal}` : ""}</div>
+                      <div className="text-[12px] font-medium" style={{ color: VAR.text }}>{s.to.time}</div>
+                      <div className="text-[10px]" style={{ color: VAR.subtle }}>
+                        {s.to.date}{s.to.terminal ? ` · ${s.to.terminal}` : ""}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -596,12 +585,12 @@ export default function TicketCopyPage({
           </div>
 
           {/* Passengers table */}
-          <div className="px-5 py-4 border-b border-slate-100">
+          <div className="px-5 py-4 border-b" style={{ borderColor: VAR.border }}>
             <div className="flex items-center justify-between">
-              <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+              <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: VAR.muted }}>
                 Passengers
               </div>
-              <div className="text-[11px] text-slate-500">
+              <div className="text-[11px]" style={{ color: VAR.subtle }}>
                 {ticket.passengers.length} passenger{ticket.passengers.length > 1 ? "s" : ""}
               </div>
             </div>
@@ -609,7 +598,7 @@ export default function TicketCopyPage({
             <div className="mt-3 overflow-x-auto">
               <table className="min-w-full text-[11px]">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-600">
+                  <tr style={{ background: VAR.surface2, color: VAR.muted }}>
                     <th className="text-left font-semibold px-3 py-2 rounded-l-lg">Passenger</th>
                     <th className="text-left font-semibold px-3 py-2">Airline</th>
                     <th className="text-left font-semibold px-3 py-2">Status</th>
@@ -619,48 +608,46 @@ export default function TicketCopyPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {ticket.passengers.map((p) => (
-                    <tr key={p.id} className="border-b border-slate-100 last:border-b-0">
-                      <td className="px-3 py-2">
-                        <div className="font-medium text-slate-900">
-                          {(p.title ? p.title + " " : "") + p.firstName + " " + p.lastName}
-                        </div>
-                        <div className="text-[10px] text-slate-500">{p.paxType || "ADT"}</div>
-                      </td>
-                      <td className="px-3 py-2 text-slate-700">{p.airline || "-"}</td>
-                      <td className="px-3 py-2">
-                        <span
-                          className={`inline-flex rounded-full px-2 py-0.5 font-semibold ${
-                            String(p.status).toUpperCase().includes("CONF")
-                              ? "bg-emerald-50 text-emerald-700"
-                              : String(p.status).toUpperCase().includes("HOLD")
-                              ? "bg-amber-50 text-amber-700"
-                              : "bg-slate-100 text-slate-700"
-                          }`}
-                        >
-                          {p.status}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 text-slate-700">{p.sector}</td>
-                      <td className="px-3 py-2 text-slate-700">{p.airlinePnr || "-"}</td>
-                      <td className="px-3 py-2 text-slate-700">{p.ticketNumber || "-"}</td>
-                    </tr>
-                  ))}
+                  {ticket.passengers.map((p) => {
+                    const tone = statusTone(p.status);
+                    return (
+                      <tr key={p.id} className="border-b last:border-b-0" style={{ borderColor: VAR.border }}>
+                        <td className="px-3 py-2">
+                          <div className="font-medium" style={{ color: VAR.text }}>
+                            {(p.title ? p.title + " " : "") + p.firstName + " " + p.lastName}
+                          </div>
+                          <div className="text-[10px]" style={{ color: VAR.subtle }}>{p.paxType || "ADT"}</div>
+                        </td>
+                        <td className="px-3 py-2" style={{ color: VAR.muted }}>{p.airline || "-"}</td>
+                        <td className="px-3 py-2">
+                          <span
+                            className="inline-flex rounded-full px-2 py-0.5 font-semibold border"
+                            style={{ background: tone.bg, color: tone.fg, borderColor: VAR.border }}
+                          >
+                            {p.status}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2" style={{ color: VAR.muted }}>{p.sector}</td>
+                        <td className="px-3 py-2" style={{ color: VAR.muted }}>{p.airlinePnr || "-"}</td>
+                        <td className="px-3 py-2" style={{ color: VAR.muted }}>{p.ticketNumber || "-"}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           </div>
 
           {/* Baggage */}
-          <div className="px-5 py-4 border-b border-slate-100">
-            <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+          <div className="px-5 py-4 border-b" style={{ borderColor: VAR.border }}>
+            <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: VAR.muted }}>
               Baggage Info
             </div>
 
             <div className="mt-3 overflow-x-auto">
               <table className="min-w-full text-[11px]">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-600">
+                  <tr style={{ background: VAR.surface2, color: VAR.muted }}>
                     <th className="text-left font-semibold px-3 py-2 rounded-l-lg">Airline</th>
                     <th className="text-left font-semibold px-3 py-2">Sector</th>
                     <th className="text-left font-semibold px-3 py-2">Check-in</th>
@@ -669,19 +656,11 @@ export default function TicketCopyPage({
                 </thead>
                 <tbody>
                   {ticket.segments.map((s) => (
-                    <tr key={s.id} className="border-b border-slate-100 last:border-b-0">
-                      <td className="px-3 py-2 text-slate-700">
-                        {s.airlineCode}
-                      </td>
-                      <td className="px-3 py-2 text-slate-700">
-                        {s.from.code}-{s.to.code}
-                      </td>
-                      <td className="px-3 py-2 text-slate-700">
-                        {s.baggage?.checkIn || "As per airline"}
-                      </td>
-                      <td className="px-3 py-2 text-slate-700">
-                        {s.baggage?.cabin || "As per airline"}
-                      </td>
+                    <tr key={s.id} className="border-b last:border-b-0" style={{ borderColor: VAR.border }}>
+                      <td className="px-3 py-2" style={{ color: VAR.muted }}>{s.airlineCode}</td>
+                      <td className="px-3 py-2" style={{ color: VAR.muted }}>{s.from.code}-{s.to.code}</td>
+                      <td className="px-3 py-2" style={{ color: VAR.muted }}>{s.baggage?.checkIn || "As per airline"}</td>
+                      <td className="px-3 py-2" style={{ color: VAR.muted }}>{s.baggage?.cabin || "As per airline"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -690,75 +669,80 @@ export default function TicketCopyPage({
           </div>
 
           {/* Fare Details */}
-          <div className="px-5 py-4 border-b border-slate-100">
+          <div className="px-5 py-4 border-b" style={{ borderColor: VAR.border }}>
             <div className="flex items-center justify-between">
-              <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+              <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: VAR.muted }}>
                 Fare Details
               </div>
-              <div className="text-[10px] text-slate-500">
+              <div className="text-[10px]" style={{ color: VAR.subtle }}>
                 {mode === "AGENT" ? "Agent view includes internal pricing" : "Customer view"}
               </div>
             </div>
 
             <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
-                <div className="text-[11px] font-semibold text-slate-700">Supplier Fare (Gross)</div>
+              <div className="rounded-xl border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
+                <div className="text-[11px] font-semibold" style={{ color: VAR.muted }}>
+                  Supplier Fare (Gross)
+                </div>
                 <div className="mt-2 space-y-1">
                   {fareRows.map((r, i) => (
                     <div key={i} className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-600">{r.label}</span>
-                      <span className={`font-medium ${r.amount < 0 ? "text-emerald-700" : "text-slate-900"}`}>
+                      <span style={{ color: VAR.subtle }}>{r.label}</span>
+                      <span style={{ fontWeight: 600, color: r.amount < 0 ? VAR.success : VAR.text }}>
                         {fmtINR(r.amount)}
                       </span>
                     </div>
                   ))}
                 </div>
-                <div className="mt-2 pt-2 border-t border-slate-200 flex items-center justify-between text-[11px]">
-                  <span className="font-semibold text-slate-700">Total (Supplier)</span>
-                  <span className="font-semibold text-slate-900">{fmtINR(supplierTotal)}</span>
+                <div className="mt-2 pt-2 border-t flex items-center justify-between text-[11px]" style={{ borderColor: VAR.border }}>
+                  <span className="font-semibold" style={{ color: VAR.muted }}>Total (Supplier)</span>
+                  <span className="font-semibold" style={{ color: VAR.text }}>{fmtINR(supplierTotal)}</span>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
-                <div className="text-[11px] font-semibold text-slate-700">Sale Fare</div>
+              <div className="rounded-xl border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
+                <div className="text-[11px] font-semibold" style={{ color: VAR.muted }}>
+                  Sale Fare
+                </div>
 
                 <div className="mt-2 space-y-1">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-600">Supplier Total</span>
-                    <span className="font-medium text-slate-900">{fmtINR(supplierTotal)}</span>
+                    <span style={{ color: VAR.subtle }}>Supplier Total</span>
+                    <span style={{ fontWeight: 600, color: VAR.text }}>{fmtINR(supplierTotal)}</span>
                   </div>
 
-                  {/* Customer view only shows final add-ons without internal labels */}
                   {safeNum(pricing.markup) > 0 || mode === "AGENT" ? (
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-600">{mode === "AGENT" ? "Agent Markup" : "Service Add-on"}</span>
-                      <span className="font-medium text-slate-900">{fmtINR(safeNum(pricing.markup))}</span>
+                      <span style={{ color: VAR.subtle }}>{mode === "AGENT" ? "Agent Markup" : "Service Add-on"}</span>
+                      <span style={{ fontWeight: 600, color: VAR.text }}>{fmtINR(safeNum(pricing.markup))}</span>
                     </div>
                   ) : null}
 
                   {safeNum(pricing.serviceFee) > 0 || mode === "AGENT" ? (
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-600">{mode === "AGENT" ? "Service Fee" : "Convenience Fee"}</span>
-                      <span className="font-medium text-slate-900">{fmtINR(safeNum(pricing.serviceFee))}</span>
+                      <span style={{ color: VAR.subtle }}>{mode === "AGENT" ? "Service Fee" : "Convenience Fee"}</span>
+                      <span style={{ fontWeight: 600, color: VAR.text }}>{fmtINR(safeNum(pricing.serviceFee))}</span>
                     </div>
                   ) : null}
 
                   {mode === "AGENT" && safeNum(pricing.commissionOverride) > 0 ? (
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-600">Commission (Display)</span>
-                      <span className="font-medium text-emerald-700">{fmtINR(safeNum(pricing.commissionOverride))}</span>
+                      <span style={{ color: VAR.subtle }}>Commission (Display)</span>
+                      <span style={{ fontWeight: 700, color: VAR.success }}>
+                        {fmtINR(safeNum(pricing.commissionOverride))}
+                      </span>
                     </div>
                   ) : null}
                 </div>
 
-                <div className="mt-2 pt-2 border-t border-slate-200 flex items-center justify-between text-[11px]">
-                  <span className="font-semibold text-slate-700">Total Payable</span>
-                  <span className="font-semibold text-slate-900">{fmtINR(customerPayable)}</span>
+                <div className="mt-2 pt-2 border-t flex items-center justify-between text-[11px]" style={{ borderColor: VAR.border }}>
+                  <span className="font-semibold" style={{ color: VAR.muted }}>Total Payable</span>
+                  <span className="font-semibold" style={{ color: VAR.text }}>{fmtINR(customerPayable)}</span>
                 </div>
 
                 {mode === "AGENT" ? (
-                  <div className="mt-2 text-[10px] text-slate-500">
-                    Agent Net (to supplier): <span className="font-medium">{fmtINR(agentNetTotal)}</span>
+                  <div className="mt-2 text-[10px]" style={{ color: VAR.subtle }}>
+                    Agent Net (to supplier): <span style={{ fontWeight: 600, color: VAR.text }}>{fmtINR(agentNetTotal)}</span>
                   </div>
                 ) : null}
               </div>
@@ -766,33 +750,35 @@ export default function TicketCopyPage({
           </div>
 
           {/* Cancellation rules */}
-          <div className="px-5 py-4 border-b border-slate-100">
-            <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+          <div className="px-5 py-4 border-b" style={{ borderColor: VAR.border }}>
+            <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: VAR.muted }}>
               Cancellation Charges
             </div>
 
             <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
-                <div className="text-[11px] font-semibold text-slate-700">
+              <div className="rounded-xl border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
+                <div className="text-[11px] font-semibold" style={{ color: VAR.muted }}>
                   Portal / Convenience Fee
                 </div>
-                <div className="mt-1 text-[11px] text-slate-600">
-                  {ticket.cancellation?.easeMyTripFeeLabel ||
-                    "Convenience fee as applicable per airline and sector."}
+                <div className="mt-1 text-[11px]" style={{ color: VAR.subtle }}>
+                  {ticket.cancellation?.easeMyTripFeeLabel || "Convenience fee as applicable per airline and sector."}
                 </div>
               </div>
-              <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
-                <div className="text-[11px] font-semibold text-slate-700">Airline Fee</div>
+
+              <div className="rounded-xl border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
+                <div className="text-[11px] font-semibold" style={{ color: VAR.muted }}>
+                  Airline Fee
+                </div>
                 <div className="mt-2 space-y-1">
                   {(ticket.cancellation?.airlineFeeRules || []).length ? (
                     ticket.cancellation!.airlineFeeRules!.map((r, i) => (
                       <div key={i} className="flex items-center justify-between text-[11px]">
-                        <span className="text-slate-600">{r.label}</span>
-                        <span className="font-medium text-slate-900">{r.amount}</span>
+                        <span style={{ color: VAR.subtle }}>{r.label}</span>
+                        <span style={{ fontWeight: 600, color: VAR.text }}>{r.amount}</span>
                       </div>
                     ))
                   ) : (
-                    <div className="text-[11px] text-slate-500">As per airline policy.</div>
+                    <div className="text-[11px]" style={{ color: VAR.subtle }}>As per airline policy.</div>
                   )}
                 </div>
               </div>
@@ -801,41 +787,44 @@ export default function TicketCopyPage({
 
           {/* Terms */}
           <div className="px-5 py-4">
-            <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+            <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: VAR.muted }}>
               Terms & Conditions
             </div>
-            <ul className="mt-2 space-y-1 text-[11px] text-slate-600 list-disc pl-4">
-              {(ticket.terms || []).length ? (
-                ticket.terms!.map((t, i) => <li key={i}>{t}</li>)
-              ) : (
-                <li>Standard airline and portal terms apply.</li>
-              )}
+            <ul className="mt-2 space-y-1 text-[11px] list-disc pl-4" style={{ color: VAR.subtle }}>
+              {(ticket.terms || []).length ? ticket.terms!.map((t, i) => <li key={i}>{t}</li>) : <li>Standard airline and portal terms apply.</li>}
             </ul>
           </div>
         </div>
 
         {/* ================= Agent Control Panel ================= */}
         <div className="space-y-4">
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
+          <div className="rounded-2xl shadow-sm p-4 border" style={{ background: VAR.surface, borderColor: VAR.border }}>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs text-slate-500">Agent Tools</div>
-                <div className="text-sm font-semibold text-slate-900">Pricing & Actions</div>
+                <div className="text-xs" style={{ color: VAR.subtle }}>Agent Tools</div>
+                <div className="text-sm font-semibold" style={{ color: VAR.text }}>Pricing & Actions</div>
               </div>
-              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
+
+              <span
+                className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold border"
+                style={{ background: VAR.surface2, borderColor: VAR.border, color: VAR.muted }}
+              >
                 <Wallet className="h-3 w-3" />
                 B2B
               </span>
             </div>
 
             {/* Pricing editor */}
-            <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/40 p-3">
+            <div className="mt-4 rounded-xl border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
               <div className="flex items-center justify-between">
-                <div className="text-[11px] font-semibold text-slate-700">Markup Management</div>
+                <div className="text-[11px] font-semibold" style={{ color: VAR.muted }}>
+                  Markup Management
+                </div>
                 <button
                   type="button"
                   onClick={() => setEditPricing((v) => !v)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-semibold text-slate-600 hover:bg-slate-50"
+                  className="inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[10px] font-semibold"
+                  style={{ background: VAR.surface, borderColor: VAR.border, color: VAR.muted }}
                 >
                   <Pencil className="h-3 w-3" />
                   {editPricing ? "Close" : "Edit"}
@@ -843,63 +832,47 @@ export default function TicketCopyPage({
               </div>
 
               <div className="mt-3 space-y-2">
-                <label className="block">
-                  <span className="text-[10px] font-medium text-slate-500">Agent Markup (₹)</span>
-                  <input
-                    type="number"
-                    value={pricing.markup}
-                    onChange={(e) => handlePricingChange("markup", e.target.value)}
-                    disabled={!editPricing}
-                    className={`mt-1 w-full rounded-lg border px-3 py-2 text-xs outline-none ${
-                      editPricing
-                        ? "border-slate-200 bg-white focus:border-slate-400"
-                        : "border-slate-100 bg-slate-100 text-slate-500"
-                    }`}
-                  />
-                </label>
+                {(
+                  [
+                    { key: "markup", label: "Agent Markup (₹)" },
+                    { key: "serviceFee", label: "Service / Convenience Fee (₹)" },
+                    { key: "commissionOverride", label: "Commission Override (Display) (₹)" },
+                  ] as const
+                ).map((f) => (
+                  <label className="block" key={f.key}>
+                    <span className="text-[10px] font-medium" style={{ color: VAR.subtle }}>
+                      {f.label}
+                    </span>
+                    <input
+                      type="number"
+                      value={pricing[f.key]}
+                      onChange={(e) => handlePricingChange(f.key, e.target.value)}
+                      disabled={!editPricing}
+                      className="mt-1 w-full rounded-lg border px-3 py-2 text-xs outline-none"
+                      style={{
+                        borderColor: VAR.border,
+                        background: editPricing ? VAR.surface : VAR.surface2,
+                        color: editPricing ? VAR.text : VAR.subtle,
+                        opacity: editPricing ? 1 : 0.85,
+                      }}
+                    />
+                  </label>
+                ))}
 
                 <label className="block">
-                  <span className="text-[10px] font-medium text-slate-500">Service / Convenience Fee (₹)</span>
-                  <input
-                    type="number"
-                    value={pricing.serviceFee}
-                    onChange={(e) => handlePricingChange("serviceFee", e.target.value)}
-                    disabled={!editPricing}
-                    className={`mt-1 w-full rounded-lg border px-3 py-2 text-xs outline-none ${
-                      editPricing
-                        ? "border-slate-200 bg-white focus:border-slate-400"
-                        : "border-slate-100 bg-slate-100 text-slate-500"
-                    }`}
-                  />
-                </label>
-
-                <label className="block">
-                  <span className="text-[10px] font-medium text-slate-500">Commission Override (Display) (₹)</span>
-                  <input
-                    type="number"
-                    value={pricing.commissionOverride}
-                    onChange={(e) => handlePricingChange("commissionOverride", e.target.value)}
-                    disabled={!editPricing}
-                    className={`mt-1 w-full rounded-lg border px-3 py-2 text-xs outline-none ${
-                      editPricing
-                        ? "border-slate-200 bg-white focus:border-slate-400"
-                        : "border-slate-100 bg-slate-100 text-slate-500"
-                    }`}
-                  />
-                </label>
-
-                <label className="block">
-                  <span className="text-[10px] font-medium text-slate-500">Internal Notes</span>
+                  <span className="text-[10px] font-medium" style={{ color: VAR.subtle }}>Internal Notes</span>
                   <textarea
                     rows={3}
                     value={pricing.notes || ""}
                     onChange={(e) => setPricing((p) => ({ ...p, notes: e.target.value }))}
                     disabled={!editPricing}
-                    className={`mt-1 w-full rounded-lg border px-3 py-2 text-xs outline-none ${
-                      editPricing
-                        ? "border-slate-200 bg-white focus:border-slate-400"
-                        : "border-slate-100 bg-slate-100 text-slate-500"
-                    }`}
+                    className="mt-1 w-full rounded-lg border px-3 py-2 text-xs outline-none"
+                    style={{
+                      borderColor: VAR.border,
+                      background: editPricing ? VAR.surface : VAR.surface2,
+                      color: editPricing ? VAR.text : VAR.subtle,
+                      opacity: editPricing ? 1 : 0.85,
+                    }}
                     placeholder="Optional: internal remarks for this booking"
                   />
                 </label>
@@ -909,7 +882,8 @@ export default function TicketCopyPage({
                     <button
                       type="button"
                       onClick={resetPricing}
-                      className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"
+                      className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-[11px] font-semibold"
+                      style={{ background: VAR.surface, borderColor: VAR.border, color: VAR.text }}
                     >
                       <RefreshCw className="h-3.5 w-3.5" />
                       Reset
@@ -919,7 +893,8 @@ export default function TicketCopyPage({
                       type="button"
                       onClick={savePricing}
                       disabled={busy === "save"}
-                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-[11px] font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-[11px] font-semibold disabled:opacity-60"
+                      style={{ background: VAR.success, color: "white" }}
                     >
                       <Save className="h-3.5 w-3.5" />
                       {busy === "save" ? "Saving..." : "Save Pricing"}
@@ -931,80 +906,86 @@ export default function TicketCopyPage({
 
             {/* Quick totals card */}
             <div className="mt-4 grid grid-cols-1 gap-2">
-              <div className="rounded-xl border border-slate-100 p-3">
-                <div className="text-[10px] text-slate-500">Supplier Total</div>
-                <div className="text-base font-semibold text-slate-900">{fmtINR(supplierTotal)}</div>
+              <div className="rounded-xl border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
+                <div className="text-[10px]" style={{ color: VAR.subtle }}>Supplier Total</div>
+                <div className="text-base font-semibold" style={{ color: VAR.text }}>{fmtINR(supplierTotal)}</div>
               </div>
-              <div className="rounded-xl border border-slate-100 p-3">
-                <div className="text-[10px] text-slate-500">Customer Payable (Live)</div>
-                <div className="text-base font-semibold text-slate-900">{fmtINR(customerPayable)}</div>
+              <div className="rounded-xl border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
+                <div className="text-[10px]" style={{ color: VAR.subtle }}>Customer Payable (Live)</div>
+                <div className="text-base font-semibold" style={{ color: VAR.text }}>{fmtINR(customerPayable)}</div>
               </div>
             </div>
           </div>
 
           {/* Document / Sharing Tools */}
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
-            <div className="text-xs text-slate-500">Documents</div>
-            <div className="text-sm font-semibold text-slate-900">Ticket & Invoice</div>
+          <div className="rounded-2xl shadow-sm p-4 border" style={{ background: VAR.surface, borderColor: VAR.border }}>
+            <div className="text-xs" style={{ color: VAR.subtle }}>Documents</div>
+            <div className="text-sm font-semibold" style={{ color: VAR.text }}>Ticket & Invoice</div>
 
             <div className="mt-3 grid grid-cols-1 gap-2">
               <button
                 type="button"
                 onClick={doDownload}
                 disabled={!onDownloadPdf || busy === "pdf"}
-                className="inline-flex items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+                className="inline-flex items-center justify-between rounded-xl border px-3 py-2 text-xs font-medium disabled:opacity-60"
+                style={{ background: VAR.surface2, borderColor: VAR.border, color: VAR.text }}
               >
                 <span className="inline-flex items-center gap-2">
                   <FileText className="h-4 w-4" />
                   Download {mode === "AGENT" ? "Agent" : "Customer"} PDF
                 </span>
-                <span className="text-[10px] text-slate-400">A4</span>
+                <span className="text-[10px]" style={{ color: VAR.subtle }}>A4</span>
               </button>
 
               <button
                 type="button"
                 onClick={printTicket}
-                className="inline-flex items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                className="inline-flex items-center justify-between rounded-xl border px-3 py-2 text-xs font-medium"
+                style={{ background: VAR.surface2, borderColor: VAR.border, color: VAR.text }}
               >
                 <span className="inline-flex items-center gap-2">
                   <Printer className="h-4 w-4" />
                   Print Ticket
                 </span>
-                <span className="text-[10px] text-slate-400">Ctrl/Cmd + P</span>
+                <span className="text-[10px]" style={{ color: VAR.subtle }}>Ctrl/Cmd + P</span>
               </button>
 
               <button
                 type="button"
                 onClick={doEmail}
                 disabled={!onEmailTicket || busy === "email"}
-                className="inline-flex items-center justify-between rounded-xl bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-700 disabled:opacity-60"
+                className="inline-flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold disabled:opacity-60"
+                style={{ background: VAR.primary, color: "white" }}
               >
                 <span className="inline-flex items-center gap-2">
                   <Send className="h-4 w-4" />
                   Email Ticket
                 </span>
-                <span className="text-[10px] text-white/80">Auto template</span>
+                <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.8)" }}>Auto template</span>
               </button>
             </div>
           </div>
 
           {/* Safety / Audit Notes */}
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
-            <div className="text-xs text-slate-500">Agent Compliance</div>
-            <div className="text-sm font-semibold text-slate-900">Audit Checklist</div>
-            <ul className="mt-3 space-y-2 text-[11px] text-slate-600">
-              <li className="flex gap-2">
-                <span className="mt-0.5 h-4 w-4 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center text-[10px] font-bold">✓</span>
-                Verify passenger names match government ID.
-              </li>
-              <li className="flex gap-2">
-                <span className="mt-0.5 h-4 w-4 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center text-[10px] font-bold">✓</span>
-                Confirm sector and travel date before sharing customer copy.
-              </li>
-              <li className="flex gap-2">
-                <span className="mt-0.5 h-4 w-4 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center text-[10px] font-bold">✓</span>
-                Save markup changes to keep reports accurate.
-              </li>
+          <div className="rounded-2xl shadow-sm p-4 border" style={{ background: VAR.surface, borderColor: VAR.border }}>
+            <div className="text-xs" style={{ color: VAR.subtle }}>Agent Compliance</div>
+            <div className="text-sm font-semibold" style={{ color: VAR.text }}>Audit Checklist</div>
+            <ul className="mt-3 space-y-2 text-[11px]" style={{ color: VAR.muted }}>
+              {[
+                "Verify passenger names match government ID.",
+                "Confirm sector and travel date before sharing customer copy.",
+                "Save markup changes to keep reports accurate.",
+              ].map((t, i) => (
+                <li key={i} className="flex gap-2">
+                  <span
+                    className="mt-0.5 h-4 w-4 rounded-full flex items-center justify-center text-[10px] font-bold border"
+                    style={{ background: VAR.successSoft, color: VAR.success, borderColor: VAR.border }}
+                  >
+                    ✓
+                  </span>
+                  {t}
+                </li>
+              ))}
             </ul>
           </div>
         </div>

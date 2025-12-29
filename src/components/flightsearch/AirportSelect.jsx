@@ -137,7 +137,7 @@ export default function AirportSelect({ label, value, onChange }) {
             </div>
           </div>
 
-          {value && (
+          {/* {value && (
             <button
               type="button"
               onClick={clear}
@@ -151,7 +151,7 @@ export default function AirportSelect({ label, value, onChange }) {
             >
               ×
             </button>
-          )}
+          )} */}
         </div>
       </FieldShell>
 

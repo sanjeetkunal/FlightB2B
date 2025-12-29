@@ -7,6 +7,7 @@ import RecentSearches from "./flightsearch/RecentSearches";
 import QuickActions from "../pages/FlightBooking/quickaction/QuickActions";
 import RecentBookings from "../pages/FlightBooking/quickaction/RecentBookings";
 import { AgentAlerts } from "../pages/FlightBooking/quickaction/AgentAlerts";
+import MonthlyTargetOfferModal from "../components/offers/MonthlyTargetOfferModal";
 
 import heroBg from "../assets/media/hero-bg.jpg";
 
@@ -96,6 +97,9 @@ function Pill({ active, children, onClick, icon: Icon }) {
 }
 
 export default function HomeHero() {
+
+   const [offerOpen, setOfferOpen] = useState(true);
+
   const onSearch = (payload) => {
     console.log("SEARCH →", payload);
   };
@@ -271,6 +275,22 @@ export default function HomeHero() {
           <AgentAlerts />
         </div>
       </div>
+
+       <MonthlyTargetOfferModal
+        open={offerOpen}
+        onClose={() => setOfferOpen(false)}
+        // autoOpen={true}  // if you want once/day open, use this instead of open state
+        title="Mega Booking Challenge"
+        monthLabel="this month"
+        targetBookings={1500}
+        rewardLabel="iPhone 17 Pro"
+        brand="Virtual2Actual"
+        onPrimaryAction={() => {
+          // route to progress page / dashboard section
+          // e.g. navigate("/agent/targets")
+          console.log("Go to target progress");
+        }}
+      />
     </section>
   );
 }

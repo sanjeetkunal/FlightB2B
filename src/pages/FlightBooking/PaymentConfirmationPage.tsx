@@ -1,4 +1,4 @@
-// src/pages/PaymentConfirmationPage.tsx (or .jsx)
+// src/pages/PaymentConfirmationPage.tsx
 // Drop-in replacement. Works with your existing sessionStorage payload: "BOOKING_PAYLOAD_V1"
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -24,6 +24,9 @@ const VAR = {
 
 const nfIN = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
 
+/** ================== Ticket Copy storage ================== */
+const TICKET_SS_KEY = "TICKET_CTX_V1";
+
 /** ================== Payment gateways ================== */
 type PaymentGateway = {
   id: string;
@@ -47,35 +50,45 @@ function safeParse(json: string | null) {
     return null;
   }
 }
-
 function fmtINR(v: number) {
   return `₹${nfIN.format(Number.isFinite(v) ? v : 0)}`;
 }
-
+function safeNum(v: any) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
 function paxIdToLabel(paxId: string) {
   if (paxId.startsWith("ADT")) return "Adult";
   if (paxId.startsWith("CHD")) return "Child";
   if (paxId.startsWith("INF")) return "Infant";
   return "Traveller";
 }
-
+function paxIdToPaxType(paxId: string) {
+  if (paxId.startsWith("ADT")) return "ADT";
+  if (paxId.startsWith("CHD")) return "CHD";
+  if (paxId.startsWith("INF")) return "INF";
+  return "ADT";
+}
 function guessTripLabel(flight: any) {
-  // supports: {tripType:'ONEWAY'|'ROUNDTRIP'} OR {outbound, inbound} OR {segments:[]}
   if (!flight) return "Flight";
-  if (flight.tripType) return String(flight.tripType).toUpperCase() === "ROUNDTRIP" ? "Round Trip" : "One Way";
+  const t = String(flight.tripType || "").toUpperCase();
+  if (t === "ROUNDTRIP" || t === "ROUND") return "Round Trip";
   if (flight.outbound || flight.inbound) return "Round Trip";
   return "One Way";
 }
-
+function guessTripType(flight: any): "ONEWAY" | "ROUND" {
+  const t = String(flight?.tripType || "").toUpperCase();
+  if (t === "ROUNDTRIP" || t === "ROUND") return "ROUND";
+  if (flight?.outbound || flight?.inbound) return "ROUND";
+  return "ONEWAY";
+}
 function getSegmentsFromFlight(flight: any) {
-  // supports: flight.segments (oneway) OR flight.outbound.segments/inbound.segments (roundtrip)
   if (!flight) return { outbound: [], inbound: [] as any[] };
   if (flight.outbound?.segments || flight.inbound?.segments) {
     return { outbound: flight.outbound?.segments || [], inbound: flight.inbound?.segments || [] };
   }
   return { outbound: flight.segments || [], inbound: [] };
 }
-
 function segSummary(segs: any[]) {
   if (!segs?.length) return "";
   const first = segs[0];
@@ -84,6 +97,180 @@ function segSummary(segs: any[]) {
   const to = `${last.toCity || ""} (${last.toIata || ""})`;
   const time = `${first.departTime || ""} → ${last.arriveTime || ""}`;
   return `${from} → ${to} • ${time}`;
+}
+function routeLabelFromSegments(outbound: any[], inbound: any[], fallback = "Flight") {
+  const pick = (segs: any[]) => {
+    if (!segs?.length) return null;
+    const first = segs[0];
+    const last = segs[segs.length - 1];
+    return {
+      fromCity: first.fromCity || "",
+      fromIata: first.fromIata || "",
+      toCity: last.toCity || "",
+      toIata: last.toIata || "",
+    };
+  };
+
+  const o = pick(outbound);
+  const r = pick(inbound);
+
+  if (o && r) return `${o.fromCity} (${o.fromIata}) - ${o.toCity} (${o.toIata}) (Round Trip)`;
+  if (o) return `${o.fromCity} (${o.fromIata}) - ${o.toCity} (${o.toIata})`;
+  return fallback;
+}
+
+function toTicketSegments(segs: any[], idPrefix: string) {
+  return (segs || []).map((s: any, idx: number) => ({
+    id: `${idPrefix}-${idx + 1}`,
+    airlineName: s.airline || s.airlineName || "",
+    airlineCode: s.airlineCode || s.code || (s.flightNos ? String(s.flightNos).split(" ")[0] : ""),
+    flightNo: s.flightNo || s.flightNos || "",
+    from: {
+      code: s.fromIata || "",
+      city: s.fromCity || "",
+      terminal: s.fromTerminal || s.terminalFrom || s.from?.terminal,
+      time: s.departTime || s.from?.time || "",
+      date: s.departDate || s.from?.date || "",
+    },
+    to: {
+      code: s.toIata || "",
+      city: s.toCity || "",
+      terminal: s.toTerminal || s.terminalTo || s.to?.terminal,
+      time: s.arriveTime || s.to?.time || "",
+      date: s.arriveDate || s.to?.date || "",
+    },
+    durationMins: safeNum(s.durationMins ?? s.duration ?? s.durationMinutes),
+    cabin: s.cabin || s.cabinClass || "",
+    refundable: s.refundable || "",
+    baggage: {
+      checkIn: s.baggage?.checkKg ? `${s.baggage.checkKg}KG` : s.baggage?.checkIn,
+      cabin: s.baggage?.handKg ? `${s.baggage.handKg}KG` : s.baggage?.cabin,
+    },
+  }));
+}
+
+/**
+ * Build TicketData for TicketCopyPage (demo)
+ * NOTE: backend aayega to yahi mapping replace karna.
+ */
+function buildTicketFromPayload(args: {
+  bookingPayload: any;
+  b2b: {
+    grossTotal: number;
+    commissionINR: number;
+    tdsINR: number;
+    agentNetINR: number;
+  };
+  payment: {
+    method: "wallet" | "gateway";
+    amount: number;
+    gateway?: string | null;
+  };
+}) {
+  const { bookingPayload, b2b } = args;
+
+  const flight = bookingPayload?.flight ?? bookingPayload?.selectedFlight ?? bookingPayload?.flightDetails ?? null;
+  const paxConfig = bookingPayload?.paxConfig ?? bookingPayload?.pricing?.pax ?? null;
+  const paxDetails = bookingPayload?.paxDetails ?? {};
+  const seats: string[] = bookingPayload?.seats?.selectedSeats ?? bookingPayload?.seats?.seats ?? [];
+  const pricing = bookingPayload?.pricing ?? {};
+  const gst = bookingPayload?.gst ?? { enabled: false };
+
+  const { outbound, inbound } = getSegmentsFromFlight(flight);
+
+  // Build passenger list (paxDetails preferred)
+  const ids = Object.keys(paxDetails || {});
+  let paxIds: string[] = ids.length ? ids.slice().sort((a, b) => a.localeCompare(b)) : [];
+
+  if (!paxIds.length && paxConfig) {
+    const a = paxConfig?.adults ?? 0;
+    const c = paxConfig?.children ?? 0;
+    const i = paxConfig?.infants ?? 0;
+    for (let x = 0; x < a; x++) paxIds.push(`ADT-${x + 1}`);
+    for (let x = 0; x < c; x++) paxIds.push(`CHD-${x + 1}`);
+    for (let x = 0; x < i; x++) paxIds.push(`INF-${x + 1}`);
+  }
+
+  const passengers = paxIds.map((id, idx) => {
+    const d = paxDetails?.[id] || {};
+    return {
+      id,
+      title: d.title || "",
+      firstName: d.firstName || `Traveller`,
+      lastName: d.lastName || `${idx + 1}`,
+      airline: flight?.airline || "",
+      status: "CONFIRMED", // demo
+      sector:
+        outbound?.length
+          ? `${outbound[0]?.fromIata || ""}-${outbound[outbound.length - 1]?.toIata || ""}`
+          : `${flight?.fromIata || ""}-${flight?.toIata || ""}`,
+      airlinePnr: "—", // demo
+      ticketNumber: "—", // demo
+      paxType: paxIdToPaxType(id),
+      seat: seats?.[idx] || "",
+    };
+  });
+
+  const now = new Date();
+  const bookingDate = now.toLocaleDateString("en-IN", { weekday: "short", day: "2-digit", month: "short", year: "numeric" });
+  const bookingTime = now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+
+  // Fare breakup (demo)
+  // - baseFare: pricing.totalFare (your current traveller total)
+  // - taxes: 0 (until api)
+  // - gst/tds from b2b toggles
+  const baseFare = safeNum(pricing?.totalFare ?? 0);
+  const seatTotal = safeNum(bookingPayload?.seats?.seatTotal ?? (Array.isArray(seats) ? seats.length * safeNum(bookingPayload?.seats?.seatPricePerSeat ?? 250) : 0));
+
+  // In ticket copy: show supplier/gross as base+seat (demo)
+  const supplierGross = baseFare + seatTotal;
+
+  return {
+    brand: { name: "Virtual2Actual Travel", tagline: "B2B Agent Console" },
+    bookingId: bookingPayload?.bookingId || `V2A-${Math.floor(100000 + Math.random() * 900000)}`,
+    bookingStatus: "CONFIRMED", // demo after payment
+    bookingDate,
+    bookingTime,
+    tripType: guessTripType(flight),
+    routeLabel: routeLabelFromSegments(outbound?.length ? outbound : flight?.segments || [], inbound, "Flight"),
+    segments: [
+      ...toTicketSegments(outbound?.length ? outbound : flight?.segments || [], "OB"),
+      ...toTicketSegments(inbound || [], "IB"),
+    ],
+    passengers: passengers.map((p: any) => ({
+      id: p.id,
+      title: p.title,
+      firstName: p.firstName,
+      lastName: p.lastName,
+      airline: p.airline,
+      status: p.status,
+      sector: p.sector,
+      airlinePnr: p.airlinePnr,
+      ticketNumber: p.ticketNumber,
+      paxType: p.paxType,
+    })),
+    fare: {
+      baseFare: supplierGross,
+      taxes: 0,
+      airlineCharges: 0,
+      otherCharges: 0,
+      discount: 0,
+      insurance: 0,
+      gst: gst?.enabled ? 0 : 0, // demo
+      tds: safeNum(b2b.tdsINR),
+    },
+    agentPricing: {
+      markup: 0,
+      serviceFee: 0,
+      commissionOverride: safeNum(b2b.commissionINR),
+      notes: `Payment: ${args.payment.method === "wallet" ? "Wallet" : `Gateway (${args.payment.gateway || "—"})`}`,
+    },
+    terms: [
+      "All passengers must present valid government ID at check-in.",
+      "Name changes are not permitted after ticket issuance.",
+      "Baggage allowances may vary by fare family.",
+    ],
+  };
 }
 
 /** ================== Main ================== */
@@ -115,7 +302,6 @@ const PaymentConfirmationPage: React.FC = () => {
 
   // totals (fallbacks)
   const seatTotal = bookingPayload?.seats?.seatTotal ?? (Array.isArray(seats) ? seats.length * seatPricePerSeat : 0);
-  const baseTotal = pricing?.totalFare ?? bookingPayload?.finalTotal ?? 0; // your PassengerDetails uses totalFare + seats later
   const grossTotal = (pricing?.totalFare ?? 0) + seatTotal;
 
   const travellersCount = useMemo(() => {
@@ -126,16 +312,12 @@ const PaymentConfirmationPage: React.FC = () => {
   }, [paxConfig]);
 
   // ===== B2B: Agent / Commission controls (demo) =====
-  // You can later replace these with API values (commission, tds, agentNetFare etc.)
   const [commissionEdit, setCommissionEdit] = useState<number>(() => Number(pricing?.commissionINR ?? 0));
   const [tdsEdit, setTdsEdit] = useState<number>(() => Number(pricing?.tdsINR ?? 0));
   const [agentNetOverride, setAgentNetOverride] = useState<number>(() => Number(pricing?.agentNetINR ?? 0));
   const [useAgentNetOverride, setUseAgentNetOverride] = useState<boolean>(() => Boolean(pricing?.agentNetINR));
 
-  // Rule (demo):
-  // - "Customer Payable" = grossTotal
-  // - "Agent Net" = (if override) agentNetOverride else (grossTotal - commissionEdit + tdsEdit)
-  // (You can change this formula to your real back-office logic)
+  // demo formula:
   const computedAgentNet = useMemo(() => {
     if (useAgentNetOverride) return Math.max(0, Number(agentNetOverride || 0));
     const c = Math.max(0, Number(commissionEdit || 0));
@@ -144,18 +326,12 @@ const PaymentConfirmationPage: React.FC = () => {
   }, [grossTotal, commissionEdit, tdsEdit, agentNetOverride, useAgentNetOverride]);
 
   // ===== Payment method: ONLY ONE (Wallet OR Gateway) =====
-  // later walletBalance should come from API
-  const walletBalance = 5000; // demo
+  const walletBalance = 100000; // demo
   const [paymentMethod, setPaymentMethod] = useState<"wallet" | "gateway">("gateway");
   const [selectedGatewayId, setSelectedGatewayId] = useState<string>("razorpay");
 
   const walletSufficient = walletBalance >= computedAgentNet;
-
-  const amountToPayNow = useMemo(() => {
-    // If paying by wallet -> full agent net from wallet (demo rule)
-    // If paying by gateway -> full agent net via gateway
-    return computedAgentNet;
-  }, [computedAgentNet]);
+  const amountToPayNow = computedAgentNet;
 
   const selectedGateway = PAYMENT_GATEWAYS.find((g) => g.id === selectedGatewayId);
 
@@ -164,7 +340,6 @@ const PaymentConfirmationPage: React.FC = () => {
 
   const passengerList = useMemo(() => {
     const ids = Object.keys(paxDetails || {});
-    // If paxDetails empty but paxConfig exists, still render placeholders
     if (ids.length) {
       return ids
         .slice()
@@ -185,7 +360,6 @@ const PaymentConfirmationPage: React.FC = () => {
   const handleConfirmPayment = () => {
     const payload = {
       bookingPayload,
-      // B2B pricing controls
       b2b: {
         grossTotal,
         commissionINR: Number(commissionEdit || 0),
@@ -203,10 +377,32 @@ const PaymentConfirmationPage: React.FC = () => {
 
     console.log("CONFIRM PAYMENT PAYLOAD:", payload);
 
-    // Later:
+    // ✅ DEMO SUCCESS: build ticket + redirect to ticket copy page
+    const ticket = buildTicketFromPayload({
+      bookingPayload,
+      b2b: {
+        grossTotal,
+        commissionINR: Number(commissionEdit || 0),
+        tdsINR: Number(tdsEdit || 0),
+        agentNetINR: computedAgentNet,
+      },
+      payment: {
+        method: paymentMethod,
+        amount: amountToPayNow,
+        gateway: paymentMethod === "gateway" ? selectedGatewayId : null,
+      },
+    });
+
+    sessionStorage.setItem(TICKET_SS_KEY, JSON.stringify(ticket));
+
+    nav("/flights/ticket-copy", {
+      state: { ticket },
+    });
+
+    // Later (API):
     // 1) create-order API
-    // 2) if wallet: debit wallet + generate PNR
-    // 3) if gateway: redirect to PG
+    // 2) wallet: debit wallet + generate PNR/Tickets => then navigate with real ticket data
+    // 3) gateway: redirect => success callback => then navigate with real ticket data
   };
 
   if (!bookingPayload) {
@@ -342,8 +538,10 @@ const PaymentConfirmationPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <span className="shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-wide"
-                      style={{ background: VAR.surface, border: `1px solid ${VAR.border}`, color: VAR.muted }}>
+                    <span
+                      className="shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-wide"
+                      style={{ background: VAR.surface, border: `1px solid ${VAR.border}`, color: VAR.muted }}
+                    >
                       {p.type}
                     </span>
                   </div>
@@ -358,8 +556,7 @@ const PaymentConfirmationPage: React.FC = () => {
                   Contact
                 </div>
                 <div className="mt-1 text-xs" style={{ color: VAR.muted }}>
-                  {contact.email ? `Email: ${contact.email}` : "Email: —"} •{" "}
-                  {contact.phone ? `Mobile: +91 ${contact.phone}` : "Mobile: —"}
+                  {contact.email ? `Email: ${contact.email}` : "Email: —"} • {contact.phone ? `Mobile: +91 ${contact.phone}` : "Mobile: —"}
                 </div>
               </div>
             )}
@@ -392,10 +589,7 @@ const PaymentConfirmationPage: React.FC = () => {
                   <div className="text-sm font-semibold" style={{ color: VAR.text }}>
                     Pay using Agent Wallet
                   </div>
-                  <span
-                    className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                    style={{ background: VAR.surface, border: `1px solid ${VAR.border}`, color: VAR.muted }}
-                  >
+                  <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: VAR.surface, border: `1px solid ${VAR.border}`, color: VAR.muted }}>
                     Balance: {fmtINR(walletBalance)}
                   </span>
                 </div>
@@ -429,7 +623,7 @@ const PaymentConfirmationPage: React.FC = () => {
               </button>
             </div>
 
-            {/* Gateway list (enabled only if paymentMethod === "gateway") */}
+            {/* Gateway list */}
             <div className="mt-4 space-y-2" style={{ opacity: paymentMethod === "gateway" ? 1 : 0.45 }}>
               <p className="text-xs font-medium" style={{ color: VAR.muted }}>
                 Select payment gateway
@@ -470,10 +664,7 @@ const PaymentConfirmationPage: React.FC = () => {
                         </p>
                       </div>
 
-                      <span
-                        className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
-                        style={{ background: VAR.surface, border: `1px solid ${VAR.border}`, color: VAR.muted }}
-                      >
+                      <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide" style={{ background: VAR.surface, border: `1px solid ${VAR.border}`, color: VAR.muted }}>
                         {gw.type === "upi" ? "UPI" : gw.type === "card" ? "CARDS" : gw.type === "netbanking" ? "NETBANKING" : "MIXED"}
                       </span>
                     </button>
@@ -483,13 +674,7 @@ const PaymentConfirmationPage: React.FC = () => {
             </div>
 
             <div className="mt-4 flex items-start gap-2">
-              <input
-                id="agree"
-                type="checkbox"
-                className="mt-0.5 h-4 w-4 rounded border-slate-300"
-                style={{ accentColor: VAR.primary as any }}
-                defaultChecked
-              />
+              <input id="agree" type="checkbox" className="mt-0.5 h-4 w-4 rounded border-slate-300" style={{ accentColor: VAR.primary as any }} defaultChecked />
               <label htmlFor="agree" className="text-[11px] leading-relaxed" style={{ color: VAR.subtle }}>
                 I confirm passenger names match their government ID / passport and I agree to fare rules, cancellation &amp; change policies.
               </label>
@@ -497,9 +682,8 @@ const PaymentConfirmationPage: React.FC = () => {
           </section>
         </div>
 
-        {/* RIGHT – B2B Fare summary */}
+        {/* RIGHT */}
         <aside className="w-full shrink-0 space-y-4 lg:w-96">
-          {/* Fare summary */}
           <section className="rounded-2xl p-4 shadow-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold" style={{ color: VAR.text }}>
@@ -510,16 +694,13 @@ const PaymentConfirmationPage: React.FC = () => {
               </span>
             </div>
 
-            {/* Customer payable */}
             <div className="mt-3 rounded-xl p-3" style={{ background: VAR.surface2, border: `1px solid ${VAR.border}` }}>
               <div className="flex justify-between text-xs" style={{ color: VAR.muted }}>
                 <span>Base fare (travellers)</span>
                 <span>{fmtINR(pricing?.totalFare ?? 0)}</span>
               </div>
               <div className="mt-1 flex justify-between text-xs" style={{ color: VAR.muted }}>
-                <span>
-                  Seat selection {Array.isArray(seats) && seats.length ? `(${seats.length} × ${fmtINR(seatPricePerSeat)})` : ""}
-                </span>
+                <span>Seat selection {Array.isArray(seats) && seats.length ? `(${seats.length} × ${fmtINR(seatPricePerSeat)})` : ""}</span>
                 <span>{fmtINR(seatTotal)}</span>
               </div>
 
@@ -540,7 +721,6 @@ const PaymentConfirmationPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Commission edit */}
             <div className="mt-3 rounded-xl p-3" style={{ background: VAR.surface2, border: `1px solid ${VAR.border}` }}>
               <div className="flex items-center justify-between">
                 <div className="text-xs font-semibold" style={{ color: VAR.text }}>
@@ -623,7 +803,6 @@ const PaymentConfirmationPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Pay CTA */}
             <button
               type="button"
               onClick={handleConfirmPayment}
@@ -639,45 +818,8 @@ const PaymentConfirmationPage: React.FC = () => {
             </button>
 
             <p className="mt-2 text-[10px]" style={{ color: VAR.subtle }}>
-              Demo page: API implement later. Do not refresh during payment flow.
+              Demo page: API implement later. Payment success simulate -Ticket Copy page.
             </p>
-          </section>
-
-          {/* Quick payment summary */}
-          <section className="rounded-2xl p-4 shadow-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
-            <div className="text-xs font-semibold" style={{ color: VAR.text }}>
-              Payment summary
-            </div>
-
-            <div className="mt-2 rounded-xl p-3" style={{ background: VAR.surface2, border: `1px solid ${VAR.border}` }}>
-              <div className="flex justify-between text-xs" style={{ color: VAR.muted }}>
-                <span>Method</span>
-                <span className="font-semibold" style={{ color: VAR.text }}>
-                  {paymentMethod === "wallet" ? "Wallet" : "Payment Gateway"}
-                </span>
-              </div>
-
-              <div className="mt-1 flex justify-between text-xs" style={{ color: VAR.muted }}>
-                <span>Payable now</span>
-                <span className="font-semibold" style={{ color: VAR.text }}>
-                  {fmtINR(amountToPayNow)}
-                </span>
-              </div>
-
-              {paymentMethod === "wallet" ? (
-                <div className="mt-1 flex justify-between text-[11px]" style={{ color: walletSufficient ? VAR.success : VAR.danger }}>
-                  <span>Wallet balance</span>
-                  <span className="font-semibold">{fmtINR(walletBalance)}</span>
-                </div>
-              ) : (
-                <div className="mt-1 flex justify-between text-[11px]" style={{ color: VAR.subtle }}>
-                  <span>Gateway</span>
-                  <span className="font-semibold" style={{ color: VAR.text }}>
-                    {selectedGateway?.name ?? "—"}
-                  </span>
-                </div>
-              )}
-            </div>
           </section>
         </aside>
       </div>

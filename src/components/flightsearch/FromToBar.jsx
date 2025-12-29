@@ -6,6 +6,7 @@ import AirportSelect from "./AirportSelect";
 import DateField from "./DateField";
 import TravellersField from "./TravellersField";
 import TravellerClassPicker from "./TravellerClassPicker";
+import searchbg from "../../assets/media/search.jpg";
 
 import {
   BadgePercent,
@@ -29,6 +30,8 @@ import {
 
 /* ---------------- RECENT SEARCH HELPERS ---------------- */
 const RECENT_KEY = "flight_recent_searches";
+
+
 
 const getRecentSearches = () => {
   try {
@@ -452,6 +455,7 @@ function MobileSummaryCard({
 }
 
 export default function FromToBar({ onSearch }) {
+  const [openReturnOnce, setOpenReturnOnce] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -941,6 +945,12 @@ export default function FromToBar({ onSearch }) {
                 disabled={trip !== "round"}
                 minDate={returnMinDate}
                 offsetDays={1}
+                onDisabledClick={() => {
+                  setTrip("round");          // ✅ oneway -> round
+                  setOpenReturnOnce(true);   // ✅ and open calendar
+                }}
+                forceOpen={openReturnOnce && trip === "round"}
+                onForceOpenConsumed={() => setOpenReturnOnce(false)}
               />
               <div className="pt-2">
                 <button
@@ -1108,7 +1118,14 @@ export default function FromToBar({ onSearch }) {
             disabled={trip !== "round"}
             minDate={returnMinDate}
             offsetDays={1}
+            onDisabledClick={() => {
+              setTrip("round");
+              setOpenReturnOnce(true);
+            }}
+            forceOpen={openReturnOnce && trip === "round"}
+            onForceOpenConsumed={() => setOpenReturnOnce(false)}
           />
+
 
           <div className="relative min-w-0">
             <TravellersField label="Travellers & Class" text={travellersLabel} onClick={() => setOpenTC(true)} />
@@ -1172,27 +1189,27 @@ export default function FromToBar({ onSearch }) {
               </div>
             </div>
 
-           <div
-  className="relative mt-4 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3"
-  style={{ boxShadow: shadowSoft }}
->
-  {/* ===== Right side plane image (FULL opacity) ===== */}
-  <div
-    className="
+            <div
+              className="relative mt-4 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3"
+              style={{ boxShadow: shadowSoft }}
+            >
+              {/* ===== Right side plane image (FULL opacity) ===== */}
+              <div
+                className="
       pointer-events-none
       absolute inset-y-0 right-0
       w-[46%] hidden md:block
       bg-no-repeat bg-right bg-contain
     "
-    style={{
-      backgroundImage: "url('https://img.freepik.com/premium-photo/passenger-airplane-is-flying_105428-5456.jpg",
-      backgroundSize: "cover",
-    }}
-  />
+                style={{
+                  backgroundImage: `url(${searchbg})`,
+                  backgroundSize: "cover",
+                }}
+              />
 
-  {/* ===== Fade mask (this makes it look PART of card) ===== */}
-  <div
-    className="
+              {/* ===== Fade mask (this makes it look PART of card) ===== */}
+              <div
+                className="
       pointer-events-none
       absolute inset-y-0 right-0
       w-[46%] hidden md:block
@@ -1201,62 +1218,62 @@ export default function FromToBar({ onSearch }) {
       via-[var(--surface)]
       to-[var(--surface)]
     "
-  />
+              />
 
-  {/* ===== Content ===== */}
-  <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-    <div className="min-w-0">
-      <div className="flex items-start gap-3">
-        <span
-          className="inline-flex h-10 w-10 items-center justify-center rounded-2xl"
-          style={{ ...gradientStyle, color: "var(--surface)" }}
-        >
-          <BadgePercent className="h-5 w-5" />
-        </span>
+              {/* ===== Content ===== */}
+              <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-start gap-3">
+                    <span
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-2xl"
+                      style={{ ...gradientStyle, color: "var(--surface)" }}
+                    >
+                      <BadgePercent className="h-5 w-5" />
+                    </span>
 
-        <div className="min-w-0">
-          <div className="text-sm font-extrabold text-[var(--text)]">
-            Fare Preferences
-          </div>
-          <div className="text-[11px] font-medium text-[var(--muted)]">
-            {presetHint}
-          </div>
-        </div>
-      </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-extrabold text-[var(--text)]">
+                        Fare Preferences
+                      </div>
+                      <div className="text-[11px] font-medium text-[var(--muted)]">
+                        {presetHint}
+                      </div>
+                    </div>
+                  </div>
 
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Pill active={farePreset === "regular"} onClick={() => setFarePreset("regular")} icon={BadgePercent}>
-          Regular
-        </Pill>
-        <Pill active={farePreset === "work"} onClick={() => setFarePreset("work")} icon={Briefcase}>
-          Work Travel
-        </Pill>
-        <Pill active={farePreset === "student"} onClick={() => setFarePreset("student")} icon={GraduationCap}>
-          Student
-        </Pill>
-        <Pill active={farePreset === "senior"} onClick={() => setFarePreset("senior")} icon={ShieldCheck}>
-          Senior
-        </Pill>
-        <Pill active={farePreset === "defence"} onClick={() => setFarePreset("defence")} icon={ShieldCheck}>
-          Defence
-        </Pill>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Pill active={farePreset === "regular"} onClick={() => setFarePreset("regular")} icon={BadgePercent}>
+                      Regular
+                    </Pill>
+                    <Pill active={farePreset === "work"} onClick={() => setFarePreset("work")} icon={Briefcase}>
+                      Work Travel
+                    </Pill>
+                    <Pill active={farePreset === "student"} onClick={() => setFarePreset("student")} icon={GraduationCap}>
+                      Student
+                    </Pill>
+                    <Pill active={farePreset === "senior"} onClick={() => setFarePreset("senior")} icon={ShieldCheck}>
+                      Senior
+                    </Pill>
+                    <Pill active={farePreset === "defence"} onClick={() => setFarePreset("defence")} icon={ShieldCheck}>
+                      Defence
+                    </Pill>
 
-        {trip === "round" && sector === "intl" && (
-          <Pill className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--text)] shadow-sm">
-            <input
-              type="checkbox"
-              checked={specialFare}
-              onChange={(e) => setSpecialFare(e.target.checked)}
-              className="h-4 w-4"
-              style={{ accentColor: "var(--primary)" }}
-            />
-            Special Round Trip Fare
-          </Pill>
-        )}
-      </div>
-    </div>
+                    {trip === "round" && sector === "intl" && (
+                      <Pill className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--text)] shadow-sm">
+                        <input
+                          type="checkbox"
+                          checked={specialFare}
+                          onChange={(e) => setSpecialFare(e.target.checked)}
+                          className="h-4 w-4"
+                          style={{ accentColor: "var(--primary)" }}
+                        />
+                        Special Round Trip Fare
+                      </Pill>
+                    )}
+                  </div>
+                </div>
 
-    {/* <div className="flex justify-start lg:justify-end">
+                {/* <div className="flex justify-start lg:justify-end">
       <button
         type="button"
         className={[
@@ -1269,8 +1286,8 @@ export default function FromToBar({ onSearch }) {
         Flight Tracker
       </button>
     </div> */}
-  </div>
-</div>
+              </div>
+            </div>
 
 
             <div className="absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-[98%] z-20">
