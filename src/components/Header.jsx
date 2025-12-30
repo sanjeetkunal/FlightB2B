@@ -86,7 +86,7 @@ export default function Header({ variant = "private" }) {
     try {
       localStorage.removeItem("tyb_user");
       localStorage.removeItem("tyb_token");
-    } catch { }
+    } catch {}
     closeAll();
     navigate("/login", { replace: true });
   };
@@ -180,33 +180,160 @@ export default function Header({ variant = "private" }) {
     });
   };
 
+  /* =========================
+     ✅ TOPBAR HIDE ON SCROLL (MMT-LIKE, NO FLICKER)
+     ========================= */
+  const [hideTopbar, setHideTopbar] = useState(false);
+
+  const hideTopbarRef = useRef(false);
+  useEffect(() => {
+    hideTopbarRef.current = hideTopbar;
+  }, [hideTopbar]);
+
+  const lastScrollY = useRef(0);
+  const accDown = useRef(0);
+  const accUp = useRef(0);
+  const lastToggleAt = useRef(0);
+
+  useEffect(() => {
+    if (isPublic) return;
+
+    // desktop only
+    if (!isDesktop) {
+      setHideTopbar(false);
+      return;
+    }
+
+    const TOP_SHOW_Y = 24; // top pe always show
+    const DOWN_TRIGGER = 80; // itna down scroll hone pe hide
+    const UP_TRIGGER = 70; // itna up scroll hone pe show
+    const JITTER_PX = 2; // micro scroll ignore
+    const COOLDOWN_MS = 240; // rapid toggling block
+
+    lastScrollY.current = window.scrollY || 0;
+    accDown.current = 0;
+    accUp.current = 0;
+
+    let ticking = false;
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+
+      window.requestAnimationFrame(() => {
+        const y = Math.max(0, window.scrollY || 0);
+        const dy = y - lastScrollY.current;
+
+        // ignore tiny jitters
+        if (Math.abs(dy) < JITTER_PX) {
+          ticking = false;
+          return;
+        }
+
+        // near top => always show
+        if (y <= TOP_SHOW_Y) {
+          accDown.current = 0;
+          accUp.current = 0;
+          if (hideTopbarRef.current) setHideTopbar(false);
+          lastScrollY.current = y;
+          ticking = false;
+          return;
+        }
+
+        // cooldown to avoid flicker
+        const now = Date.now();
+        const inCooldown = now - lastToggleAt.current < COOLDOWN_MS;
+
+        if (dy > 0) {
+          // scrolling down
+          accDown.current += dy;
+          accUp.current = 0;
+
+          if (
+            !inCooldown &&
+            !hideTopbarRef.current &&
+            accDown.current >= DOWN_TRIGGER
+          ) {
+            lastToggleAt.current = now;
+            accDown.current = 0;
+            setHideTopbar(true);
+          }
+        } else {
+          // scrolling up
+          accUp.current += -dy;
+          accDown.current = 0;
+
+          if (
+            !inCooldown &&
+            hideTopbarRef.current &&
+            accUp.current >= UP_TRIGGER
+          ) {
+            lastToggleAt.current = now;
+            accUp.current = 0;
+            setHideTopbar(false);
+          }
+        }
+
+        lastScrollY.current = y;
+        ticking = false;
+      });
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isDesktop, isPublic]);
+
   return (
     <header className="sticky top-0 z-30 bg-[var(--surface)] text-[var(--text)]">
       {/* TOP BAR – only after login */}
       {!isPublic && (
-        <div className="hidden sm:block bg-black text-white">
-          <div className="mx-auto max-w-7xl px-0 sm:px-0 lg:px-0">
-            <div className="h-11 flex items-center justify-between gap-3 px-4">
-              <div className="flex items-center gap-6 text-sm opacity-95">
-                <span>📞 +91-9876543210</span>
-                <span>✉️ support@yourdomain.com</span>
+        <div
+          className={[
+            "hidden md:grid", // desktop only
+            "overflow-hidden",
+            "transition-[grid-template-rows,opacity] duration-300 ease-[cubic-bezier(.2,.8,.2,1)]",
+            "will-change-[grid-template-rows,opacity]",
+            hideTopbar ? "grid-rows-[0fr] opacity-0" : "grid-rows-[1fr] opacity-100",
+          ].join(" ")}
+        >
+          {/* inner wrapper required for 0fr trick */}
+          <div className="min-h-0">
+            <div
+              className={[
+                "transition-transform duration-300 ease-[cubic-bezier(.2,.8,.2,1)]",
+                "will-change-transform",
+                hideTopbar ? "-translate-y-2" : "translate-y-0",
+              ].join(" ")}
+            >
+              <div className="bg-black text-white">
+                <div className="mx-auto max-w-7xl px-0 sm:px-0 lg:px-0">
+                  <div className="h-11 flex items-center justify-between gap-3 px-4">
+                    <div className="flex items-center gap-6 text-sm opacity-95">
+                      <span>📞 +91-9876543210</span>
+                      <span>✉️ support@yourdomain.com</span>
+                    </div>
+
+                    <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+                      {topLinks.map((l) => (
+                        <a
+                          key={l}
+                          href="#"
+                          className="hover:text-blue-300 transition-colors"
+                        >
+                          {l}
+                        </a>
+                      ))}
+                    </nav>
+
+                    <button className="md:hidden h-8 px-3 rounded-full border border-white/30 text-xs font-semibold">
+                      Menu
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-                {topLinks.map((l) => (
-                  <a
-                    key={l}
-                    href="#"
-                    className="hover:text-blue-300 transition-colors"
-                  >
-                    {l}
-                  </a>
-                ))}
-              </nav>
-
-              <button className="md:hidden h-8 px-3 rounded-full border border-white/30 text-xs font-semibold">
-                Menu
-              </button>
+              {/* optional: thin divider line */}
+              {/* <div className="h-px bg-[var(--border)]" /> */}
             </div>
           </div>
         </div>
@@ -222,13 +349,13 @@ export default function Header({ variant = "private" }) {
                 onClick={() => go(isPublic ? "/login" : "/")}
                 className="flex items-center gap-3"
                 aria-label="Go home"
+                type="button"
               >
                 <img
                   src={logo}
                   className="w-36 sm:w-[80px] object-contain"
                   alt="Logo"
                 />
-                {/* <div className="hidden sm:block w-px h-6 bg-[var(--border)]" /> */}
               </button>
             </div>
 
@@ -243,6 +370,7 @@ export default function Header({ variant = "private" }) {
                     hover:bg-[var(--primaryHover)]
                     focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30
                   "
+                  type="button"
                 >
                   Become an Agent
                 </button>
@@ -261,6 +389,7 @@ export default function Header({ variant = "private" }) {
                               ? "border-[var(--border)] text-[var(--text)] bg-[var(--primarySoft)]"
                               : "border-transparent text-[var(--text)] hover:bg-[var(--surface2)]",
                           ].join(" ")}
+                          type="button"
                         >
                           <span className="whitespace-nowrap">{t.label}</span>
                         </button>
@@ -269,7 +398,7 @@ export default function Header({ variant = "private" }) {
                   </nav>
 
                   <div className="flex items-center gap-2">
-                    {/* ✅ Wallet */}
+                    {/* Wallet */}
                     <div
                       className="relative"
                       ref={walletRef}
@@ -279,7 +408,7 @@ export default function Header({ variant = "private" }) {
                       <button
                         onClick={toggleWallet}
                         className="
-                          h-10 px-3 inline-flex items-center gap-2 rounded-xl
+                          h-10 px-3 inline-flex items-center gap-2 rounded-md
                           border border-[var(--border)]
                           bg-[var(--surface)]
                           hover:bg-[var(--surface2)]
@@ -312,7 +441,7 @@ export default function Header({ variant = "private" }) {
                             w-80
                             bg-[var(--surface)]
                             border border-[var(--border)]
-                            rounded-2xl shadow-xl p-3
+                            rounded-md shadow-xl p-3
                           "
                         >
                           <div className="flex items-center justify-between">
@@ -327,7 +456,7 @@ export default function Header({ variant = "private" }) {
                             </div>
                             <button
                               className="
-                                px-3 py-2 rounded-lg
+                                px-3 py-2 rounded-md
                                 bg-[var(--primary)] text-white
                                 text-sm font-semibold
                                 hover:bg-[var(--primaryHover)]
@@ -342,23 +471,16 @@ export default function Header({ variant = "private" }) {
                           <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
                             <InfoTile
                               title="Credit Limit"
-                              value={`${wallet.currency}${formatMoney(
-                                wallet.creditLimit
-                              )}`}
+                              value={`${wallet.currency}${formatMoney(wallet.creditLimit)}`}
                             />
-                            <InfoTile
-                              title="Hold Amount"
-                              value={`${wallet.currency}0.00`}
-                            />
+                            <InfoTile title="Hold Amount" value={`${wallet.currency}0.00`} />
                           </div>
 
                           <div className="mt-3 border-t border-[var(--border)] pt-3">
                             <DropItem onClick={() => go("/admin/wallet/history")}>
                               Wallet History
                             </DropItem>
-                            <DropItem
-                              onClick={() => go("/admin/wallet/statement")}
-                            >
+                            <DropItem onClick={() => go("/admin/wallet/statement")}>
                               Download Statement
                             </DropItem>
                             <DropItem onClick={() => go("/admin/wallet/refunds")}>
@@ -369,7 +491,7 @@ export default function Header({ variant = "private" }) {
                       )}
                     </div>
 
-                    {/* ✅ Notifications */}
+                    {/* Notifications */}
                     <div
                       className="relative"
                       ref={notifRef}
@@ -379,7 +501,7 @@ export default function Header({ variant = "private" }) {
                       <button
                         onClick={toggleNotif}
                         className="
-                          h-10 w-10 inline-grid place-items-center rounded-xl
+                          h-10 w-10 inline-grid place-items-center rounded-md
                           border border-[var(--border)]
                           bg-[var(--surface)]
                           hover:bg-[var(--surface2)]
@@ -401,7 +523,7 @@ export default function Header({ variant = "private" }) {
                             sm:right-0 sm:left-auto sm:translate-x-0
                             bg-[var(--surface)]
                             border border-[var(--border)]
-                            rounded-2xl shadow-xl p-3
+                            rounded-md shadow-xl p-3
                           "
                         >
                           <div className="px-2 py-1 text-sm font-semibold">
@@ -409,17 +531,14 @@ export default function Header({ variant = "private" }) {
                           </div>
                           <div className="divide-y divide-[var(--border)] max-h-80 overflow-auto">
                             <NotifItem title="PNR AD4K9Q ticketed" meta="Just now" />
-                            <NotifItem
-                              title="Low wallet threshold crossed"
-                              meta="10m ago"
-                            />
+                            <NotifItem title="Low wallet threshold crossed" meta="10m ago" />
                             <NotifItem title="Refund processed ₹2,350" meta="Yesterday" />
                           </div>
                         </div>
                       )}
                     </div>
 
-                    {/* ✅ Profile */}
+                    {/* Profile */}
                     <div
                       className="relative"
                       ref={profileRef}
@@ -429,7 +548,7 @@ export default function Header({ variant = "private" }) {
                       <button
                         onClick={toggleProfile}
                         className="
-                          h-10 px-0 md:px-3 inline-flex items-center gap-3 rounded-xl
+                          h-10 px-0 md:px-3 inline-flex items-center gap-3 rounded-md
                           bg-[var(--surface)] hover:bg-[var(--surface2)] cursor-pointer
                         "
                         type="button"
@@ -456,7 +575,7 @@ export default function Header({ variant = "private" }) {
                             w-72
                             bg-[var(--surface)]
                             border border-[var(--border)]
-                            rounded-2xl shadow-xl p-2
+                            rounded-md shadow-xl p-2
                           "
                         >
                           <div className="px-3 py-2">
@@ -474,9 +593,7 @@ export default function Header({ variant = "private" }) {
                           </div>
 
                           <div className="border-t my-2 border-[var(--border)]" />
-                          <MenuLink onClick={() => go("/agency-settings")}>
-                            My Profile
-                          </MenuLink>
+                          <MenuLink onClick={() => go("/agency-settings")}>My Profile</MenuLink>
                           <MenuLink onClick={() => go("/agency-settings")}>
                             Agency Settings
                           </MenuLink>
@@ -504,7 +621,7 @@ export default function Header({ variant = "private" }) {
 function DropItem({ children, onClick }) {
   return (
     <button
-      className="w-full text-left px-3 py-2 rounded-lg hover:bg-[var(--surface2)] text-sm"
+      className="w-full text-left px-3 py-2 rounded-md hover:bg-[var(--surface2)] text-sm"
       onClick={onClick}
       type="button"
     >
@@ -515,7 +632,7 @@ function DropItem({ children, onClick }) {
 
 function InfoTile({ title, value }) {
   return (
-    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface2)] p-3">
+    <div className="rounded-md border border-[var(--border)] bg-[var(--surface2)] p-3">
       <div className="text-xs text-[var(--muted)]">{title}</div>
       <div className="font-semibold">{value}</div>
     </div>
@@ -537,7 +654,7 @@ function MenuLink({ children, danger, onClick }) {
       onClick={onClick}
       type="button"
       className={[
-        "w-full text-left px-3 py-2 rounded-lg hover:bg-[var(--surface2)] text-sm",
+        "w-full text-left px-3 py-2 rounded-md hover:bg-[var(--surface2)] text-sm",
         danger ? "text-red-600 hover:bg-red-50" : "",
       ].join(" ")}
     >

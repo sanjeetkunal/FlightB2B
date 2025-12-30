@@ -265,7 +265,7 @@ function SegmentCard({
   const check = bag.checkKg ?? 0;
 
   return (
-    <div className="rounded-xl border border-gray-200 p-3">
+    <div className="rounded-md border border-gray-200 p-3">
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <SmallImageLogo src={logo} alt={airline} />
@@ -379,7 +379,7 @@ function ItineraryLeg({
 
 function BaggagePanelRT({ outbound, inbound }: { outbound: LegSummary; inbound: LegSummary }) {
   const render = (title: string, b: LegSummary["baggage"]) => (
-    <div className="overflow-hidden rounded-xl border border-gray-200">
+    <div className="overflow-hidden rounded-md border border-gray-200">
       <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-700">{title}</div>
       <div className="grid grid-cols-3 bg-gray-50 text-[11px] font-semibold text-gray-700 border-t border-gray-200">
         <div className="border-r border-gray-200 p-2">Cabin</div>
@@ -413,7 +413,7 @@ function CancellationPanel({
 }) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      <div className="rounded-xl border border-gray-200 p-3">
+      <div className="rounded-md border border-gray-200 p-3">
         <div className="mb-2 text-sm font-semibold">Refund rules</div>
         <ul className="space-y-1 text-sm text-gray-700">
           {refund.map((r, i) => (
@@ -429,7 +429,7 @@ function CancellationPanel({
           </div>
         )}
       </div>
-      <div className="rounded-xl border border-gray-200 p-3">
+      <div className="rounded-md border border-gray-200 p-3">
         <div className="mb-2 text-sm font-semibold">Change rules</div>
         <ul className="space-y-1 text-sm text-gray-700">
           {change.map((r, i) => (
@@ -488,7 +488,7 @@ function SelectedFarePanelRT({ fare, showCommission }: { fare: FareOption; showC
   const agentNet = fare.agentFareINR ?? (commission != null ? fare.price - commission : undefined);
 
   return (
-    <div className="rounded-xl border border-gray-200 p-3">
+    <div className="rounded-md border border-gray-200 p-3">
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <div className="text-[13px] text-gray-600">Selected RT Fare</div>
         <div className="text-[18px] font-bold text-gray-900">
@@ -503,7 +503,7 @@ function SelectedFarePanelRT({ fare, showCommission }: { fare: FareOption; showC
       </div>
 
       {showCommission && (
-        <div className="mt-3 rounded-lg bg-emerald-50 p-2 text-[12px] text-emerald-800 border border-emerald-200">
+        <div className="mt-3 rounded-md bg-emerald-50 p-2 text-[12px] text-emerald-800 border border-emerald-200">
           {agentNet != null && commission != null ? (
             <>
               Agent Net: <span className="font-semibold"><Money v={agentNet} /></span>
@@ -831,7 +831,7 @@ function IntlB2BRow({
   const agentNet = effFare.agentFareINR ?? (commission != null ? effFare.price - commission : undefined);
 
   return (
-    <div className="border border-gray-200 bg-white p-3 rounded-2xl relative">
+    <div className="border border-gray-200 bg-white p-3 rounded-md relative">
       {/* ✅ share checkbox */}
       {shareMode && (
         <button
@@ -977,7 +977,7 @@ function IntlB2BRow({
           <button
             type="button"
             onClick={onToggle}
-            className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-800 hover:bg-gray-50"
+            className="inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-800 hover:bg-gray-50"
           >
             Details
             <svg
@@ -1001,7 +1001,7 @@ function IntlB2BRow({
           <button
             type="button"
             onClick={onBook}
-            className="rounded-sm bg-blue-500 px-3 py-1.5 text-sm font-semibold text-white shadow hover:opacity-95"
+            className="rounded-md bg-blue-500 px-3 py-1.5 text-sm font-semibold text-white shadow hover:opacity-95"
             title="Proceed to book"
           >
             Book RT Fare
@@ -1011,7 +1011,7 @@ function IntlB2BRow({
 
       {/* details card */}
       {expanded && (
-        <div className="mt-2 rounded-xl border border-gray-200 p-3">
+        <div className="mt-2 rounded-md border border-gray-200 p-3">
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ImageLogo src={r.logo} alt={r.airline} />
@@ -1121,7 +1121,7 @@ export default function SpecialRoundTripResult({
 
   if (!rows || rows.length === 0) {
     return (
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center text-sm text-gray-600">
+      <div className="rounded-md border border-gray-200 bg-white p-6 text-center text-sm text-gray-600">
         {onEmpty ?? "No international round-trip results. Modify search or filters."}
       </div>
     );
@@ -1130,7 +1130,7 @@ export default function SpecialRoundTripResult({
   return (
     <div className="space-y-3">
       {/* ✅ Share top bar (icons, no dropdown) */}
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-gray-200 bg-white px-3 py-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-gray-200 bg-white px-3 py-2">
         <div className="text-sm font-semibold text-gray-900">Special Round Trip Results</div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -1141,7 +1141,7 @@ export default function SpecialRoundTripResult({
               clearSelection();
             }}
             className={[
-              "rounded-lg border px-3 py-1.5 text-xs font-semibold",
+              "rounded-md border px-3 py-1.5 text-xs font-semibold",
               shareMode ? "border-indigo-600 bg-indigo-600 text-white" : "border-gray-300 bg-white text-gray-800 hover:bg-gray-50",
             ].join(" ")}
           >
@@ -1157,7 +1157,7 @@ export default function SpecialRoundTripResult({
               <button
                 type="button"
                 onClick={selectAll}
-                className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 hover:bg-gray-50"
+                className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 hover:bg-gray-50"
               >
                 Select All
               </button>
@@ -1165,7 +1165,7 @@ export default function SpecialRoundTripResult({
               <button
                 type="button"
                 onClick={clearSelection}
-                className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 hover:bg-gray-50"
+                className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 hover:bg-gray-50"
               >
                 Clear
               </button>

@@ -57,7 +57,7 @@ export default function HolidayDashboard() {
             title={holidayAiTitle}
             placeholderQuestion={holidayAiPlaceholder}
           />
-          <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-500 shadow-sm">
+          <div className="rounded-md border border-slate-200 bg-white p-4 text-xs text-slate-500 shadow-sm">
             Yahin se aap AI se itinerary, inclusions, exclusions, pricing note
             aur WhatsApp message sab bana sakte ho.
           </div>

@@ -4,7 +4,7 @@ export default function FieldShell({ label, children, className = "" }) {
     <div className={`min-w-0 ${className}`}>
       <div
         className="
-          rounded-2xl border border-[var(--border)]
+          rounded-md border border-[var(--border)]
           bg-[var(--surface)]
           shadow-sm px-4 py-3
           text-[var(--text)]

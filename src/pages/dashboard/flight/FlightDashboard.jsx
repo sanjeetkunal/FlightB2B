@@ -63,7 +63,7 @@ export default function FlightDashboard() {
             placeholderQuestion={flightAiPlaceholder}
           />
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-500 shadow-sm">
+          <div className="rounded-md border border-slate-200 bg-white p-4 text-xs text-slate-500 shadow-sm">
             <div className="mb-1 text-[11px] font-semibold text-slate-700">
               Tip for you
             </div>

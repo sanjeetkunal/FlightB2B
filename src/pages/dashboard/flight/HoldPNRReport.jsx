@@ -196,18 +196,18 @@ export default function HoldPNRReport() {
           <div className="flex gap-2">
             <button
               onClick={handleExport}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100"
+              className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100"
             >
               ⬇️ Export (CSV/Excel)
             </button>
-            <button className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800">
+            <button className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800">
               📄 Print View
             </button>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="mb-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+        <div className="mb-4 rounded-md border border-slate-200 bg-white p-3 shadow-sm">
           <div className="mb-2 flex items-center justify-between gap-2">
             <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               Filters
@@ -240,7 +240,7 @@ export default function HoldPNRReport() {
                 type="date"
                 value={fromDate}
                 onChange={(e) => setFromDate(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
               />
             </div>
 
@@ -253,7 +253,7 @@ export default function HoldPNRReport() {
                 type="date"
                 value={toDate}
                 onChange={(e) => setToDate(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
               />
             </div>
 
@@ -265,7 +265,7 @@ export default function HoldPNRReport() {
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
               >
                 <option value="ALL">All</option>
                 <option value="ACTIVE">Active</option>
@@ -283,7 +283,7 @@ export default function HoldPNRReport() {
               <select
                 value={paymentStatus}
                 onChange={(e) => setPaymentStatus(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
               >
                 <option value="ALL">All</option>
                 <option value="UNPAID">Unpaid</option>
@@ -300,7 +300,7 @@ export default function HoldPNRReport() {
               <select
                 value={sector}
                 onChange={(e) => setSector(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
               >
                 <option value="ALL">All</option>
                 <option value="DOM">Domestic</option>
@@ -316,7 +316,7 @@ export default function HoldPNRReport() {
               <select
                 value={tripType}
                 onChange={(e) => setTripType(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
               >
                 <option value="ALL">All</option>
                 <option value="ONEWAY">Oneway</option>
@@ -333,7 +333,7 @@ export default function HoldPNRReport() {
               <select
                 value={airline}
                 onChange={(e) => setAirline(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
               >
                 <option value="ALL">All</option>
                 {airlineOptions.map((a) => (
@@ -352,7 +352,7 @@ export default function HoldPNRReport() {
               <select
                 value={source}
                 onChange={(e) => setSource(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
               >
                 <option value="ALL">All</option>
                 <option value="PORTAL">Portal</option>
@@ -371,7 +371,7 @@ export default function HoldPNRReport() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="e.g. HPNR01 / Rahul / DEL BOM / Agent001"
-                className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
               />
             </div>
           </div>
@@ -379,7 +379,7 @@ export default function HoldPNRReport() {
 
         {/* Summary Cards */}
         <div className="mb-4 grid gap-3 md:grid-cols-3 lg:grid-cols-5">
-          <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+          <div className="rounded-md border border-slate-200 bg-white px-3 py-2 shadow-sm">
             <div className="text-[10px] font-medium uppercase text-slate-500">
               Total Hold PNRs
             </div>
@@ -388,7 +388,7 @@ export default function HoldPNRReport() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-sky-100 bg-sky-50 px-3 py-2 shadow-sm">
+          <div className="rounded-md border border-sky-100 bg-sky-50 px-3 py-2 shadow-sm">
             <div className="text-[10px] font-medium uppercase text-sky-700">
               Active Holds
             </div>
@@ -397,7 +397,7 @@ export default function HoldPNRReport() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 shadow-sm">
+          <div className="rounded-md border border-emerald-100 bg-emerald-50 px-3 py-2 shadow-sm">
             <div className="text-[10px] font-medium uppercase text-emerald-700">
               Converted (Ticketed)
             </div>
@@ -406,7 +406,7 @@ export default function HoldPNRReport() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 shadow-sm">
+          <div className="rounded-md border border-rose-100 bg-rose-50 px-3 py-2 shadow-sm">
             <div className="text-[10px] font-medium uppercase text-rose-700">
               Expired / Cancelled
             </div>
@@ -415,7 +415,7 @@ export default function HoldPNRReport() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+          <div className="rounded-md border border-slate-200 bg-white px-3 py-2 shadow-sm">
             <div className="text-[10px] font-medium uppercase text-slate-500">
               Hold Fare / Paid / Balance
             </div>
@@ -432,7 +432,7 @@ export default function HoldPNRReport() {
         </div>
 
         {/* Results Table */}
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2 text-[11px] text-slate-500">
             <div>
               Showing{" "}

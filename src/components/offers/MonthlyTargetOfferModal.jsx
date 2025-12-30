@@ -71,7 +71,7 @@ export default function MonthlyTargetOfferModal({
       />
 
       {/* Image-only Modal */}
-      <div className="relative w-full max-w-4xl overflow-hidden rounded-2xl shadow-2xl">
+      <div className="relative w-full max-w-4xl overflow-hidden rounded-md shadow-2xl">
         <button
           type="button"
           onClick={handleClose}

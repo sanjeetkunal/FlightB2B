@@ -67,7 +67,10 @@ type Props = {
 
   showCommission?: boolean;
 
-  paxConfig: PaxConfig; // ✅ required (but we still guard)
+  paxConfig: PaxConfig;
+
+  // ✅ from FilterPanel (f.fareView)
+  fareView?: "SINGLE" | "FULL";
 };
 
 /* ================= THEME VARS (no hard colors) ================= */
@@ -86,6 +89,22 @@ const VAR = {
   accentSoft: "var(--accentSoft, rgba(16,182,217,0.12))",
   success: "var(--success, rgb(34,197,94))",
   danger: "var(--danger, rgb(244,63,94))",
+
+  // dark summary bar tones (still themeable)
+  darkBg: "var(--darkBg, rgba(15,23,42,0.96))",
+  onDark: "var(--onDark, rgba(255,255,255,1))",
+  onDarkMuted: "var(--onDarkMuted, rgba(255,255,255,0.82))",
+  onDarkSubtle: "var(--onDarkSubtle, rgba(255,255,255,0.72))",
+  onDarkFaint: "var(--onDarkFaint, rgba(255,255,255,0.35))",
+  onDarkBorder: "var(--onDarkBorder, rgba(255,255,255,0.12))",
+  onDarkBtnBg: "var(--onDarkBtnBg, rgba(255,255,255,0.08))",
+  onDarkBtnBorder: "var(--onDarkBtnBorder, rgba(255,255,255,0.18))",
+  onDarkPaneBg: "var(--onDarkPaneBg, rgba(0,0,0,0.15))",
+  onDarkCardBg: "var(--onDarkCardBg, rgba(255,255,255,0.06))",
+  onDarkCardBorder: "var(--onDarkCardBorder, rgba(255,255,255,0.14))",
+  linkOnDark: "var(--linkOnDark, rgba(125,211,252,1))",
+  okOnDark: "var(--okOnDark, rgba(110,231,183,1))",
+  warnOnDark: "var(--warnOnDark, rgba(251,191,36,1))",
 };
 
 /* ================= HELPERS ================= */
@@ -112,16 +131,15 @@ function toInt(n: any) {
   return Math.max(0, Math.floor(v));
 }
 
-function normalizePax(input?: PaxConfig | null): PaxConfig {
-  const src = input ?? { adults: 1, children: 0, infants: 0 };
-  const pax = {
-    adults: toInt((src as any).adults),
-    children: toInt((src as any).children),
-    infants: toInt((src as any).infants),
-  };
-  // if everything 0 => default 1 adult
-  if (pax.adults + pax.children + pax.infants <= 0) return { adults: 1, children: 0, infants: 0 };
-  return pax;
+function normalizePax(input?: any): PaxConfig {
+  const src = input ?? {};
+
+  const adults = toInt(src.adults ?? src.adult ?? src.ADT ?? src.adt ?? src.noOfAdults ?? src.adultCount ?? src.Adults);
+  const children = toInt(src.children ?? src.child ?? src.CHD ?? src.chd ?? src.noOfChildren ?? src.childCount ?? src.Children);
+  const infants = toInt(src.infants ?? src.infant ?? src.INF ?? src.inf ?? src.noOfInfants ?? src.infantCount ?? src.Infants);
+
+  if (adults + children + infants <= 0) return { adults: 1, children: 0, infants: 0 };
+  return { adults, children, infants };
 }
 
 /** ✅ seats are only Adults+Children (infants usually not charged same) */
@@ -349,7 +367,7 @@ function TimelineRow({ row }: { row: RowRT }) {
   );
 }
 
-/* ================= FARE LIST ================= */
+/* ================= FARE LIST (FULL MODE SUPPORT) ================= */
 
 function FareRadioList({
   row,
@@ -357,47 +375,74 @@ function FareRadioList({
   onPickFare,
   limit = 2,
   groupName,
+  seats,
+  fareView,
 }: {
   row: RowRT;
   currentFare?: FareRT | null;
   onPickFare: (fare: FareRT) => void;
   limit?: number;
   groupName: string;
+  seats: number;
+  fareView: "SINGLE" | "FULL";
 }) {
   const [expanded, setExpanded] = useState(false);
   const fares = row.fares ?? [];
   const visible = expanded ? fares : fares.slice(0, Math.min(limit, fares.length));
+  const seatCount = Math.max(1, seats);
 
   return (
     <div>
       <div className="space-y-2">
         {visible.map((f) => {
           const checked = currentFare?.code === f.code;
+
+          const shown = fareView === "FULL" ? Number(f.price || 0) * seatCount : Number(f.price || 0);
+          const subLabel = fareView === "FULL" ? `total • ${seatCount} seat${seatCount > 1 ? "s" : ""}` : "per pax";
+
           return (
             <label
               key={f.code}
-              className="flex cursor-pointer items-center justify-between gap-3 rounded-xl px-3 py-2 transition"
+              className="flex cursor-pointer items-center justify-between gap-3 rounded-md px-1 transition"
               style={{
                 border: `1px solid ${checked ? VAR.primary : VAR.border}`,
                 background: checked ? VAR.primarySoft : VAR.surface,
               }}
             >
               <div className="flex items-center gap-3">
-                <input type="radio" name={groupName} checked={checked} onChange={() => onPickFare(f)} style={{ accentColor: "var(--primary, rgb(37,99,235))" }} />
+                <input
+                  type="radio"
+                  name={groupName}
+                  checked={checked}
+                  onChange={() => onPickFare(f)}
+                  style={{ accentColor: "var(--primary, rgb(37,99,235))" }}
+                />
                 <div className="flex items-center gap-2">
-                  <div className="text-[14px] font-extrabold" style={{ color: VAR.text }}>
-                    {nfIN.format(f.price)}
+                  <div>
+                    <div className="text-[14px] font-extrabold leading-none" style={{ color: VAR.text }}>
+                      {nfIN.format(shown)}
+                    </div>
+                    <div className="mt-1 text-[10px] font-semibold" style={{ color: VAR.subtle }}>
+                      {subLabel}
+                    </div>
                   </div>
                   <InfoDot title={fareTooltip(row, f)} />
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="rounded-lg px-2 py-0.5 text-[11px] font-semibold" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2, color: VAR.muted }} title={f.label}>
+                <span
+                  className="rounded-md px-2 py-0.5 text-[11px] font-semibold"
+                  style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2, color: VAR.muted }}
+                  title={f.label}
+                >
                   {f.label}
                 </span>
                 {f.badge?.text ? (
-                  <span className="rounded-lg px-2 py-0.5 text-[11px] font-semibold" style={{ border: `1px solid ${VAR.border}`, background: VAR.accentSoft, color: VAR.text }}>
+                  <span
+                    className="rounded-md px-2 py-0.5 text-[11px] font-semibold"
+                    style={{ border: `1px solid ${VAR.border}`, background: VAR.accentSoft, color: VAR.text }}
+                  >
                     {f.badge.text}
                   </span>
                 ) : null}
@@ -411,7 +456,7 @@ function FareRadioList({
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="mt-2 w-full rounded-xl px-3 py-2 text-left text-[12px] font-semibold"
+          className="mt-2 w-full rounded-md px-3 py-2 text-left text-[12px] font-semibold"
           style={{ border: `1px dashed ${VAR.border}`, background: VAR.surface2, color: VAR.primary }}
         >
           {expanded ? "Show less fares" : `Show more fares (+${fares.length - limit})`}
@@ -445,6 +490,8 @@ function LegCard({
   shareMode,
   isSelected,
   onToggleSelect,
+  seats,
+  fareView,
 }: {
   row: RowRT;
   selected: Selected;
@@ -455,6 +502,9 @@ function LegCard({
   shareMode: boolean;
   isSelected: boolean;
   onToggleSelect: (rowId: string) => void;
+
+  seats: number;
+  fareView: "SINGLE" | "FULL";
 }) {
   const [open, setOpen] = useState(false);
 
@@ -471,8 +521,10 @@ function LegCard({
     .filter(Boolean)
     .join(" • ");
 
+  const seatCount = Math.max(1, seats);
+
   return (
-    <div className="relative overflow-hidden rounded-2xl shadow-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
+    <div className="relative overflow-hidden rounded-md shadow-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
       {shareMode && (
         <button
           type="button"
@@ -518,25 +570,35 @@ function LegCard({
             <Pill key={x}>{x}</Pill>
           ))}
           {row.sector === "INTL" ? <Pill>INTL</Pill> : <Pill>DOM</Pill>}
+          {fareView === "FULL" ? <Pill>{`FULL • ${seatCount} seat${seatCount > 1 ? "s" : ""}`}</Pill> : <Pill>PER PAX</Pill>}
         </div>
       </div>
 
       <div className="px-4 py-4">
         <div className="grid grid-cols-12 gap-4 items-start">
-          <div className="col-span-12 lg:col-span-7">
+          <div className="col-span-12 lg:col-span-8">
             <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide" style={{ color: VAR.subtle }}>
               Fare option
             </div>
-            <FareRadioList row={row} currentFare={currentFare} onPickFare={onPickFare} limit={2} groupName={groupName} />
+
+            <FareRadioList
+              row={row}
+              currentFare={currentFare}
+              onPickFare={onPickFare}
+              limit={2}
+              groupName={groupName}
+              seats={seats}
+              fareView={fareView}
+            />
           </div>
 
-          <div className="col-span-12 lg:col-span-5">
+          <div className="col-span-12 lg:col-span-4">
             <div className="flex items-start justify-between gap-3 lg:flex-col lg:items-end">
               <div className="w-full lg:w-auto lg:text-right">
                 <button
                   type="button"
                   onClick={() => setOpen((v) => !v)}
-                  className="mt-1 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-[12px] font-semibold"
+                  className="mt-1 inline-flex items-center gap-2 rounded-md px-3 py-2 text-[12px] font-semibold"
                   style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2, color: VAR.text }}
                 >
                   {open ? "Hide details" : "View details"}
@@ -546,19 +608,19 @@ function LegCard({
             </div>
 
             {showCommission && (agentNet != null || commission != null) && (
-              <div className="mt-3 w-full rounded-2xl px-3 py-2.5" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2 }}>
+              <div className="mt-3 w-full rounded-md px-3 py-2.5" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2 }}>
                 <div className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: VAR.subtle }}>
                   B2B
                 </div>
                 <div className="mt-1 flex flex-col gap-1 text-[12px]">
                   {agentNet != null && (
                     <span className="font-semibold" style={{ color: VAR.text }}>
-                      Net: <Money v={agentNet} />
+                      Net: <Money v={fareView === "FULL" ? agentNet * seatCount : agentNet} />
                     </span>
                   )}
                   {commission != null && (
                     <span className="font-semibold" style={{ color: VAR.text }}>
-                      Comm: <Money v={commission} />
+                      Comm: <Money v={fareView === "FULL" ? commission * seatCount : commission} />
                     </span>
                   )}
                 </div>
@@ -571,7 +633,7 @@ function LegCard({
       {open && (
         <div className="px-4 py-4" style={{ borderTop: `1px solid ${VAR.border}`, background: VAR.surface2 }}>
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-            <div className="rounded-2xl p-4" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
+            <div className="rounded-md p-4" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
               <div className="text-[12px] font-semibold" style={{ color: VAR.text }}>
                 Flight details
               </div>
@@ -584,7 +646,7 @@ function LegCard({
               </div>
             </div>
 
-            <div className="rounded-2xl p-4" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
+            <div className="rounded-md p-4" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
               <div className="text-[12px] font-semibold" style={{ color: VAR.text }}>
                 Fare details
               </div>
@@ -596,11 +658,22 @@ function LegCard({
                 <KV k="Baggage" v={baggageText} />
                 <KV k="Seat" v={currentFare?.seat ?? "—"} />
               </div>
+
+              {currentFare?.price != null && (
+                <div className="mt-3 rounded-md p-3 text-[12px] font-semibold" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2, color: VAR.text }}>
+                  <div className="flex items-center justify-between">
+                    <span style={{ color: VAR.subtle }}>{fareView === "FULL" ? `Price (total • ${seatCount} seats)` : "Price (per pax)"}</span>
+                    <span style={{ color: VAR.text, fontWeight: 900 }}>
+                      {nfIN.format(fareView === "FULL" ? currentFare.price * seatCount : currentFare.price)}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           {row.sector === "INTL" && (
-            <div className="mt-3 rounded-2xl p-4 text-[12px] font-medium" style={{ border: `1px solid ${VAR.border}`, background: VAR.accentSoft, color: VAR.text }}>
+            <div className="mt-3 rounded-md p-4 text-[12px] font-medium" style={{ border: `1px solid ${VAR.border}`, background: VAR.accentSoft, color: VAR.text }}>
               Passport & visa may be required. International baggage rules can differ by carrier/sector.
             </div>
           )}
@@ -618,6 +691,8 @@ type SummaryBarProps = {
   paxConfig: PaxConfig;
   showCommission: boolean;
   onBookNow?: () => void;
+
+  fareView?: "SINGLE" | "FULL";
 };
 
 type TabKey = "flight" | "fare" | "cancel" | "date";
@@ -630,7 +705,7 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
       className="px-3 py-2 text-[12px] font-semibold border-b-2 transition"
       style={{
         borderColor: active ? VAR.accent : "transparent",
-        color: active ? VAR.text : VAR.subtle,
+        color: active ? VAR.onDark : VAR.onDarkSubtle,
       }}
     >
       {children}
@@ -638,12 +713,27 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
   );
 }
 
-function SegmentMini({ title, seg }: { title: string; seg?: { row: RowRT; fare: FareRT } }) {
+function SegmentMini({
+  title,
+  seg,
+  seats,
+  fareView,
+}: {
+  title: string;
+  seg?: { row: RowRT; fare: FareRT };
+  seats: number;
+  fareView: "SINGLE" | "FULL";
+}) {
   const row = seg?.row;
   const fare = seg?.fare;
 
+  const shownFare = useMemo(() => {
+    const perPax = Number(fare?.price || 0);
+    return fareView === "FULL" ? perPax * Math.max(1, seats) : perPax;
+  }, [fare?.price, fareView, seats]);
+
   return (
-    <div className="rounded-2xl p-4" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
+    <div className="rounded-md p-4" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-[12px] font-semibold" style={{ color: VAR.muted }}>
@@ -656,17 +746,23 @@ function SegmentMini({ title, seg }: { title: string; seg?: { row: RowRT; fare: 
 
         <div className="text-right">
           <div className="text-[12px]" style={{ color: VAR.subtle }}>
-            Fare (per pax)
+            {fareView === "FULL"
+              ? `Fare (total • ${Math.max(1, seats)} seat${Math.max(1, seats) > 1 ? "s" : ""})`
+              : "Fare (per pax)"}
           </div>
           <div className="text-[14px] font-extrabold" style={{ color: VAR.text }}>
-            {fare ? nfIN.format(fare.price) : "—"}
+            {fare ? nfIN.format(shownFare) : "—"}
           </div>
         </div>
       </div>
 
-      <div className="mt-3 rounded-xl p-3" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2 }}>
+      <div className="mt-3 rounded-md p-3" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2 }}>
         <div className="flex items-center gap-3">
-          {row?.logo ? <img src={row.logo} alt={row.airline} className="h-8 w-8 object-contain rounded" /> : <div className="h-8 w-8 rounded" style={{ background: VAR.surface }} />}
+          {row?.logo ? (
+            <img src={row.logo} alt={row.airline} className="h-8 w-8 object-contain rounded" />
+          ) : (
+            <div className="h-8 w-8 rounded" style={{ background: VAR.surface }} />
+          )}
           <div className="min-w-0 flex-1">
             <div className="text-[13px] font-semibold truncate" style={{ color: VAR.text }}>
               {row ? row.airline : "—"}{" "}
@@ -745,16 +841,18 @@ function SegmentMini({ title, seg }: { title: string; seg?: { row: RowRT; fare: 
   );
 }
 
-export function SummaryBar({ out, inn, paxConfig, showCommission, onBookNow }: SummaryBarProps) {
+export function SummaryBar({
+  out,
+  inn,
+  paxConfig,
+  showCommission,
+  onBookNow,
+  fareView = "SINGLE",
+}: SummaryBarProps) {
   const [expanded, setExpanded] = useState(false);
   const [tab, setTab] = useState<TabKey>("flight");
 
-const pax = useMemo(
-  () => normalizePax(paxConfig),
-  [paxConfig?.adults, paxConfig?.children, paxConfig?.infants]
-);
-
-
+  const pax = useMemo(() => normalizePax(paxConfig), [paxConfig?.adults, paxConfig?.children, paxConfig?.infants]);
 
   const seats = useMemo(() => seatPaxCount(pax), [pax]);
   const totalPax = useMemo(() => totalPaxCount(pax), [pax]);
@@ -764,8 +862,21 @@ const pax = useMemo(
     [out?.fare?.price, inn?.fare?.price]
   );
 
-  // ✅ IMPORTANT: totals should multiply by seat pax (A+C), not infants
   const grandTotal = useMemo(() => perPaxTotal * seats, [perPaxTotal, seats]);
+
+  const outShown = useMemo(() => {
+    const perPax = Number(out?.fare?.price || 0);
+    return fareView === "FULL" ? perPax * seats : perPax;
+  }, [out?.fare?.price, fareView, seats]);
+
+  const inShown = useMemo(() => {
+    const perPax = Number(inn?.fare?.price || 0);
+    return fareView === "FULL" ? perPax * seats : perPax;
+  }, [inn?.fare?.price, fareView, seats]);
+
+  const mainTotalShown = useMemo(() => {
+    return fareView === "FULL" ? grandTotal : perPaxTotal;
+  }, [fareView, grandTotal, perPaxTotal]);
 
   const outAgent = useMemo(() => getAgentInfo(out?.fare), [out?.fare]);
   const inAgent = useMemo(() => getAgentInfo(inn?.fare), [inn?.fare]);
@@ -784,9 +895,12 @@ const pax = useMemo(
 
   return (
     <div className="sticky bottom-0 z-30 mt-6">
-      <div className="overflow-hidden rounded-2xl shadow-lg" style={{ border: `1px solid ${VAR.border}`, background: VAR.text, color: "white" }}>
+      <div
+        className="overflow-hidden rounded-md shadow-lg"
+        style={{ border: `1px solid ${VAR.border}`, background: VAR.darkBg, color: VAR.onDark }}
+      >
         {expanded && (
-          <div style={{ borderBottom: `1px solid rgba(255,255,255,0.12)`, background: "rgba(0,0,0,0.15)" }}>
+          <div style={{ borderBottom: `1px solid ${VAR.onDarkBorder}`, background: VAR.onDarkPaneBg }}>
             <div className="flex items-center justify-between px-4 pt-3">
               <div className="flex items-center gap-2">
                 <TabButton active={tab === "flight"} onClick={() => setTab("flight")}>
@@ -807,7 +921,7 @@ const pax = useMemo(
                 type="button"
                 onClick={() => setExpanded(false)}
                 className="rounded-full px-3 py-1.5 text-[12px] font-semibold"
-                style={{ border: `1px solid rgba(255,255,255,0.18)`, background: "rgba(255,255,255,0.08)", color: "white" }}
+                style={{ border: `1px solid ${VAR.onDarkBtnBorder}`, background: VAR.onDarkBtnBg, color: VAR.onDark }}
               >
                 Close
               </button>
@@ -816,64 +930,69 @@ const pax = useMemo(
             <div className="px-4 pb-4 pt-3">
               {tab === "flight" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <SegmentMini title="Outbound" seg={out} />
-                  <SegmentMini title="Inbound" seg={inn} />
+                  <SegmentMini title="Outbound" seg={out} seats={seats} fareView={fareView} />
+                  <SegmentMini title="Inbound" seg={inn} seats={seats} fareView={fareView} />
                 </div>
               )}
 
               {tab === "fare" && (
-                <div className="rounded-2xl p-4 text-[13px]" style={{ border: `1px solid rgba(255,255,255,0.14)`, background: "rgba(255,255,255,0.06)" }}>
+                <div className="rounded-md p-4 text-[13px]" style={{ border: `1px solid ${VAR.onDarkCardBorder}`, background: VAR.onDarkCardBg }}>
                   <div className="font-semibold">Fare Summary</div>
 
-                  <div className="mt-2 flex items-center justify-between" style={{ color: "rgba(255,255,255,0.8)" }}>
-                    <span>Outbound (per pax)</span>
-                    <span className="font-semibold" style={{ color: "white" }}>
-                      {out ? nfIN.format(out.fare.price) : "—"}
-                    </span>
-                  </div>
-                  <div className="mt-1 flex items-center justify-between" style={{ color: "rgba(255,255,255,0.8)" }}>
-                    <span>Inbound (per pax)</span>
-                    <span className="font-semibold" style={{ color: "white" }}>
-                      {inn ? nfIN.format(inn.fare.price) : "—"}
+                  <div className="mt-2 flex items-center justify-between" style={{ color: VAR.onDarkMuted }}>
+                    <span>Outbound ({fareView === "FULL" ? `total • ${seats} seats` : "per pax"})</span>
+                    <span className="font-semibold" style={{ color: VAR.onDark }}>
+                      {out ? nfIN.format(outShown) : "—"}
                     </span>
                   </div>
 
-                  <div className="mt-3 pt-3 space-y-1" style={{ borderTop: `1px solid rgba(255,255,255,0.12)` }}>
-                    <div className="flex items-center justify-between" style={{ color: "rgba(255,255,255,0.8)" }}>
+                  <div className="mt-1 flex items-center justify-between" style={{ color: VAR.onDarkMuted }}>
+                    <span>Inbound ({fareView === "FULL" ? `total • ${seats} seats` : "per pax"})</span>
+                    <span className="font-semibold" style={{ color: VAR.onDark }}>
+                      {inn ? nfIN.format(inShown) : "—"}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 pt-3 space-y-1" style={{ borderTop: `1px solid ${VAR.onDarkBorder}` }}>
+                    <div className="flex items-center justify-between" style={{ color: VAR.onDarkMuted }}>
                       <span>Per pax total</span>
-                      <span className="font-extrabold" style={{ color: "white" }}>
+                      <span className="font-extrabold" style={{ color: VAR.onDark }}>
                         {nfIN.format(perPaxTotal)}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between" style={{ color: "rgba(255,255,255,0.8)" }}>
+                    <div className="flex items-center justify-between" style={{ color: VAR.onDarkMuted }}>
                       <span>
                         Pax ({pax.adults}A {pax.children}C {pax.infants}I)
                       </span>
-                      <span className="font-semibold" style={{ color: "white" }}>
+                      <span className="font-semibold" style={{ color: VAR.onDark }}>
                         Seats: {seats}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold" style={{ color: "rgba(255,255,255,0.9)" }}>
+                      <span className="font-semibold" style={{ color: VAR.onDarkMuted }}>
                         Grand total
                       </span>
-                      <span className="font-extrabold text-[15px]" style={{ color: "white" }}>
+                      <span className="font-extrabold text-[15px]" style={{ color: VAR.onDark }}>
                         {nfIN.format(grandTotal)}
                       </span>
                     </div>
 
                     {showCommission && (totalNetAll > 0 || totalCommAll > 0) && (
                       <div className="mt-2 text-[12px] font-semibold">
-                        {totalNetAll > 0 && <span style={{ color: "rgba(110,231,183,1)" }}>Net: {nfIN.format(totalNetAll)}</span>}
-                        {totalCommAll > 0 && <span className="ml-2" style={{ color: "rgba(251,191,36,1)" }}>Comm: {nfIN.format(totalCommAll)}</span>}
+                        {totalNetAll > 0 && <span style={{ color: VAR.okOnDark }}>Net: {nfIN.format(totalNetAll)}</span>}
+                        {totalCommAll > 0 && (
+                          <span className="ml-2" style={{ color: VAR.warnOnDark }}>
+                            Comm: {nfIN.format(totalCommAll)}
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
 
                   {totalPax !== seats && (
-                    <div className="mt-3 text-[12px]" style={{ color: "rgba(255,255,255,0.7)" }}>
+                    <div className="mt-3 text-[12px]" style={{ color: VAR.onDarkSubtle }}>
                       Note: Infants (I) usually have separate fare rules and are not included in seat fare total here.
                     </div>
                   )}
@@ -881,18 +1000,18 @@ const pax = useMemo(
               )}
 
               {tab === "cancel" && (
-                <div className="rounded-2xl p-4 text-[13px]" style={{ border: `1px solid rgba(255,255,255,0.14)`, background: "rgba(255,255,255,0.06)" }}>
+                <div className="rounded-md p-4 text-[13px]" style={{ border: `1px solid ${VAR.onDarkCardBorder}`, background: VAR.onDarkCardBg }}>
                   <div className="font-semibold">Cancellation</div>
-                  <div className="mt-2" style={{ color: "rgba(255,255,255,0.78)" }}>
+                  <div className="mt-2" style={{ color: VAR.onDarkMuted }}>
                     API cancellation rules yaha plug kar do.
                   </div>
                 </div>
               )}
 
               {tab === "date" && (
-                <div className="rounded-2xl p-4 text-[13px]" style={{ border: `1px solid rgba(255,255,255,0.14)`, background: "rgba(255,255,255,0.06)" }}>
+                <div className="rounded-md p-4 text-[13px]" style={{ border: `1px solid ${VAR.onDarkCardBorder}`, background: VAR.onDarkCardBg }}>
                   <div className="font-semibold">Date Change</div>
-                  <div className="mt-2" style={{ color: "rgba(255,255,255,0.78)" }}>
+                  <div className="mt-2" style={{ color: VAR.onDarkMuted }}>
                     API date-change rules yaha plug kar do.
                   </div>
                 </div>
@@ -903,17 +1022,18 @@ const pax = useMemo(
 
         {/* bottom bar */}
         <div className="grid grid-cols-12 items-center gap-0">
-          <div className="col-span-12 md:col-span-4 px-4 py-3" style={{ borderRight: "1px solid rgba(255,255,255,0.12)" }}>
-            <div className="text-[12px] font-semibold" style={{ color: "rgba(255,255,255,0.82)" }}>
-              Departure <span style={{ color: "rgba(255,255,255,0.35)" }}>•</span>{" "}
-              <span style={{ color: "white" }}>{out?.row.airline ?? "—"}</span>
+          {/* OUT */}
+          <div className="col-span-12 md:col-span-4 px-4 py-3" style={{ borderRight: `1px solid ${VAR.onDarkBorder}` }}>
+            <div className="text-[12px] font-semibold" style={{ color: VAR.onDarkMuted }}>
+              Departure <span style={{ color: VAR.onDarkFaint }}>•</span>{" "}
+              <span style={{ color: VAR.onDark }}>{out?.row.airline ?? "—"}</span>
             </div>
 
             <div className="mt-1 flex items-center gap-2 text-[14px] font-extrabold">
               <span>{out?.row.departTime ?? "—"}</span>
-              <span style={{ color: "rgba(255,255,255,0.35)" }}>→</span>
+              <span style={{ color: VAR.onDarkFaint }}>→</span>
               <span>{out?.row.arriveTime ?? "—"}</span>
-              <span className="ml-auto">{out ? nfIN.format(out.fare.price) : "—"}</span>
+              <span className="ml-auto">{out ? nfIN.format(outShown) : "—"}</span>
             </div>
 
             <button
@@ -923,23 +1043,24 @@ const pax = useMemo(
                 setTab("flight");
               }}
               className="mt-1 text-[12px] font-semibold"
-              style={{ color: "rgba(125,211,252,1)" }}
+              style={{ color: VAR.linkOnDark }}
             >
               Flight Details
             </button>
           </div>
 
-          <div className="col-span-12 md:col-span-4 px-4 py-3" style={{ borderRight: "1px solid rgba(255,255,255,0.12)" }}>
-            <div className="text-[12px] font-semibold" style={{ color: "rgba(255,255,255,0.82)" }}>
-              Return <span style={{ color: "rgba(255,255,255,0.35)" }}>•</span>{" "}
-              <span style={{ color: "white" }}>{inn?.row.airline ?? "—"}</span>
+          {/* IN */}
+          <div className="col-span-12 md:col-span-4 px-4 py-3" style={{ borderRight: `1px solid ${VAR.onDarkBorder}` }}>
+            <div className="text-[12px] font-semibold" style={{ color: VAR.onDarkMuted }}>
+              Return <span style={{ color: VAR.onDarkFaint }}>•</span>{" "}
+              <span style={{ color: VAR.onDark }}>{inn?.row.airline ?? "—"}</span>
             </div>
 
             <div className="mt-1 flex items-center gap-2 text-[14px] font-extrabold">
               <span>{inn?.row.departTime ?? "—"}</span>
-              <span style={{ color: "rgba(255,255,255,0.35)" }}>→</span>
+              <span style={{ color: VAR.onDarkFaint }}>→</span>
               <span>{inn?.row.arriveTime ?? "—"}</span>
-              <span className="ml-auto">{inn ? nfIN.format(inn.fare.price) : "—"}</span>
+              <span className="ml-auto">{inn ? nfIN.format(inShown) : "—"}</span>
             </div>
 
             <button
@@ -949,28 +1070,36 @@ const pax = useMemo(
                 setTab("flight");
               }}
               className="mt-1 text-[12px] font-semibold"
-              style={{ color: "rgba(125,211,252,1)" }}
+              style={{ color: VAR.linkOnDark }}
             >
               Flight Details
             </button>
           </div>
 
+          {/* TOTAL */}
           <div className="col-span-12 md:col-span-4 px-4 py-3">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <div className="text-[12px] font-semibold" style={{ color: "rgba(255,255,255,0.82)" }}>
-                  Grand Total
+                <div className="text-[12px] font-semibold" style={{ color: VAR.onDarkMuted }}>
+                  {fareView === "FULL" ? "Grand Total" : "Per Pax Total"}
                 </div>
-                <div className="text-[22px] leading-none font-extrabold">{nfIN.format(grandTotal)}</div>
 
-                <div className="mt-1 text-[12px] font-semibold" style={{ color: "rgba(255,255,255,0.72)" }}>
-                  Per pax: {nfIN.format(perPaxTotal)} • Pax: {pax.adults}A {pax.children}C {pax.infants}I • Seats: {seats}
+                <div className="text-[22px] leading-none font-extrabold">{nfIN.format(mainTotalShown)}</div>
+
+                <div className="mt-1 text-[12px] font-semibold" style={{ color: VAR.onDarkSubtle }}>
+                  {fareView === "FULL"
+                    ? `Per pax: ${nfIN.format(perPaxTotal)} • Seats: ${seats} • Pax: ${pax.adults}A ${pax.children}C ${pax.infants}I`
+                    : `Grand total: ${nfIN.format(grandTotal)} • Seats: ${seats} • Pax: ${pax.adults}A ${pax.children}C ${pax.infants}I`}
                 </div>
 
                 {showCommission && (totalNetAll > 0 || totalCommAll > 0) && (
                   <div className="mt-1 text-[12px] font-semibold">
-                    {totalNetAll > 0 && <span style={{ color: "rgba(110,231,183,1)" }}>Net: {nfIN.format(totalNetAll)}</span>}
-                    {totalCommAll > 0 && <span className="ml-2" style={{ color: "rgba(251,191,36,1)" }}>Comm: {nfIN.format(totalCommAll)}</span>}
+                    {totalNetAll > 0 && <span style={{ color: VAR.okOnDark }}>Net: {nfIN.format(totalNetAll)}</span>}
+                    {totalCommAll > 0 && (
+                      <span className="ml-2" style={{ color: VAR.warnOnDark }}>
+                        Comm: {nfIN.format(totalCommAll)}
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
@@ -980,10 +1109,10 @@ const pax = useMemo(
                   type="button"
                   onClick={onBookNow}
                   disabled={!canBook}
-                  className="rounded-2xl px-4 py-2 text-[12px] font-extrabold"
+                  className="rounded-md px-4 py-2 text-[12px] font-extrabold"
                   style={{
-                    background: canBook ? "var(--primary, rgb(37,99,235))" : "rgba(255,255,255,0.12)",
-                    color: "white",
+                    background: canBook ? VAR.primary : "var(--disabledBg, rgba(255,255,255,0.12))",
+                    color: VAR.onDark,
                     cursor: canBook ? "pointer" : "not-allowed",
                     opacity: canBook ? 1 : 0.7,
                   }}
@@ -995,7 +1124,7 @@ const pax = useMemo(
                   type="button"
                   onClick={() => setExpanded((v) => !v)}
                   className="h-9 w-9 rounded-full grid place-items-center"
-                  style={{ border: "1px solid rgba(255,255,255,0.18)", background: "rgba(255,255,255,0.08)", color: "white" }}
+                  style={{ border: `1px solid ${VAR.onDarkBtnBorder}`, background: VAR.onDarkBtnBg, color: VAR.onDark }}
                   aria-label={expanded ? "Collapse" : "Expand"}
                 >
                   <span className={cn("transition-transform", expanded && "rotate-180")}>▴</span>
@@ -1055,7 +1184,7 @@ function IconButton({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className="h-9 w-9 rounded-xl grid place-items-center"
+      className="h-9 w-9 rounded-md grid place-items-center"
       style={{
         border: `1px solid ${VAR.border}`,
         background: VAR.surface,
@@ -1094,6 +1223,18 @@ function CopyIcon() {
   );
 }
 
+function readPaxFromQuery(search: string): PaxConfig | null {
+  try {
+    const qs = new URLSearchParams(search);
+    const adults = Number(qs.get("adt") || "1");
+    const children = Number(qs.get("chd") || "0");
+    const infants = Number(qs.get("inf") || "0");
+    return normalizePax({ adults, children, infants });
+  } catch {
+    return null;
+  }
+}
+
 /* ================= MAIN ================= */
 
 function readPaxFromSession(): PaxConfig | null {
@@ -1120,6 +1261,7 @@ export default function RoundTripResultList({
   emptyReturnNode,
   showCommission = false,
   paxConfig,
+  fareView = "SINGLE",
 }: Props) {
   const nav = useNavigate();
   const loc = useLocation();
@@ -1127,18 +1269,21 @@ export default function RoundTripResultList({
   // ✅ robust pax source
   const pax = useMemo(() => {
     const fromProps = normalizePax(paxConfig);
-    // if props looks default-ish AND route has something better -> prefer route
+
     const looksDefault = fromProps.adults === 1 && fromProps.children === 0 && fromProps.infants === 0;
 
     const fromStateRaw = (loc.state as any)?.paxConfig ?? (loc.state as any)?.pax ?? (loc.state as any)?.pricing?.pax;
     const fromState = fromStateRaw ? normalizePax(fromStateRaw) : null;
-
     if (fromState && looksDefault) return fromState;
 
-    // last fallback (refresh case)
+    const fromQuery = looksDefault ? readPaxFromQuery(loc.search) : null;
+    if (fromQuery) return fromQuery;
+
     const fromSS = looksDefault ? readPaxFromSession() : null;
     return fromSS ?? fromProps;
-  }, [paxConfig, loc.state]);
+  }, [paxConfig, loc.state, loc.search]);
+
+  const seats = useMemo(() => seatPaxCount(pax), [pax]);
 
   // ✅ selection sync (rows refresh safe)
   useEffect(() => {
@@ -1303,7 +1448,7 @@ export default function RoundTripResultList({
       currency: "INR",
       perTraveller: perPaxSell,
 
-      // ✅ IMPORTANT: totals by seats only
+      // ✅ totals by seats only
       totalFare: perPaxSell * seatCount,
 
       pax: paxFixed,
@@ -1346,7 +1491,7 @@ export default function RoundTripResultList({
   return (
     <div className="space-y-5">
       {/* ✅ Share top bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl px-3 py-2" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-md px-3 py-2" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
         <div className="text-sm font-semibold" style={{ color: VAR.text }}>
           Round Trip Results
         </div>
@@ -1358,7 +1503,7 @@ export default function RoundTripResultList({
               setShareMode((s) => !s);
               clearShareSelection();
             }}
-            className="rounded-xl px-3 py-1.5 text-xs font-semibold"
+            className="rounded-md px-3 py-1.5 text-xs font-semibold"
             style={{
               border: `1px solid ${VAR.border}`,
               background: shareMode ? VAR.primary : VAR.surface,
@@ -1370,11 +1515,21 @@ export default function RoundTripResultList({
 
           {shareMode && (
             <>
-              <button type="button" onClick={selectAll} className="rounded-xl px-3 py-1.5 text-xs font-semibold" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface, color: VAR.text }}>
+              <button
+                type="button"
+                onClick={selectAll}
+                className="rounded-md px-3 py-1.5 text-xs font-semibold"
+                style={{ border: `1px solid ${VAR.border}`, background: VAR.surface, color: VAR.text }}
+              >
                 Select All
               </button>
 
-              <button type="button" onClick={clearShareSelection} className="rounded-xl px-3 py-1.5 text-xs font-semibold" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface, color: VAR.text }}>
+              <button
+                type="button"
+                onClick={clearShareSelection}
+                className="rounded-md px-3 py-1.5 text-xs font-semibold"
+                style={{ border: `1px solid ${VAR.border}`, background: VAR.surface, color: VAR.text }}
+              >
                 Clear
               </button>
 
@@ -1411,23 +1566,11 @@ export default function RoundTripResultList({
       <div className="grid grid-cols-12 gap-6">
         {/* OUTBOUND */}
         <div className="col-span-12 md:col-span-6 space-y-3">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-semibold" style={{ color: VAR.text }}>
-                Departure (Outbound)
-              </h2>
-              <div className="mt-0.5 text-[12px]" style={{ color: VAR.subtle }}>
-                Choose your onward flight
-              </div>
-            </div>
-            <span className="text-[11px]" style={{ color: VAR.subtle }}>
-              {outboundRows.length} option(s)
-            </span>
-          </div>
+       
 
           {outboundRows.length === 0 &&
             (emptyOutboundNode ?? (
-              <div className="rounded-2xl p-4 text-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface, color: VAR.muted }}>
+              <div className="rounded-md p-4 text-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface, color: VAR.muted }}>
                 No outbound flights found.
               </div>
             ))}
@@ -1443,33 +1586,24 @@ export default function RoundTripResultList({
               shareMode={shareMode}
               isSelected={selectedOutIds.has(r.id)}
               onToggleSelect={toggleOut}
+              seats={seats}
+              fareView={fareView}
             />
           ))}
         </div>
 
         {/* RETURN */}
         <div className="col-span-12 md:col-span-6 space-y-3">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-semibold" style={{ color: VAR.text }}>
-                Return (Inbound)
-              </h2>
-              <div className="mt-0.5 text-[12px]" style={{ color: VAR.subtle }}>
-                Choose your return flight
-              </div>
-            </div>
-            <span className="text-[11px]" style={{ color: VAR.subtle }}>
-              {returnRows.length} option(s)
-            </span>
-          </div>
+
 
           {returnRows.length === 0 &&
             (emptyReturnNode ?? (
-              <div className="rounded-2xl p-4 text-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface, color: VAR.muted }}>
+              <div className="rounded-md p-4 text-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface, color: VAR.muted }}>
                 No return flights found.
               </div>
             ))}
 
+          {/* ✅ IMPORTANT: return side uses selectedReturn/onSelectReturnFare/toggleIn */}
           {returnRows.map((r) => (
             <LegCard
               key={r.id}
@@ -1481,17 +1615,22 @@ export default function RoundTripResultList({
               shareMode={shareMode}
               isSelected={selectedInIds.has(r.id)}
               onToggleSelect={toggleIn}
+              seats={seats}
+              fareView={fareView}
             />
           ))}
         </div>
       </div>
 
       {/* ✅ Book Now summary */}
-      <SummaryBar out={pickedOut} inn={pickedIn} paxConfig={pax} showCommission={showCommission} onBookNow={onBookNow} />
+      <SummaryBar
+        out={pickedOut}
+        inn={pickedIn}
+        paxConfig={pax}
+        showCommission={showCommission}
+        onBookNow={onBookNow}
+        fareView={fareView}
+      />
     </div>
   );
 }
-function paxCount(pax: PaxConfig): any {
-  throw new Error("Function not implemented.");
-}
-

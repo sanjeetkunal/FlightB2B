@@ -104,7 +104,7 @@ export default function TravellerClassPicker({ open, value, onChange, onClose })
           onClick={(e) => e.stopPropagation()}
           className={[
             "w-full md:w-[520px] max-w-[96vw]",
-            "p-[1px] rounded-2xl",
+            "p-[1px] rounded-md",
             anim ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2",
             "transition-all duration-200",
           ].join(" ")}
@@ -115,7 +115,7 @@ export default function TravellerClassPicker({ open, value, onChange, onClose })
         >
           {/* Card */}
           <div
-            className="rounded-2xl shadow-xl overflow-hidden"
+            className="rounded-md shadow-xl overflow-hidden"
             style={{
               background: "var(--surface)",
               color: "var(--text)",
@@ -261,7 +261,7 @@ export default function TravellerClassPicker({ open, value, onChange, onClose })
               <button
                 type="button"
                 onClick={onClose}
-                className="h-10 px-5 rounded-xl text-white font-semibold transition focus:outline-none focus:ring-4"
+                className="h-10 px-5 rounded-md text-white font-semibold transition focus:outline-none focus:ring-4"
                 style={{
                   background: "var(--primary)",
                 }}

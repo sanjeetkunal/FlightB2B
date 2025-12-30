@@ -129,7 +129,7 @@ export default function LoginLandingPro() {
           {stats.map((s) => (
             <div
               key={s.k}
-              className="rounded-2xl border border-slate-200 bg-white/75 backdrop-blur px-4 py-3 text-center shadow-[0_10px_30px_rgba(2,6,23,0.06)]"
+              className="rounded-md border border-slate-200 bg-white/75 backdrop-blur px-4 py-3 text-center shadow-[0_10px_30px_rgba(2,6,23,0.06)]"
             >
               <div className="text-xl font-semibold text-slate-900">{s.k}</div>
               <div className="text-[11px] uppercase tracking-wide text-slate-500">{s.v}</div>
@@ -147,8 +147,8 @@ export default function LoginLandingPro() {
       {/* Right login card */}
       <div className="lg:col-span-4">
         {/* gradient border wrapper */}
-        <div className="relative rounded-3xl p-[1px] bg-gradient-to-br from-[#19B8DF]/55 via-[#8BD0BD]/35 to-[#39AA81]/55 shadow-[0_20px_60px_rgba(2,6,23,0.16)]">
-          <div className="relative rounded-3xl border border-white/60 bg-white/80 backdrop-blur-xl p-6 sm:p-8 overflow-hidden">
+        <div className="relative rounded-md p-[1px] bg-gradient-to-br from-[#19B8DF]/55 via-[#8BD0BD]/35 to-[#39AA81]/55 shadow-[0_20px_60px_rgba(2,6,23,0.16)]">
+          <div className="relative rounded-md border border-white/60 bg-white/80 backdrop-blur-xl p-6 sm:p-8 overflow-hidden">
             {/* subtle inner glow */}
             <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[#19B8DF]/20 blur-3xl" />
             <div className="pointer-events-none absolute -bottom-28 -left-24 h-64 w-64 rounded-full bg-[#39AA81]/18 blur-3xl" />
@@ -197,7 +197,7 @@ export default function LoginLandingPro() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="agent@v2a.com"
-                    className="w-full rounded-xl border border-slate-200 bg-white/85 text-slate-900 placeholder:text-slate-400 pl-9 pr-3 py-2.5 outline-none focus:ring-2 focus:ring-[#19B8DF]/40"
+                    className="w-full rounded-md border border-slate-200 bg-white/85 text-slate-900 placeholder:text-slate-400 pl-9 pr-3 py-2.5 outline-none focus:ring-2 focus:ring-[#19B8DF]/40"
                     required
                   />
                 </div>
@@ -213,7 +213,7 @@ export default function LoginLandingPro() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Password123"
-                      className="w-full rounded-xl border border-slate-200 bg-white/85 text-slate-900 placeholder:text-slate-400 pl-9 pr-10 py-2.5 outline-none focus:ring-2 focus:ring-[#19B8DF]/40"
+                      className="w-full rounded-md border border-slate-200 bg-white/85 text-slate-900 placeholder:text-slate-400 pl-9 pr-10 py-2.5 outline-none focus:ring-2 focus:ring-[#19B8DF]/40"
                       required
                     />
                     <button
@@ -250,7 +250,7 @@ export default function LoginLandingPro() {
               )}
 
               {err && (
-                <div className="text-red-700 text-sm bg-red-50 border border-red-200 rounded-xl p-2.5">
+                <div className="text-red-700 text-sm bg-red-50 border border-red-200 rounded-md p-2.5">
                   {err}
                 </div>
               )}
@@ -312,7 +312,7 @@ export default function LoginLandingPro() {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-6">
+            <div className="rounded-md border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-6">
               <h4 className="text-lg font-semibold text-slate-900">Need an enterprise rollout?</h4>
               <p className="text-sm text-slate-600 mt-1">We provide white-labeling, SSO, custom roles, and data residency options.</p>
               <ul className="mt-4 grid sm:grid-cols-2 gap-3 text-sm">
@@ -354,7 +354,7 @@ function PartnerMarquee({ items = [] }) {
   const logos = items;
 
   return (
-    <div className="mt-3 overflow-hidden rounded-2xl bg-white relative">
+    <div className="mt-3 overflow-hidden rounded-md bg-white relative">
       <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white to-transparent" />
 
@@ -423,7 +423,7 @@ function ProductCard({ data, featured = false }) {
   return (
     <div
       className={[
-        "group relative overflow-hidden rounded-3xl border border-slate-200 shadow-sm",
+        "group relative overflow-hidden rounded-md border border-slate-200 shadow-sm",
         featured ? "lg:col-span-2 lg:aspect-[21/9]" : "aspect-[16/10]"
       ].join(" ")}
     >
@@ -441,7 +441,7 @@ function ProductCard({ data, featured = false }) {
       )}
       <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
         <div className="flex items-center gap-2.5">
-          <div className="rounded-2xl border border-white/60 bg-white/90 text-slate-900 shadow-sm p-2">
+          <div className="rounded-md border border-white/60 bg-white/90 text-slate-900 shadow-sm p-2">
             <Icon className="w-5 h-5" />
           </div>
           <h4 className="text-lg font-semibold text-white">{key}</h4>
@@ -459,7 +459,7 @@ function ProductCard({ data, featured = false }) {
 function FaqItem({ q, a }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white">
+    <div className="rounded-md border border-slate-200 bg-white">
       <button onClick={() => setOpen((o) => !o)} className="w-full flex items-center justify-between gap-4 px-4 py-3">
         <span className="text-sm font-medium text-slate-900 text-left">{q}</span>
         <span className="text-slate-500">{open ? "−" : "+"}</span>
@@ -485,7 +485,7 @@ function OtpInput({ value, onChange }) {
           maxLength={1}
           value={(value || "")[i] || ""}
           onChange={(e) => set(i, e.target.value)}
-          className="w-11 h-12 text-center text-lg font-semibold rounded-xl border-slate-300 border bg-white text-slate-900 focus:ring-2 focus:ring-blue-500/40 outline-none"
+          className="w-11 h-12 text-center text-lg font-semibold rounded-md border-slate-300 border bg-white text-slate-900 focus:ring-2 focus:ring-blue-500/40 outline-none"
         />
       ))}
     </>

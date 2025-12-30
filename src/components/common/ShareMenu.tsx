@@ -45,7 +45,7 @@ export default function ShareMenu({ payload, className = "", compact = true }: P
             className="fixed inset-0 z-40 cursor-default"
             aria-label="Close share menu overlay"
           />
-          <div className="absolute right-0 mt-2 z-50 w-48 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+          <div className="absolute right-0 mt-2 z-50 w-48 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg">
             <button
               type="button"
               onClick={() => run("wa")}

@@ -103,7 +103,7 @@ export default function MultiMonthDatePicker({
       role="dialog"
       aria-label="Calendar"
       className={[
-        "absolute top-[calc(100%+8px)] right-0 rounded-3xl border p-4 z-30",
+        "absolute top-[calc(100%+8px)] right-0 rounded-md border p-4 z-30",
         "shadow-[0_30px_60px_-20px_rgba(0,0,0,0.35)]",
         "max-w-[98vw] sm:max-w-[92vw] md:max-w-[1000px]",
         "bg-[var(--surface)] text-[var(--text)] border-[var(--border)]",
@@ -195,7 +195,7 @@ export default function MultiMonthDatePicker({
                         }
                       }}
                       className={[
-                        "h-8 rounded-xl border transition-colors text-sm flex items-center justify-center px-0",
+                        "h-8 rounded-md border transition-colors text-sm flex items-center justify-center px-0",
                         "border-transparent",
                         d ? "hover:bg-[var(--surface2)]" : "cursor-default",
                         disabled ? "text-black/25 cursor-not-allowed hover:bg-transparent" : "text-[var(--text)]",

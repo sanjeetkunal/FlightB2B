@@ -69,7 +69,7 @@ function Pill({ children, tone = "default" }) {
 
 function SectionCard({ title, subtitle, right, children }) {
   return (
-    <div className="rounded-2xl shadow-sm" style={{ background: VAR.surface, border: `1px solid ${VAR.border}` }}>
+    <div className="rounded-md shadow-sm" style={{ background: VAR.surface, border: `1px solid ${VAR.border}` }}>
       <div className="flex items-start justify-between gap-3 border-b px-4 py-3" style={{ borderColor: VAR.border }}>
         <div>
           <div className="text-sm font-semibold" style={{ color: VAR.text }}>
@@ -102,7 +102,7 @@ function KeyVal({ k, v, bold = false, tone }) {
 
 function Collapse({ titleLeft, titleRight, open, onToggle, children }) {
   return (
-    <div className="rounded-xl" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
+    <div className="rounded-md" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
       <button
         type="button"
         onClick={onToggle}
@@ -494,14 +494,14 @@ export default function PassengerDetailsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div
-          className="rounded-2xl px-6 py-5 text-center text-sm shadow-sm"
+          className="rounded-md px-6 py-5 text-center text-sm shadow-sm"
           style={{ background: VAR.surface, border: `1px solid ${VAR.border}`, color: VAR.muted }}
         >
           Missing selection (flight/fare). Please go back to results and select properly.
           <div className="mt-3 flex justify-center gap-2">
             <button
               onClick={() => navigate(-1)}
-              className="rounded-xl px-4 py-2 text-xs font-semibold"
+              className="rounded-md px-4 py-2 text-xs font-semibold"
               style={{ background: VAR.primary, color: "var(--onPrimary, #fff)" }}
             >
               Go Back
@@ -511,7 +511,7 @@ export default function PassengerDetailsPage() {
                 sessionStorage.removeItem(SS_KEY);
                 navigate("/flights");
               }}
-              className="rounded-xl px-4 py-2 text-xs font-semibold"
+              className="rounded-md px-4 py-2 text-xs font-semibold"
               style={{ background: VAR.surface, border: `1px solid ${VAR.border}`, color: VAR.text }}
             >
               New Search
@@ -564,7 +564,7 @@ export default function PassengerDetailsPage() {
             <form onSubmit={handleSubmit} className="space-y-5">
               {errors.length > 0 && (
                 <div
-                  className="rounded-xl px-4 py-3 text-sm"
+                  className="rounded-md px-4 py-3 text-sm"
                   style={{ border: `1px solid rgba(244,63,94,0.25)`, background: "rgba(244,63,94,0.08)", color: "rgba(127,29,29,0.95)" }}
                 >
                   <div className="font-semibold mb-1">Please fix:</div>
@@ -582,7 +582,7 @@ export default function PassengerDetailsPage() {
                 return (
                   <div
                     key={p.id}
-                    className="space-y-3 rounded-2xl px-3.5 py-3.5 sm:px-4 sm:py-4"
+                    className="space-y-3 rounded-md px-3.5 py-3.5 sm:px-4 sm:py-4"
                     style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2 }}
                   >
                     <div className="flex items-center justify-between gap-3">
@@ -607,7 +607,7 @@ export default function PassengerDetailsPage() {
                         <select
                           value={d.title}
                           onChange={(e) => handlePaxChange(p.id, "title", e.target.value)}
-                          className="w-full rounded-xl border px-2 py-2 text-xs outline-none"
+                          className="w-full rounded-md border px-2 py-2 text-xs outline-none"
                           style={{ borderColor: VAR.border, background: VAR.surface, color: VAR.text }}
                         >
                           <option value="MR">Mr</option>
@@ -624,7 +624,7 @@ export default function PassengerDetailsPage() {
                           type="text"
                           value={d.firstName}
                           onChange={(e) => handlePaxChange(p.id, "firstName", e.target.value)}
-                          className="w-full rounded-xl border px-2 py-2 text-xs outline-none"
+                          className="w-full rounded-md border px-2 py-2 text-xs outline-none"
                           style={{ borderColor: VAR.border, background: VAR.surface, color: VAR.text }}
                           placeholder="As per ID"
                           required
@@ -639,7 +639,7 @@ export default function PassengerDetailsPage() {
                           type="text"
                           value={d.lastName}
                           onChange={(e) => handlePaxChange(p.id, "lastName", e.target.value)}
-                          className="w-full rounded-xl border px-2 py-2 text-xs outline-none"
+                          className="w-full rounded-md border px-2 py-2 text-xs outline-none"
                           style={{ borderColor: VAR.border, background: VAR.surface, color: VAR.text }}
                           placeholder="Surname"
                           required
@@ -653,7 +653,7 @@ export default function PassengerDetailsPage() {
                         <select
                           value={d.gender}
                           onChange={(e) => handlePaxChange(p.id, "gender", e.target.value)}
-                          className="w-full rounded-xl border px-2 py-2 text-xs outline-none"
+                          className="w-full rounded-md border px-2 py-2 text-xs outline-none"
                           style={{ borderColor: VAR.border, background: VAR.surface, color: VAR.text }}
                           required
                         >
@@ -674,7 +674,7 @@ export default function PassengerDetailsPage() {
                           type="date"
                           value={d.dob}
                           onChange={(e) => handlePaxChange(p.id, "dob", e.target.value)}
-                          className="w-full rounded-xl border px-2 py-2 text-xs outline-none"
+                          className="w-full rounded-md border px-2 py-2 text-xs outline-none"
                           style={{ borderColor: VAR.border, background: VAR.surface, color: VAR.text }}
                           required
                         />
@@ -685,7 +685,7 @@ export default function PassengerDetailsPage() {
               })}
 
               {/* Contact */}
-              <div className="space-y-3 rounded-2xl px-3.5 py-3.5 sm:px-4 sm:py-4" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
+              <div className="space-y-3 rounded-md px-3.5 py-3.5 sm:px-4 sm:py-4" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-sm font-semibold" style={{ color: VAR.text }}>
                     Contact Details
@@ -704,7 +704,7 @@ export default function PassengerDetailsPage() {
                       type="email"
                       value={contact.email}
                       onChange={(e) => setContact((prev) => ({ ...prev, email: e.target.value }))}
-                      className="w-full rounded-xl border px-2 py-2 text-xs outline-none"
+                      className="w-full rounded-md border px-2 py-2 text-xs outline-none"
                       style={{ borderColor: VAR.border, background: VAR.surface, color: VAR.text }}
                       placeholder="you@example.com"
                       required
@@ -716,14 +716,14 @@ export default function PassengerDetailsPage() {
                       Mobile (WhatsApp preferred)
                     </label>
                     <div className="flex gap-2">
-                      <span className="flex items-center rounded-xl border px-2 text-xs" style={{ borderColor: VAR.border, background: VAR.surface2, color: VAR.muted }}>
+                      <span className="flex items-center rounded-md border px-2 text-xs" style={{ borderColor: VAR.border, background: VAR.surface2, color: VAR.muted }}>
                         +91
                       </span>
                       <input
                         type="tel"
                         value={contact.phone}
                         onChange={(e) => setContact((prev) => ({ ...prev, phone: e.target.value }))}
-                        className="w-full rounded-xl border px-2 py-2 text-xs outline-none"
+                        className="w-full rounded-md border px-2 py-2 text-xs outline-none"
                         style={{ borderColor: VAR.border, background: VAR.surface, color: VAR.text }}
                         placeholder="10-digit mobile number"
                         required
@@ -740,7 +740,7 @@ export default function PassengerDetailsPage() {
               <SeatMap totalPax={totalPax} selectedSeats={selectedSeats} onChange={setSelectedSeats} />
 
               {/* GST */}
-              <div className="space-y-3 rounded-2xl px-3.5 py-3.5 sm:px-4 sm:py-4" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
+              <div className="space-y-3 rounded-md px-3.5 py-3.5 sm:px-4 sm:py-4" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-sm font-semibold" style={{ color: VAR.text }}>
                     GST details for invoice
@@ -767,7 +767,7 @@ export default function PassengerDetailsPage() {
                         type="text"
                         value={gstDetails.gstin}
                         onChange={(e) => setGstDetails((prev) => ({ ...prev, gstin: e.target.value }))}
-                        className="w-full rounded-xl border px-2 py-2 text-xs outline-none"
+                        className="w-full rounded-md border px-2 py-2 text-xs outline-none"
                         style={{ borderColor: VAR.border, background: VAR.surface, color: VAR.text }}
                         placeholder="22AAAAA0000A1Z5"
                       />
@@ -780,7 +780,7 @@ export default function PassengerDetailsPage() {
                         type="text"
                         value={gstDetails.company}
                         onChange={(e) => setGstDetails((prev) => ({ ...prev, company: e.target.value }))}
-                        className="w-full rounded-xl border px-2 py-2 text-xs outline-none"
+                        className="w-full rounded-md border px-2 py-2 text-xs outline-none"
                         style={{ borderColor: VAR.border, background: VAR.surface, color: VAR.text }}
                         placeholder="Your company legal name"
                       />
@@ -793,7 +793,7 @@ export default function PassengerDetailsPage() {
                         rows={2}
                         value={gstDetails.address}
                         onChange={(e) => setGstDetails((prev) => ({ ...prev, address: e.target.value }))}
-                        className="w-full rounded-xl border px-2 py-2 text-xs outline-none"
+                        className="w-full rounded-md border px-2 py-2 text-xs outline-none"
                         style={{ borderColor: VAR.border, background: VAR.surface, color: VAR.text }}
                         placeholder="Address as per GST registration"
                       />
@@ -805,7 +805,7 @@ export default function PassengerDetailsPage() {
               <div className="flex justify-end pt-1">
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center rounded-2xl px-6 py-2.5 text-sm font-semibold shadow-sm"
+                  className="inline-flex items-center justify-center rounded-md px-6 py-2.5 text-sm font-semibold shadow-sm"
                   style={{ background: VAR.primary, color: "var(--onPrimary, #fff)" }}
                 >
                   Continue to payment
@@ -834,7 +834,7 @@ export default function PassengerDetailsPage() {
                 </div>
 
                 {selectedFare ? (
-                  <div className="rounded-2xl px-3 py-3 text-xs" style={{ background: VAR.surface, border: `1px solid ${VAR.border}` }}>
+                  <div className="rounded-md px-3 py-3 text-xs" style={{ background: VAR.surface, border: `1px solid ${VAR.border}` }}>
                     <KeyVal k="Fare" v={selectedFare.label || "Selected Fare"} />
                     <KeyVal k="Per Pax" v={moneyIN(pricing?.perTraveller || selectedFare.price || 0)} bold />
                   </div>
@@ -846,7 +846,7 @@ export default function PassengerDetailsPage() {
             {tripType === "ROUNDTRIP" ? (
               <div className="space-y-3">
                 {selectedFlightOnward ? (
-                  <div className="rounded-2xl px-3 py-3" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2 }}>
+                  <div className="rounded-md px-3 py-3" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2 }}>
                     <div className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: VAR.subtle }}>
                       Onward
                     </div>
@@ -873,7 +873,7 @@ export default function PassengerDetailsPage() {
                 ) : null}
 
                 {selectedFlightReturn ? (
-                  <div className="rounded-2xl px-3 py-3" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2 }}>
+                  <div className="rounded-md px-3 py-3" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2 }}>
                     <div className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: VAR.subtle }}>
                       Return
                     </div>
@@ -899,7 +899,7 @@ export default function PassengerDetailsPage() {
                   </div>
                 ) : null}
 
-                <div className="rounded-2xl px-3 py-3 text-xs" style={{ background: VAR.surface, border: `1px solid ${VAR.border}` }}>
+                <div className="rounded-md px-3 py-3 text-xs" style={{ background: VAR.surface, border: `1px solid ${VAR.border}` }}>
                   <KeyVal k="Per Pax (Round Trip)" v={moneyIN(pricing?.perTraveller || 0)} bold />
                   <KeyVal k="Total Fare" v={moneyIN(pricing?.totalFare || 0)} bold tone="primary" />
                 </div>
@@ -965,14 +965,14 @@ export default function PassengerDetailsPage() {
                 </Collapse>
               )}
 
-              <div className="rounded-xl p-3 space-y-2" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2 }}>
+              <div className="rounded-md p-3 space-y-2" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2 }}>
                 <KeyVal k="Seat selection" v={moneyIN(seatTotal)} />
                 <KeyVal k="GST" v={moneyIN(gstEnabled ? gstAmount : 0)} />
                 <KeyVal k="Transaction Fee" v={moneyIN(txnFee)} />
                 <KeyVal k="Transaction Charge" v={moneyIN(txnCharge)} />
               </div>
 
-              <div className="rounded-xl p-3 space-y-2" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
+              <div className="rounded-md p-3 space-y-2" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
                 {paxLines.map((x) => (
                   <KeyVal key={x.code} k={x.label} v={moneyIN(x.amount)} />
                 ))}
@@ -982,7 +982,7 @@ export default function PassengerDetailsPage() {
                 </div>
               </div>
 
-              <div className="rounded-xl p-3 space-y-2" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
+              <div className="rounded-md p-3 space-y-2" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
                 <div className="flex items-center justify-between">
                   <div className="text-xs font-semibold" style={{ color: VAR.text }}>
                     Agent Summary

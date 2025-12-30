@@ -36,7 +36,7 @@ export default function B2BFooter() {
           {/* Brand + Newsletter */}
           <div className="lg:col-span-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-2xl bg-blue-500 flex items-center justify-center shadow-sm">
+              <div className="h-10 w-10 rounded-md bg-blue-500 flex items-center justify-center shadow-sm">
                 <span className="text-white font-black">V2A</span>
               </div>
               <div>
@@ -179,7 +179,7 @@ function LinkBlock({ title, links }) {
 function StoreBadge({ kind }) {
   if (kind === "apple") {
     return (
-      <a href="#" className="inline-flex items-center gap-2 rounded-xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 py-2 hover:shadow-sm transition">
+      <a href="#" className="inline-flex items-center gap-2 rounded-md border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 py-2 hover:shadow-sm transition">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="opacity-90"><path d="M16.365 1.43a5.6 5.6 0 0 1-1.36 4.305 5.1 5.1 0 0 1-3.84 1.746 5.682 5.682 0 0 1 1.386-4.39A5.32 5.32 0 0 1 16.364 1.43ZM21.64 17.86c-.36.826-.78 1.59-1.26 2.29-.67.97-1.22 1.64-1.66 2.01-.66.61-1.36.93-2.12.95-.54 0-1.2-.16-2-.48-.8-.32-1.53-.48-2.18-.48-.68 0-1.43.16-2.25.48-.82.32-1.48.49-1.98.5-.74.03-1.46-.29-2.16-.96-.47-.4-1.03-1.08-1.68-2.04-.72-1.04-1.31-2.25-1.77-3.62-.5-1.53-.75-3-.75-4.35 0-1.6.35-2.98 1.04-4.14a6.52 6.52 0 0 1 2.39-2.45c.95-.55 1.97-.84 3.05-.86.6 0 1.39.18 2.37.55.98.37 1.61.56 1.9.56.2 0 .87-.21 2.03-.62 1.09-.38 2.01-.54 2.78-.51 2.05.17 3.6.97 4.66 2.4-1.85 1.12-2.77 2.7-2.77 4.72 0 1.57.58 2.88 1.73 3.94.52.5 1.1.88 1.73 1.15-.14.4-.3.8-.47 1.2Z" /></svg>
         <div className="leading-none">
           <div className="text-[10px] text-gray-500 dark:text-gray-400">Download on the</div>
@@ -189,7 +189,7 @@ function StoreBadge({ kind }) {
     );
   }
   return (
-    <a href="#" className="inline-flex items-center gap-2 rounded-xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 py-2 hover:shadow-sm transition">
+    <a href="#" className="inline-flex items-center gap-2 rounded-md border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 py-2 hover:shadow-sm transition">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="opacity-90"><path d="M3.6 2.2 14 12 3.6 21.8c-.4-.3-.6-.8-.6-1.3v-17c0-.5.2-1 .6-1.3Zm10.2 9.8 2.5 2.5-8.7 5c-.4.2-.9.2-1.2 0l7.4-7.5Zm3.5-3.6 2.1 1.2c.4.2.6.6.6 1s-.2.8-.6 1l-2.1 1.2-2.9-2.9 2.9-2.9Z" /></svg>
       <div className="leading-none">
         <div className="text-[10px] text-gray-500 dark:text-gray-400">Get it on</div>
@@ -207,7 +207,7 @@ function Badge({ children }) {
 
 function Logo({ label }) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-neutral-800 px-2.5 py-1.5 bg-white dark:bg-neutral-900">
+    <span className="inline-flex items-center gap-2 rounded-md border border-gray-200 dark:border-neutral-800 px-2.5 py-1.5 bg-white dark:bg-neutral-900">
       <span className="h-2 w-2 rounded-full bg-amber-500" />
       {label}
     </span>
@@ -216,7 +216,7 @@ function Logo({ label }) {
 
 function Selector({ label, options }) {
   return (
-    <label className="relative inline-flex items-center gap-2 rounded-xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-2.5 py-2 text-sm">
+    <label className="relative inline-flex items-center gap-2 rounded-md border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-2.5 py-2 text-sm">
       <span className="text-gray-500 dark:text-gray-400">{label}</span>
       <select className="appearance-none bg-transparent outline-none text-gray-900 dark:text-white">
         {options.map((o) => <option key={o}>{o}</option>)}

@@ -141,7 +141,7 @@ export default function PNRImport() {
       {/* Toast */}
       {toast && (
         <div
-          className={`fixed right-4 top-20 z-20 rounded-lg px-3 py-2 text-xs shadow-md ${
+          className={`fixed right-4 top-20 z-20 rounded-md px-3 py-2 text-xs shadow-md ${
             toast.tone === "success"
               ? "bg-emerald-600 text-white"
               : toast.tone === "error"
@@ -239,7 +239,7 @@ export default function PNRImport() {
 
         {/* Summary cards */}
         <div className="mb-4 grid gap-3 md:grid-cols-3 lg:grid-cols-5 text-[11px]">
-          <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+          <div className="rounded-md border border-slate-200 bg-white px-3 py-2 shadow-sm">
             <div className="text-[10px] font-medium uppercase text-slate-500">
               Total Imported
             </div>
@@ -250,7 +250,7 @@ export default function PNRImport() {
               Single: {summary.single} • Bulk: {summary.bulk}
             </div>
           </div>
-          <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 shadow-sm">
+          <div className="rounded-md border border-emerald-100 bg-emerald-50 px-3 py-2 shadow-sm">
             <div className="text-[10px] font-medium uppercase text-emerald-700">
               Successful
             </div>
@@ -258,7 +258,7 @@ export default function PNRImport() {
               {summary.imported}
             </div>
           </div>
-          <div className="rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 shadow-sm">
+          <div className="rounded-md border border-rose-100 bg-rose-50 px-3 py-2 shadow-sm">
             <div className="text-[10px] font-medium uppercase text-rose-700">
               Failed
             </div>
@@ -266,7 +266,7 @@ export default function PNRImport() {
               {summary.failed}
             </div>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm lg:col-span-2">
+          <div className="rounded-md border border-slate-200 bg-white px-3 py-2 shadow-sm lg:col-span-2">
             <div className="text-[10px] font-medium uppercase text-slate-500">
               Tips
             </div>
@@ -281,7 +281,7 @@ export default function PNRImport() {
         {importMode === "SINGLE" ? (
           <div className="mb-4 grid gap-4 lg:grid-cols-3">
             {/* Left: Form */}
-            <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm text-[11px]">
+            <div className="lg:col-span-2 rounded-md border border-slate-200 bg-white p-3 shadow-sm text-[11px]">
               <div className="mb-2 flex items-center justify-between">
                 <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                   Single PNR Import
@@ -299,7 +299,7 @@ export default function PNRImport() {
                     value={pnr}
                     onChange={(e) => setPnr(e.target.value.toUpperCase())}
                     placeholder="e.g. AB12CD"
-                    className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] uppercase outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                    className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] uppercase outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                   />
                 </div>
 
@@ -313,7 +313,7 @@ export default function PNRImport() {
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value.toUpperCase())}
                     placeholder="e.g. SHARMA"
-                    className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] uppercase outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                    className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] uppercase outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                   />
                 </div>
 
@@ -329,7 +329,7 @@ export default function PNRImport() {
                       setAirlineCode(e.target.value.toUpperCase())
                     }
                     placeholder="e.g. UK / AI / EK"
-                    className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] uppercase outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                    className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] uppercase outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                   />
                 </div>
 
@@ -342,7 +342,7 @@ export default function PNRImport() {
                     <select
                       value={gds}
                       onChange={(e) => setGds(e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                      className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                     >
                       <option value="Amadeus">Amadeus</option>
                       <option value="Galileo">Galileo</option>
@@ -362,7 +362,7 @@ export default function PNRImport() {
                     onChange={(e) => setRawDump(e.target.value)}
                     rows={4}
                     placeholder="Yahan GDS / airline PNR ka full text dump paste kar sakte ho. System isse auto-parse kar sakta hai (demo)."
-                    className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                    className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                   />
                   <div className="mt-1 flex items-center justify-between text-[10px] text-slate-400">
                     <span>Dump optional hai – sirf PNR + Last Name se bhi import ho jayega.</span>
@@ -387,14 +387,14 @@ export default function PNRImport() {
                     setRawDump("");
                     setPreview(null);
                   }}
-                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-100"
+                  className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-100"
                 >
                   Clear
                 </button>
                 <button
                   type="button"
                   onClick={handleSingleImport}
-                  className="rounded-lg bg-slate-900 px-4 py-1.5 text-[11px] font-medium text-white hover:bg-slate-800"
+                  className="rounded-md bg-slate-900 px-4 py-1.5 text-[11px] font-medium text-white hover:bg-slate-800"
                 >
                   🚀 Import PNR
                 </button>
@@ -402,7 +402,7 @@ export default function PNRImport() {
             </div>
 
             {/* Right: Preview */}
-            <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm text-[11px]">
+            <div className="rounded-md border border-slate-200 bg-white p-3 shadow-sm text-[11px]">
               <div className="mb-2 flex items-center justify-between">
                 <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                   Preview / Parsed Data
@@ -451,7 +451,7 @@ export default function PNRImport() {
                       ))}
                     </ul>
                   </div>
-                  <div className="mt-2 rounded-lg bg-slate-50 px-2 py-1 text-[10px] text-slate-500">
+                  <div className="mt-2 rounded-md bg-slate-50 px-2 py-1 text-[10px] text-slate-500">
                     Actual system me yahan se auto-fill hoga: pax list, fare
                     details, segments, SSR, remarks etc.
                   </div>
@@ -469,7 +469,7 @@ export default function PNRImport() {
           // BULK IMPORT MODE
           <div className="mb-4 grid gap-4 lg:grid-cols-3">
             {/* Left: Bulk list / CSV */}
-            <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm text-[11px]">
+            <div className="lg:col-span-2 rounded-md border border-slate-200 bg-white p-3 shadow-sm text-[11px]">
               <div className="mb-2 flex items-center justify-between">
                 <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                   Bulk PNR Import (List / CSV)
@@ -487,7 +487,7 @@ export default function PNRImport() {
                     onChange={(e) => setBulkList(e.target.value)}
                     rows={6}
                     placeholder={"Format: PNR,LASTNAME,AIRLINE\nAB12CD,SHARMA,UK\nZX98PQ,VERMA,EK"}
-                    className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] font-mono outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                    className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] font-mono outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                   />
                   <div className="mt-1 text-[10px] text-slate-400">
                     System is list ko line-by-line parse karke import karega.
@@ -499,7 +499,7 @@ export default function PNRImport() {
                   <label className="mb-1 block text-[10px] font-medium text-slate-500">
                     Upload CSV (optional)
                   </label>
-                  <div className="flex flex-col items-start gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-[10px] text-slate-500">
+                  <div className="flex flex-col items-start gap-2 rounded-md border border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-[10px] text-slate-500">
                     <div className="text-[11px] font-medium text-slate-700">
                       Drag & drop ya CSV file select karo
                     </div>
@@ -537,14 +537,14 @@ export default function PNRImport() {
                     setBulkList("");
                     setBulkFileName("");
                   }}
-                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-100"
+                  className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-100"
                 >
                   Clear
                 </button>
                 <button
                   type="button"
                   onClick={handleBulkImport}
-                  className="rounded-lg bg-indigo-600 px-4 py-1.5 text-[11px] font-medium text-white hover:bg-indigo-500"
+                  className="rounded-md bg-indigo-600 px-4 py-1.5 text-[11px] font-medium text-white hover:bg-indigo-500"
                 >
                   🚀 Start Bulk Import
                 </button>
@@ -552,7 +552,7 @@ export default function PNRImport() {
             </div>
 
             {/* Right: Info / Help */}
-            <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm text-[11px]">
+            <div className="rounded-md border border-slate-200 bg-white p-3 shadow-sm text-[11px]">
               <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                 Bulk Import Rules
               </div>
@@ -562,7 +562,7 @@ export default function PNRImport() {
                 <li>• Duplicate PNR ko system skip ya update kar sakta hai (config ke hisaab se).</li>
                 <li>• Actual implementation me yahan background job / queue lagega.</li>
               </ul>
-              <div className="mt-3 rounded-lg bg-slate-50 px-2 py-1.5 text-[10px] text-slate-500">
+              <div className="mt-3 rounded-md bg-slate-50 px-2 py-1.5 text-[10px] text-slate-500">
                 Real project me yahan se tum:
                 <ul className="mt-1 list-disc pl-4">
                   <li>PNR ko supplier API / GDS se fetch kar sakte ho.</li>
@@ -575,7 +575,7 @@ export default function PNRImport() {
         )}
 
         {/* Recent imported PNRs */}
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2 text-[11px] text-slate-500">
             <div className="font-medium text-slate-700">
               Recent Imported PNRs

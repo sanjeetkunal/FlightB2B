@@ -77,7 +77,7 @@ export default function ThemeSwitcher() {
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="h-9 w-9 rounded-lg hover:bg-[var(--surface2)] grid place-items-center"
+            className="h-9 w-9 rounded-md hover:bg-[var(--surface2)] grid place-items-center"
             aria-label="Close"
           >
             ✕
@@ -103,7 +103,7 @@ export default function ThemeSwitcher() {
                       setPresetId(p.id);
                     }}
                     className={[
-                      "rounded-xl border p-3 text-left transition",
+                      "rounded-md border p-3 text-left transition",
                       active
                         ? "border-[var(--primary)] bg-[var(--primarySoft)]"
                         : "border-[var(--border)] hover:bg-[var(--surface2)]",
@@ -122,7 +122,7 @@ export default function ThemeSwitcher() {
           </div>
 
           {/* Custom */}
-          <div className="rounded-2xl border border-[var(--border)] p-3">
+          <div className="rounded-md border border-[var(--border)] p-3">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm font-semibold">Custom Theme</div>
@@ -147,7 +147,7 @@ export default function ThemeSwitcher() {
                 type="color"
                 value={customPrimary}
                 onChange={(e) => setCustomPrimary(e.target.value)}
-                className="h-10 w-12 rounded-lg border border-[var(--border)] bg-transparent"
+                className="h-10 w-12 rounded-md border border-[var(--border)] bg-transparent"
                 disabled={!useCustom}
                 title="Primary Color"
               />
@@ -157,7 +157,7 @@ export default function ThemeSwitcher() {
                 onChange={(e) => setCustomPrimary(e.target.value)}
                 disabled={!useCustom}
                 className="
-                  h-10 flex-1 rounded-lg border border-[var(--border)]
+                  h-10 flex-1 rounded-md border border-[var(--border)]
                   bg-[var(--surface2)] px-3 text-sm
                   outline-none
                 "
@@ -177,7 +177,7 @@ export default function ThemeSwitcher() {
               type="button"
               onClick={reset}
               className="
-                flex-1 h-10 rounded-xl border border-[var(--border)]
+                flex-1 h-10 rounded-md border border-[var(--border)]
                 bg-[var(--surface)] hover:bg-[var(--surface2)]
                 text-sm font-semibold
               "
@@ -189,7 +189,7 @@ export default function ThemeSwitcher() {
               type="button"
               onClick={() => setOpen(false)}
               className="
-                flex-1 h-10 rounded-xl
+                flex-1 h-10 rounded-md
                 bg-[var(--primary)] hover:bg-[var(--primaryHover)]
                 text-white text-sm font-semibold
               "

@@ -408,20 +408,20 @@ const PaymentConfirmationPage: React.FC = () => {
   if (!bookingPayload) {
     return (
       <div className="min-h-screen grid place-items-center bg-slate-50 px-4">
-        <div className="w-full max-w-md rounded-2xl border bg-white p-5 shadow-sm">
+        <div className="w-full max-w-md rounded-md border bg-white p-5 shadow-sm">
           <div className="text-sm font-semibold text-slate-900">No booking found</div>
           <div className="mt-1 text-xs text-slate-600">Please go back and select a flight again.</div>
           <div className="mt-3 flex gap-2">
             <button
               onClick={() => nav(-1)}
-              className="rounded-lg px-3 py-2 text-xs font-semibold"
+              className="rounded-md px-3 py-2 text-xs font-semibold"
               style={{ background: VAR.primary, color: "white" }}
             >
               Go Back
             </button>
             <button
               onClick={() => nav("/flights")}
-              className="rounded-lg border bg-white px-3 py-2 text-xs font-semibold"
+              className="rounded-md border bg-white px-3 py-2 text-xs font-semibold"
               style={{ borderColor: VAR.border, color: "rgba(15,23,42,0.85)" }}
             >
               New Search
@@ -459,7 +459,7 @@ const PaymentConfirmationPage: React.FC = () => {
         {/* LEFT */}
         <div className="flex-1 space-y-4">
           {/* Review booking */}
-          <section className="rounded-2xl p-4 shadow-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
+          <section className="rounded-md p-4 shadow-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-sm font-semibold" style={{ color: VAR.text }}>
@@ -471,14 +471,14 @@ const PaymentConfirmationPage: React.FC = () => {
               </div>
               <button
                 onClick={() => nav("/flights/passenger-details", { state: { bookingPayload } })}
-                className="rounded-lg px-3 py-2 text-xs font-semibold"
+                className="rounded-md px-3 py-2 text-xs font-semibold"
                 style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2, color: VAR.text }}
               >
                 Edit details
               </button>
             </div>
 
-            <div className="mt-3 rounded-xl p-3" style={{ background: VAR.surface2, border: `1px solid ${VAR.border}` }}>
+            <div className="mt-3 rounded-md p-3" style={{ background: VAR.surface2, border: `1px solid ${VAR.border}` }}>
               <div className="text-xs font-semibold" style={{ color: VAR.text }}>
                 {outbound?.length ? "Outbound" : "Flight"}
               </div>
@@ -525,7 +525,7 @@ const PaymentConfirmationPage: React.FC = () => {
                 const seat = Array.isArray(seats) ? seats[idx] : null;
 
                 return (
-                  <div key={p.id} className="flex items-start justify-between gap-3 rounded-xl p-3" style={{ background: VAR.surface2, border: `1px solid ${VAR.border}` }}>
+                  <div key={p.id} className="flex items-start justify-between gap-3 rounded-md p-3" style={{ background: VAR.surface2, border: `1px solid ${VAR.border}` }}>
                     <div className="min-w-0">
                       <div className="text-sm font-semibold truncate" style={{ color: VAR.text }}>
                         {p.type} {String(p.id).split("-")[1] || ""} — {name}
@@ -551,7 +551,7 @@ const PaymentConfirmationPage: React.FC = () => {
 
             {/* Contact */}
             {contact && (
-              <div className="mt-3 rounded-xl p-3" style={{ background: VAR.surface2, border: `1px solid ${VAR.border}` }}>
+              <div className="mt-3 rounded-md p-3" style={{ background: VAR.surface2, border: `1px solid ${VAR.border}` }}>
                 <div className="text-xs font-semibold" style={{ color: VAR.text }}>
                   Contact
                 </div>
@@ -563,7 +563,7 @@ const PaymentConfirmationPage: React.FC = () => {
           </section>
 
           {/* Payment options */}
-          <section className="rounded-2xl p-4 shadow-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
+          <section className="rounded-md p-4 shadow-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-sm font-semibold" style={{ color: VAR.text }}>
                 Payment options
@@ -579,7 +579,7 @@ const PaymentConfirmationPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setPaymentMethod("wallet")}
-                className="rounded-xl p-3 text-left transition"
+                className="rounded-md p-3 text-left transition"
                 style={{
                   background: paymentMethod === "wallet" ? VAR.warnSoft : VAR.surface2,
                   border: `1px solid ${paymentMethod === "wallet" ? VAR.warn : VAR.border}`,
@@ -608,7 +608,7 @@ const PaymentConfirmationPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setPaymentMethod("gateway")}
-                className="rounded-xl p-3 text-left transition"
+                className="rounded-md p-3 text-left transition"
                 style={{
                   background: paymentMethod === "gateway" ? VAR.primarySoft : VAR.surface2,
                   border: `1px solid ${paymentMethod === "gateway" ? VAR.primary : VAR.border}`,
@@ -638,7 +638,7 @@ const PaymentConfirmationPage: React.FC = () => {
                       type="button"
                       disabled={paymentMethod !== "gateway"}
                       onClick={() => setSelectedGatewayId(gw.id)}
-                      className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs md:text-sm transition"
+                      className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-xs md:text-sm transition"
                       style={{
                         border: `1px solid ${active ? VAR.primary : VAR.border}`,
                         background: active ? VAR.primarySoft : VAR.surface2,
@@ -684,7 +684,7 @@ const PaymentConfirmationPage: React.FC = () => {
 
         {/* RIGHT */}
         <aside className="w-full shrink-0 space-y-4 lg:w-96">
-          <section className="rounded-2xl p-4 shadow-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
+          <section className="rounded-md p-4 shadow-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold" style={{ color: VAR.text }}>
                 Fare summary (B2B)
@@ -694,7 +694,7 @@ const PaymentConfirmationPage: React.FC = () => {
               </span>
             </div>
 
-            <div className="mt-3 rounded-xl p-3" style={{ background: VAR.surface2, border: `1px solid ${VAR.border}` }}>
+            <div className="mt-3 rounded-md p-3" style={{ background: VAR.surface2, border: `1px solid ${VAR.border}` }}>
               <div className="flex justify-between text-xs" style={{ color: VAR.muted }}>
                 <span>Base fare (travellers)</span>
                 <span>{fmtINR(pricing?.totalFare ?? 0)}</span>
@@ -721,7 +721,7 @@ const PaymentConfirmationPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-3 rounded-xl p-3" style={{ background: VAR.surface2, border: `1px solid ${VAR.border}` }}>
+            <div className="mt-3 rounded-md p-3" style={{ background: VAR.surface2, border: `1px solid ${VAR.border}` }}>
               <div className="flex items-center justify-between">
                 <div className="text-xs font-semibold" style={{ color: VAR.text }}>
                   Agent earnings &amp; net payable
@@ -748,7 +748,7 @@ const PaymentConfirmationPage: React.FC = () => {
                     <input
                       value={String(commissionEdit)}
                       onChange={(e) => setCommissionEdit(Number(e.target.value.replace(/[^\d]/g, "")) || 0)}
-                      className="mt-1 w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                      className="mt-1 w-full rounded-md border px-3 py-2 text-sm outline-none"
                       style={{ borderColor: VAR.border, background: VAR.surface, color: VAR.text }}
                       inputMode="numeric"
                     />
@@ -761,7 +761,7 @@ const PaymentConfirmationPage: React.FC = () => {
                     <input
                       value={String(tdsEdit)}
                       onChange={(e) => setTdsEdit(Number(e.target.value.replace(/[^\d]/g, "")) || 0)}
-                      className="mt-1 w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                      className="mt-1 w-full rounded-md border px-3 py-2 text-sm outline-none"
                       style={{ borderColor: VAR.border, background: VAR.surface, color: VAR.text }}
                       inputMode="numeric"
                     />
@@ -779,7 +779,7 @@ const PaymentConfirmationPage: React.FC = () => {
                   <input
                     value={String(agentNetOverride)}
                     onChange={(e) => setAgentNetOverride(Number(e.target.value.replace(/[^\d]/g, "")) || 0)}
-                    className="mt-1 w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                    className="mt-1 w-full rounded-md border px-3 py-2 text-sm outline-none"
                     style={{ borderColor: VAR.border, background: VAR.surface, color: VAR.text }}
                     inputMode="numeric"
                   />
@@ -807,7 +807,7 @@ const PaymentConfirmationPage: React.FC = () => {
               type="button"
               onClick={handleConfirmPayment}
               disabled={paymentMethod === "wallet" && !walletSufficient}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold shadow-sm transition"
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold shadow-sm transition"
               style={{
                 background: paymentMethod === "wallet" ? VAR.warn : VAR.primary,
                 color: "white",

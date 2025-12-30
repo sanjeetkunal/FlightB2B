@@ -1,7 +1,7 @@
 export default function FlightCard({ data, onBook }) {
   const { airline, from, to, dep, arr, dur, stops = 0, price = 0, baggage = "-" } = data;
   return (
-    <div className="bg-white border rounded-2xl p-4 md:p-5 flex flex-col md:flex-row md:items-center gap-4">
+    <div className="bg-white border rounded-md p-4 md:p-5 flex flex-col md:flex-row md:items-center gap-4">
       <div className="md:w-1/3">
         <div className="font-semibold">{airline}</div>
         <div className="text-sm text-gray-500">{stops === 0 ? "Non-stop" : `${stops} stop`}</div>

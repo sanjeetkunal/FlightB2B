@@ -148,7 +148,7 @@ function Pill({ active, children, onClick, icon: Icon }) {
       type="button"
       onClick={onClick}
       className={[
-        "group inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition",
+        "group inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold transition",
         focusRing,
         active
           ? "border-[var(--primary)] bg-[var(--primarySoft)] text-[var(--text)]"
@@ -158,7 +158,7 @@ function Pill({ active, children, onClick, icon: Icon }) {
       {Icon ? (
         <span
           className={[
-            "grid h-8 w-8 place-items-center rounded-lg border transition",
+            "grid h-8 w-8 place-items-center rounded-md border transition",
             active
               ? "border-[var(--primary)] bg-[var(--surface)]"
               : "border-[var(--border)] bg-[var(--surface)] group-hover:border-[var(--primary)]",
@@ -203,7 +203,7 @@ function QuickBtn({ children, onClick, icon: Icon }) {
       type="button"
       onClick={onClick}
       className={[
-        "inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-extrabold transition",
+        "inline-flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-extrabold transition",
         "border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface2)]",
         focusRing,
       ].join(" ")}
@@ -272,7 +272,7 @@ function MobileSheet({ open, title, subtitle, onClose, children }) {
               type="button"
               onClick={onClose}
               className={[
-                "grid h-10 w-10 place-items-center rounded-2xl border transition",
+                "grid h-10 w-10 place-items-center rounded-md border transition",
                 "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]",
                 focusRing,
               ].join(" ")}
@@ -326,7 +326,7 @@ function MobileSummaryCard({
     <div
       className="
         md:hidden relative
-        rounded-[22px]
+        rounded-md
         border border-[var(--border)]
         bg-[var(--surface)]
         overflow-hidden
@@ -343,7 +343,7 @@ function MobileSummaryCard({
               type="button"
               onClick={onOpenRoute}
               className={[
-                "flex-1 text-left rounded-2xl border px-3 py-3 transition",
+                "flex-1 text-left rounded-md border px-3 py-3 transition",
                 "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]",
                 focusRing,
               ].join(" ")}
@@ -372,7 +372,7 @@ function MobileSummaryCard({
               onClick={onSwap}
               title="Swap"
               className={[
-                "grid h-[64px] w-[52px] place-items-center rounded-2xl border transition",
+                "grid h-[64px] w-[52px] place-items-center rounded-md border transition",
                 "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]",
                 focusRing,
               ].join(" ")}
@@ -385,7 +385,7 @@ function MobileSummaryCard({
               type="button"
               onClick={onOpenRoute}
               className={[
-                "flex-1 text-left rounded-2xl border px-3 py-3 transition",
+                "flex-1 text-left rounded-md border px-3 py-3 transition",
                 "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]",
                 focusRing,
               ].join(" ")}
@@ -418,7 +418,7 @@ function MobileSummaryCard({
               type="button"
               onClick={onOpenDates}
               className={[
-                "rounded-2xl border px-3 py-3 text-left transition",
+                "rounded-md border px-3 py-3 text-left transition",
                 "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]",
                 focusRing,
               ].join(" ")}
@@ -434,7 +434,7 @@ function MobileSummaryCard({
               type="button"
               onClick={onOpenTravellers}
               className={[
-                "rounded-2xl border px-3 py-3 text-left transition",
+                "rounded-md border px-3 py-3 text-left transition",
                 "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]",
                 focusRing,
               ].join(" ")}
@@ -729,7 +729,7 @@ export default function FromToBar({ onSearch }) {
       {errorMsg && (
         <div className="absolute right-0 top-0 z-50">
           <div
-            className="rounded-xl border px-4 py-2 text-sm font-semibold"
+            className="rounded-md border px-4 py-2 text-sm font-semibold"
             style={{
               background: "color-mix(in srgb, var(--danger) 12%, var(--surface))",
               borderColor: "color-mix(in srgb, var(--danger) 28%, var(--border))",
@@ -793,7 +793,7 @@ export default function FromToBar({ onSearch }) {
               type="button"
               onClick={handleSearch}
               className={[
-                "w-full h-12 rounded-2xl text-sm font-extrabold",
+                "w-full h-12 rounded-md text-sm font-extrabold",
                 "hover:brightness-95 active:scale-[0.99] transition",
                 "focus:outline-none focus:ring-4 focus:ring-[color:var(--primarySoft)]",
                 "inline-flex items-center justify-center gap-2",
@@ -811,12 +811,12 @@ export default function FromToBar({ onSearch }) {
 
             {!isModifySearch && (
               <div
-                className="mt-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3"
+                className="mt-3 rounded-md border border-[var(--border)] bg-[var(--surface)] px-4 py-3"
                 style={{ boxShadow: shadowSoft }}
               >
                 <div className="flex items-start gap-3">
                   <span
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-2xl"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-md"
                     style={{ ...gradientStyle, color: "var(--surface)" }}
                   >
                     <BadgePercent className="h-5 w-5" />
@@ -834,7 +834,7 @@ export default function FromToBar({ onSearch }) {
                       type="button"
                       onClick={() => setMobileSheet("prefs")}
                       className={[
-                        "rounded-xl border px-3 py-2 text-xs font-extrabold transition",
+                        "rounded-md border px-3 py-2 text-xs font-extrabold transition",
                         "border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface2)]",
                         focusRing,
                       ].join(" ")}
@@ -850,7 +850,7 @@ export default function FromToBar({ onSearch }) {
                   <button
                     type="button"
                     className={[
-                      "inline-flex items-center gap-2 rounded-xl border bg-[var(--surface)] px-4 py-2 text-sm font-extrabold transition",
+                      "inline-flex items-center gap-2 rounded-md border bg-[var(--surface)] px-4 py-2 text-sm font-extrabold transition",
                       "border-[var(--border)] text-[var(--text)] hover:bg-[var(--surface2)]",
                       focusRing,
                     ].join(" ")}
@@ -904,7 +904,7 @@ export default function FromToBar({ onSearch }) {
                   type="button"
                   onClick={swap}
                   className={[
-                    "inline-flex items-center justify-center gap-2 w-full h-11 rounded-2xl border transition",
+                    "inline-flex items-center justify-center gap-2 w-full h-11 rounded-md border transition",
                     "border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface2)]",
                     focusRing,
                   ].join(" ")}
@@ -918,7 +918,7 @@ export default function FromToBar({ onSearch }) {
                   type="button"
                   onClick={closeMobileSheet}
                   className={[
-                    "w-full h-11 rounded-2xl text-sm font-extrabold transition",
+                    "w-full h-11 rounded-md text-sm font-extrabold transition",
                     "focus:outline-none focus:ring-4 focus:ring-[color:var(--primarySoft)]",
                   ].join(" ")}
                   style={{ background: "var(--text)", color: "var(--surface)" }}
@@ -957,7 +957,7 @@ export default function FromToBar({ onSearch }) {
                   type="button"
                   onClick={closeMobileSheet}
                   className={[
-                    "w-full h-11 rounded-2xl text-sm font-extrabold transition",
+                    "w-full h-11 rounded-md text-sm font-extrabold transition",
                     "focus:outline-none focus:ring-4 focus:ring-[color:var(--primarySoft)]",
                   ].join(" ")}
                   style={{ background: "var(--text)", color: "var(--surface)" }}
@@ -979,7 +979,7 @@ export default function FromToBar({ onSearch }) {
             subtitle="Passengers (max 9) and class"
           >
             <div className="space-y-3">
-              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3">
+              <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-3">
                 <div className="text-xs font-extrabold text-[var(--muted)]">Cabin</div>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <Chip active={tc.cabin === "Economy"} onClick={() => setCabin("Economy")} icon={Armchair}>
@@ -1028,7 +1028,7 @@ export default function FromToBar({ onSearch }) {
                     closeMobileSheet();
                   }}
                   className={[
-                    "w-full h-11 rounded-2xl text-sm font-extrabold transition",
+                    "w-full h-11 rounded-md text-sm font-extrabold transition",
                     "focus:outline-none focus:ring-4 focus:ring-[color:var(--primarySoft)]",
                   ].join(" ")}
                   style={{ background: "var(--text)", color: "var(--surface)" }}
@@ -1070,7 +1070,7 @@ export default function FromToBar({ onSearch }) {
                   type="button"
                   onClick={closeMobileSheet}
                   className={[
-                    "w-full h-11 rounded-2xl text-sm font-extrabold transition",
+                    "w-full h-11 rounded-md text-sm font-extrabold transition",
                     "focus:outline-none focus:ring-4 focus:ring-[color:var(--primarySoft)]",
                   ].join(" ")}
                   style={{ background: "var(--text)", color: "var(--surface)" }}
@@ -1148,7 +1148,7 @@ export default function FromToBar({ onSearch }) {
               type="button"
               onClick={handleSearch}
               className={[
-                "h-[56px] w-[56px] rounded-2xl transition grid place-items-center cursor-pointer",
+                "h-[56px] w-[56px] rounded-md transition grid place-items-center cursor-pointer",
                 "hover:brightness-95",
                 "focus:outline-none focus:ring-4 focus:ring-[color:var(--primarySoft)]",
               ].join(" ")}
@@ -1190,7 +1190,7 @@ export default function FromToBar({ onSearch }) {
             </div>
 
             <div
-              className="relative mt-4 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3"
+              className="relative mt-4 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface)] px-4 py-3"
               style={{ boxShadow: shadowSoft }}
             >
               {/* ===== Right side plane image (FULL opacity) ===== */}
@@ -1225,7 +1225,7 @@ export default function FromToBar({ onSearch }) {
                 <div className="min-w-0">
                   <div className="flex items-start gap-3">
                     <span
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-2xl"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-md"
                       style={{ ...gradientStyle, color: "var(--surface)" }}
                     >
                       <BadgePercent className="h-5 w-5" />
@@ -1277,7 +1277,7 @@ export default function FromToBar({ onSearch }) {
       <button
         type="button"
         className={[
-          "inline-flex items-center gap-2 rounded-xl border bg-[var(--surface)] px-4 py-2 text-sm font-extrabold transition",
+          "inline-flex items-center gap-2 rounded-md border bg-[var(--surface)] px-4 py-2 text-sm font-extrabold transition",
           "border-[var(--border)] text-[var(--text)] hover:bg-[var(--surface2)]",
           focusRing,
         ].join(" ")}

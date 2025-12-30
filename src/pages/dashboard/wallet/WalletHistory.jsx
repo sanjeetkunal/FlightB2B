@@ -80,13 +80,13 @@ export default function WalletHistory() {
           <div className="flex gap-2">
             <button
               onClick={() => nav("/admin/wallet/statement")}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
             >
               Download Statement
             </button>
             <button
               onClick={() => nav(-1)}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
             >
               Back
             </button>
@@ -94,7 +94,7 @@ export default function WalletHistory() {
         </div>
 
         {/* Filters */}
-        <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+        <div className="rounded-md border border-slate-200 bg-white p-3 shadow-sm">
           <div className="grid gap-3 md:grid-cols-4">
             <div>
               <label className="block text-[10px] font-semibold text-slate-500">
@@ -103,7 +103,7 @@ export default function WalletHistory() {
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px]"
+                className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px]"
               >
                 <option value="ALL">All</option>
                 <option value="CREDIT">Credit</option>
@@ -117,7 +117,7 @@ export default function WalletHistory() {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px]"
+                className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px]"
               >
                 <option value="ALL">All</option>
                 {categories.map((c) => (
@@ -133,14 +133,14 @@ export default function WalletHistory() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="PNR / TXN / HOLD"
-                className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px]"
+                className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px]"
               />
             </div>
           </div>
         </div>
 
         {/* Table */}
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div className="rounded-md border border-slate-200 bg-white shadow-sm overflow-hidden">
           <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2 text-[11px] text-slate-500">
             <div>
               Showing <span className="font-semibold text-slate-900">{filtered.length}</span> transactions

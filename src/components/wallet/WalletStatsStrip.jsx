@@ -33,7 +33,7 @@ export default function WalletStatsStrip({ wallet }) {
 function Tile({ label, value, highlighted }) {
   return (
     <div
-      className={`rounded-xl border shadow-sm px-4 py-3 ${
+      className={`rounded-md border shadow-sm px-4 py-3 ${
         highlighted
           ? "border-slate-900 bg-slate-900 text-white"
           : "border-slate-200 bg-white"

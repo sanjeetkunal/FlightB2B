@@ -138,7 +138,7 @@ export default function AgentRegistration() {
 
           <div className="relative">
             <div className="absolute -inset-2 bg-gradient-to-br from-sky-200 via-emerald-100 to-amber-100 blur-3xl opacity-60 pointer-events-none" />
-            <div className="relative rounded-2xl border border-slate-200 bg-white shadow-sm p-4">
+            <div className="relative rounded-md border border-slate-200 bg-white shadow-sm p-4">
               <h2 className="text-sm font-semibold text-slate-900 mb-2">
                 Account creation steps
               </h2>
@@ -160,7 +160,7 @@ export default function AgentRegistration() {
                   approves your profile & activates login.
                 </li>
               </ol>
-              <div className="mt-4 p-3 rounded-xl bg-sky-50 border border-sky-100 text-[11px] text-sky-900">
+              <div className="mt-4 p-3 rounded-md bg-sky-50 border border-sky-100 text-[11px] text-sky-900">
                 ⏱️ Average approval time:{" "}
                 <span className="font-semibold">within 2–4 working hours</span> during
                 business days.
@@ -173,7 +173,7 @@ export default function AgentRegistration() {
         {/* =================== FORM (Screenshot-only) =================== */}
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-slate-200 bg-white shadow-sm p-4 sm:p-6"
+          className="rounded-md border border-slate-200 bg-white shadow-sm p-4 sm:p-6"
         >
           <div className="mb-3 flex items-center justify-center">
             <h2 className="text-sm font-semibold text-slate-800">Agent SignUp</h2>
@@ -559,7 +559,7 @@ export default function AgentRegistration() {
 
 function FeatureBadge({ title, desc }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white/80 px-3 py-2 shadow-[0_8px_20px_rgba(15,23,42,0.04)]">
+    <div className="rounded-md border border-slate-200 bg-white/80 px-3 py-2 shadow-[0_8px_20px_rgba(15,23,42,0.04)]">
       <div className="text-[11px] font-semibold text-slate-900">{title}</div>
       <div className="text-[10px] text-slate-500">{desc}</div>
     </div>

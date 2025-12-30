@@ -73,13 +73,13 @@ export default function WalletOverview() {
           <div className="flex gap-2">
             <button
               onClick={() => nav("/admin/wallet/add-funds")}
-              className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800"
+              className="rounded-md bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800"
             >
               + Add Funds
             </button>
             <button
               onClick={() => nav("/admin/wallet/statement")}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              className="rounded-md border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
             >
               Download Statement
             </button>
@@ -112,7 +112,7 @@ export default function WalletOverview() {
         </div>
 
         {/* Recent transactions */}
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div className="rounded-md border border-slate-200 bg-white shadow-sm overflow-hidden">
           <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
             <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               Recent Transactions
@@ -188,12 +188,12 @@ export default function WalletOverview() {
 
 function ActionCard({ title, desc, action, onClick }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
       <div className="text-sm font-semibold text-slate-900">{title}</div>
       <div className="mt-1 text-xs text-slate-500">{desc}</div>
       <button
         onClick={onClick}
-        className="mt-3 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"
+        className="mt-3 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"
       >
         {action}
       </button>

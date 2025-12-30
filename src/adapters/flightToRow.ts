@@ -7,7 +7,7 @@ export function adaptFare(f: FlightFare): FareOption {
     code: f.fareId,
     label: f.brand,
     price: f.totalINR,
-    refundable: f.refundable ? "Refundable" : "Non Refundable",
+    refundable: f.refundable ? "Refundable" : "Non-Refundable",
     cabin: f.cabin,
     meal: f.meal ? "Meal included" : undefined,
     baggage: {

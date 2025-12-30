@@ -79,7 +79,7 @@ function LoginOfferModal({ open, onClose }) {
 
       {/* modal */}
       <div
-        className="relative w-full max-w-lg overflow-hidden rounded-2xl shadow-2xl"
+        className="relative w-full max-w-lg overflow-hidden rounded-md shadow-2xl"
         style={{ background: VAR.surface, border: `1px solid ${VAR.border}` }}
       >
         {/* top glow */}
@@ -125,7 +125,7 @@ function LoginOfferModal({ open, onClose }) {
             <button
               type="button"
               onClick={onClose}
-              className="shrink-0 rounded-xl px-3 py-2 text-xs font-semibold"
+              className="shrink-0 rounded-md px-3 py-2 text-xs font-semibold"
               style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2, color: VAR.text }}
             >
               Close
@@ -134,7 +134,7 @@ function LoginOfferModal({ open, onClose }) {
 
           {/* highlights */}
           <div
-            className="mt-4 grid grid-cols-1 gap-2 rounded-xl p-3"
+            className="mt-4 grid grid-cols-1 gap-2 rounded-md p-3"
             style={{ background: VAR.surface2, border: `1px solid ${VAR.border}` }}
           >
             <div className="flex items-center justify-between text-sm">
@@ -162,7 +162,7 @@ function LoginOfferModal({ open, onClose }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold"
+              className="flex-1 rounded-md px-4 py-2.5 text-sm font-semibold"
               style={{
                 background: VAR.primary,
                 color: "white",
@@ -174,7 +174,7 @@ function LoginOfferModal({ open, onClose }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl px-4 py-2.5 text-sm font-semibold"
+              className="rounded-md px-4 py-2.5 text-sm font-semibold"
               style={{
                 border: `1px solid ${VAR.border}`,
                 background: VAR.surface2,

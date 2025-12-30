@@ -164,7 +164,7 @@ function FeatureCard({
   brand,
 }: Feature & { brand: { cyan: string; green: string; purple: string; mint: string } }) {
   return (
-    <div className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white/85 backdrop-blur p-5 sm:p-6 transition-all duration-300 hover:shadow-[0_22px_60px_rgba(2,6,23,0.12)] hover:-translate-y-0.5">
+    <div className="group relative overflow-hidden rounded-md border border-slate-200 bg-white/85 backdrop-blur p-5 sm:p-6 transition-all duration-300 hover:shadow-[0_22px_60px_rgba(2,6,23,0.12)] hover:-translate-y-0.5">
       {/* top gradient rail (logo palette) */}
       <div
         className="absolute inset-x-0 top-0 h-1"
@@ -183,7 +183,7 @@ function FeatureCard({
 
       <div className="relative flex items-start gap-3">
         <div
-          className="shrink-0 rounded-2xl border p-2.5"
+          className="shrink-0 rounded-md border p-2.5"
           style={{
             borderColor: "rgba(2,6,23,0.08)",
             background: `linear-gradient(135deg, rgba(99,44,142,0.10), rgba(32,185,221,0.10), rgba(57,170,129,0.08))`,
@@ -213,7 +213,7 @@ function FeatureCard({
       </ul>
 
       {/* hover ring */}
-      <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-transparent group-hover:ring-slate-900/5" />
+      <div className="pointer-events-none absolute inset-0 rounded-md ring-1 ring-transparent group-hover:ring-slate-900/5" />
     </div>
   );
 }

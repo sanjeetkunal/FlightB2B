@@ -49,11 +49,11 @@ export default function RecentBookings() {
 
   return (
 
-      <div className="relative rounded-3xl border border-[var(--border)]
+      <div className="relative rounded-md border border-[var(--border)]
           shadow-[0_18px_45px_rgba(0,0,0,0.08)] backdrop-blur-xl p-5">
         {/* BOTH SIDE LIGHT WASH */}
-        <div className="pointer-events-none absolute inset-0 rounded-3xl" style={{ background: bg.left }} />
-        <div className="pointer-events-none absolute inset-0 rounded-3xl" style={{ background: bg.right }} />
+        <div className="pointer-events-none absolute inset-0 rounded-md" style={{ background: bg.left }} />
+        <div className="pointer-events-none absolute inset-0 rounded-md" style={{ background: bg.right }} />
 
         <div className="relative">
           <div className="flex items-start justify-between gap-3">
@@ -86,7 +86,7 @@ function BookingRow({ b }) {
     <button
       type="button"
       className="
-        group w-full rounded-2xl border
+        group w-full rounded-md border
         border-[var(--border)] bg-[var(--surface)]/90
         px-4 py-3 text-left
         hover:shadow-[0_10px_24px_rgba(0,0,0,0.08)]
@@ -94,7 +94,7 @@ function BookingRow({ b }) {
       "
     >
       <div
-        className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition rounded-2xl"
+        className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition rounded-md"
         style={{ background: "linear-gradient(135deg, var(--primarySoft), rgba(0,0,0,0) 60%)" }}
       />
 

@@ -1,7 +1,7 @@
 // WalletSnapshot.jsx
 export default function WalletSnapshot() {
   return (
-    <div className="mt-6 rounded-xl border bg-white p-4">
+    <div className="mt-6 rounded-md border bg-white p-4">
       <div className="text-sm font-semibold text-gray-700">
         Wallet Snapshot
       </div>

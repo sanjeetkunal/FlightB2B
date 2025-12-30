@@ -212,7 +212,7 @@ export default function AgencySettings() {
 
 function ProfileTab({ profile, onChange, onSave }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-4 sm:p-6 space-y-5">
+    <div className="rounded-md border border-slate-200 bg-white shadow-sm p-4 sm:p-6 space-y-5">
       <SectionHeader
         title="Agency Profile & KYC"
         desc="Update your agency details. PAN & GST details are used for invoicing and compliance."
@@ -357,7 +357,7 @@ function ProfileTab({ profile, onChange, onSave }) {
           desc="Your logo will appear on tickets, invoices and vouchers."
         />
         <div className="flex flex-col sm:flex-row items-start gap-4">
-          <div className="w-24 h-24 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[11px] text-slate-400">
+          <div className="w-24 h-24 rounded-md border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[11px] text-slate-400">
             {profile.logoUrl ? (
               <img
                 src={profile.logoUrl}
@@ -396,7 +396,7 @@ function ProfileTab({ profile, onChange, onSave }) {
 
 function BookingTab({ booking, onChange, onSave }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-4 sm:p-6 space-y-5">
+    <div className="rounded-md border border-slate-200 bg-white shadow-sm p-4 sm:p-6 space-y-5">
       <SectionHeader
         title="Flight Booking & Markup"
         desc="Control how your flight search, pricing and markup behaves in the B2B portal."
@@ -498,7 +498,7 @@ function BookingTab({ booking, onChange, onSave }) {
 
         <div className="grid gap-4 md:grid-cols-2">
           {/* Domestic */}
-          <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3 space-y-2">
+          <div className="rounded-md border border-slate-200 bg-slate-50/60 p-3 space-y-2">
             <div className="flex items-center justify-between">
               <div className="text-xs font-semibold text-slate-800">
                 Domestic Flights
@@ -540,7 +540,7 @@ function BookingTab({ booking, onChange, onSave }) {
           </div>
 
           {/* International */}
-          <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3 space-y-2">
+          <div className="rounded-md border border-slate-200 bg-slate-50/60 p-3 space-y-2">
             <div className="flex items-center justify-between">
               <div className="text-xs font-semibold text-slate-800">
                 International Flights
@@ -626,7 +626,7 @@ function BookingTab({ booking, onChange, onSave }) {
 
 function InvoiceTab({ invoice, onChange, onSave }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-4 sm:p-6 space-y-5">
+    <div className="rounded-md border border-slate-200 bg-white shadow-sm p-4 sm:p-6 space-y-5">
       <SectionHeader
         title="Invoice & GST Settings"
         desc="Control how your GST invoices and ticket headers appear for your customers."
@@ -699,7 +699,7 @@ function InvoiceTab({ invoice, onChange, onSave }) {
 
 function NotificationsTab({ notifications, onChange, onSave }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-4 sm:p-6 space-y-5">
+    <div className="rounded-md border border-slate-200 bg-white shadow-sm p-4 sm:p-6 space-y-5">
       <SectionHeader
         title="Notification & Alerts"
         desc="Control which events you want to be notified for on email and SMS."
@@ -819,7 +819,7 @@ function NotificationsTab({ notifications, onChange, onSave }) {
 
 function PayoutTab({ payout, onChange, onSave }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-4 sm:p-6 space-y-5">
+    <div className="rounded-md border border-slate-200 bg-white shadow-sm p-4 sm:p-6 space-y-5">
       <SectionHeader
         title="Payout & Bank Details"
         desc="We use these details for settling your incentives and commission payouts."
@@ -968,7 +968,7 @@ function FooterSaveBar({ onSave }) {
 
 function SettingBlock({ title, children }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3 space-y-2">
+    <div className="rounded-md border border-slate-200 bg-slate-50/60 p-3 space-y-2">
       <div className="text-xs font-semibold text-slate-800">{title}</div>
       <div className="space-y-1.5">{children}</div>
     </div>

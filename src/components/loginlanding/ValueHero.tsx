@@ -33,8 +33,8 @@ export default function B2BHeroNTW() {
         <div className="grid lg:grid-cols-12 gap-10 lg:gap-14 items-stretch">
           {/* LEFT: Image (enterprise frame) */}
           <div className="lg:col-span-5 h-full">
-            <div className="relative h-full rounded-3xl p-[1px] bg-gradient-to-br from-[#19B8DF]/55 via-[#8BD0BD]/35 to-[#39AA81]/55 shadow-[0_22px_60px_rgba(2,6,23,0.14)]">
-              <div className="relative h-full rounded-3xl overflow-hidden bg-white/70 backdrop-blur border border-white/60">
+            <div className="relative h-full rounded-md p-[1px] bg-gradient-to-br from-[#19B8DF]/55 via-[#8BD0BD]/35 to-[#39AA81]/55 shadow-[0_22px_60px_rgba(2,6,23,0.14)]">
+              <div className="relative h-full rounded-md overflow-hidden bg-white/70 backdrop-blur border border-white/60">
                 <div className="relative h-72 sm:h-96 lg:h-full">
                   <img
                     src={heroImg}
@@ -94,10 +94,10 @@ export default function B2BHeroNTW() {
               {points.map((p, i) => (
                 <div
                   key={i}
-                  className="group relative rounded-2xl p-[1px] bg-gradient-to-br from-[#19B8DF]/45 via-[#8BD0BD]/25 to-[#39AA81]/45 hover:from-[#19B8DF]/65 hover:to-[#39AA81]/65 transition"
+                  className="group relative rounded-md p-[1px] bg-gradient-to-br from-[#19B8DF]/45 via-[#8BD0BD]/25 to-[#39AA81]/45 hover:from-[#19B8DF]/65 hover:to-[#39AA81]/65 transition"
                 >
-                  <div className="flex h-full items-start gap-3 rounded-2xl bg-white/80 backdrop-blur border border-white/60 p-4 shadow-[0_12px_30px_rgba(2,6,23,0.06)]">
-                    <div className="mt-0.5 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white border border-slate-200">
+                  <div className="flex h-full items-start gap-3 rounded-md bg-white/80 backdrop-blur border border-white/60 p-4 shadow-[0_12px_30px_rgba(2,6,23,0.06)]">
+                    <div className="mt-0.5 inline-flex h-11 w-11 items-center justify-center rounded-md bg-white border border-slate-200">
                       <p.icon className="h-6 w-6 text-[#19B8DF] group-hover:text-[#39AA81] transition-colors" />
                     </div>
 

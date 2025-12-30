@@ -338,7 +338,7 @@ export default function TicketCopyPage({
           <div className="flex items-center gap-3">
             <button
               onClick={onBack}
-              className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium"
+              className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-medium"
               style={{ borderColor: VAR.border, background: VAR.surface2, color: VAR.text }}
               title="Back"
               type="button"
@@ -358,7 +358,7 @@ export default function TicketCopyPage({
 
           <div className="flex flex-wrap items-center gap-2">
             {/* Mode switch */}
-            <div className="inline-flex rounded-xl border p-1" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
+            <div className="inline-flex rounded-md border p-1" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
               {([
                 { key: "CUSTOMER", label: "Customer Copy" },
                 { key: "AGENT", label: "Agent Copy" },
@@ -369,7 +369,7 @@ export default function TicketCopyPage({
                     key={m.key}
                     type="button"
                     onClick={() => setMode(m.key)}
-                    className="rounded-lg px-3 py-1.5 text-[11px] font-semibold transition"
+                    className="rounded-md px-3 py-1.5 text-[11px] font-semibold transition"
                     style={{
                       background: active ? VAR.primary : "transparent",
                       color: active ? "white" : VAR.muted,
@@ -385,7 +385,7 @@ export default function TicketCopyPage({
             <button
               type="button"
               onClick={printTicket}
-              className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium"
+              className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-medium"
               style={{ borderColor: VAR.border, background: VAR.surface2, color: VAR.text }}
             >
               <Printer className="h-4 w-4" />
@@ -395,7 +395,7 @@ export default function TicketCopyPage({
             <button
               type="button"
               onClick={doDownload}
-              className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-medium disabled:opacity-60"
               style={{ borderColor: VAR.border, background: VAR.surface2, color: VAR.text }}
               disabled={!onDownloadPdf || busy === "pdf"}
             >
@@ -406,7 +406,7 @@ export default function TicketCopyPage({
             <button
               type="button"
               onClick={doEmail}
-              className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-xs font-semibold disabled:opacity-60"
               style={{ background: VAR.primary, color: "white" }}
               disabled={!onEmailTicket || busy === "email"}
             >
@@ -419,14 +419,14 @@ export default function TicketCopyPage({
 
       <div className="mx-auto max-w-7xl px-4 py-6 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
         {/* ================= Printable Ticket Sheet ================= */}
-        <div className="rounded-2xl shadow-sm overflow-hidden border" style={{ background: VAR.surface, borderColor: VAR.border }}>
+        <div className="rounded-md shadow-sm overflow-hidden border" style={{ background: VAR.surface, borderColor: VAR.border }}>
           {/* Header strip */}
           <div className="p-5 border-b" style={{ borderColor: VAR.border }}>
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               {/* Brand */}
               <div className="flex items-start gap-3">
                 <div
-                  className="h-10 w-10 rounded-xl flex items-center justify-center text-xs font-bold"
+                  className="h-10 w-10 rounded-md flex items-center justify-center text-xs font-bold"
                   style={{ background: `linear-gradient(135deg, ${VAR.primary}, ${VAR.accent})`, color: "white" }}
                 >
                   {brandName
@@ -491,13 +491,13 @@ export default function TicketCopyPage({
               {ticket.segments.map((s, idx) => (
                 <div
                   key={s.id}
-                  className="rounded-xl border p-4"
+                  className="rounded-md border p-4"
                   style={{ borderColor: VAR.border, background: VAR.surface2 }}
                 >
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <div
-                        className="h-9 w-9 rounded-lg border flex items-center justify-center text-xs font-bold"
+                        className="h-9 w-9 rounded-md border flex items-center justify-center text-xs font-bold"
                         style={{ background: VAR.surface, borderColor: VAR.border, color: VAR.text }}
                       >
                         {s.airlineCode}
@@ -547,7 +547,7 @@ export default function TicketCopyPage({
                   </div>
 
                   <div className="mt-4 grid grid-cols-1 md:grid-cols-[1fr_120px_1fr] items-center gap-3">
-                    <div className="rounded-lg border p-3" style={{ background: VAR.surface, borderColor: VAR.border }}>
+                    <div className="rounded-md border p-3" style={{ background: VAR.surface, borderColor: VAR.border }}>
                       <div className="text-[10px]" style={{ color: VAR.subtle }}>Departure</div>
                       <div className="mt-0.5 text-sm font-semibold" style={{ color: VAR.text }}>
                         {s.from.city} <span style={{ color: VAR.subtle }}>({s.from.code})</span>
@@ -568,7 +568,7 @@ export default function TicketCopyPage({
                       </div>
                     </div>
 
-                    <div className="rounded-lg border p-3" style={{ background: VAR.surface, borderColor: VAR.border }}>
+                    <div className="rounded-md border p-3" style={{ background: VAR.surface, borderColor: VAR.border }}>
                       <div className="text-[10px]" style={{ color: VAR.subtle }}>Arrival</div>
                       <div className="mt-0.5 text-sm font-semibold" style={{ color: VAR.text }}>
                         {s.to.city} <span style={{ color: VAR.subtle }}>({s.to.code})</span>
@@ -680,7 +680,7 @@ export default function TicketCopyPage({
             </div>
 
             <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-xl border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
+              <div className="rounded-md border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
                 <div className="text-[11px] font-semibold" style={{ color: VAR.muted }}>
                   Supplier Fare (Gross)
                 </div>
@@ -700,7 +700,7 @@ export default function TicketCopyPage({
                 </div>
               </div>
 
-              <div className="rounded-xl border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
+              <div className="rounded-md border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
                 <div className="text-[11px] font-semibold" style={{ color: VAR.muted }}>
                   Sale Fare
                 </div>
@@ -756,7 +756,7 @@ export default function TicketCopyPage({
             </div>
 
             <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-xl border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
+              <div className="rounded-md border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
                 <div className="text-[11px] font-semibold" style={{ color: VAR.muted }}>
                   Portal / Convenience Fee
                 </div>
@@ -765,7 +765,7 @@ export default function TicketCopyPage({
                 </div>
               </div>
 
-              <div className="rounded-xl border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
+              <div className="rounded-md border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
                 <div className="text-[11px] font-semibold" style={{ color: VAR.muted }}>
                   Airline Fee
                 </div>
@@ -798,7 +798,7 @@ export default function TicketCopyPage({
 
         {/* ================= Agent Control Panel ================= */}
         <div className="space-y-4">
-          <div className="rounded-2xl shadow-sm p-4 border" style={{ background: VAR.surface, borderColor: VAR.border }}>
+          <div className="rounded-md shadow-sm p-4 border" style={{ background: VAR.surface, borderColor: VAR.border }}>
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs" style={{ color: VAR.subtle }}>Agent Tools</div>
@@ -815,7 +815,7 @@ export default function TicketCopyPage({
             </div>
 
             {/* Pricing editor */}
-            <div className="mt-4 rounded-xl border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
+            <div className="mt-4 rounded-md border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
               <div className="flex items-center justify-between">
                 <div className="text-[11px] font-semibold" style={{ color: VAR.muted }}>
                   Markup Management
@@ -823,7 +823,7 @@ export default function TicketCopyPage({
                 <button
                   type="button"
                   onClick={() => setEditPricing((v) => !v)}
-                  className="inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[10px] font-semibold"
+                  className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-semibold"
                   style={{ background: VAR.surface, borderColor: VAR.border, color: VAR.muted }}
                 >
                   <Pencil className="h-3 w-3" />
@@ -848,7 +848,7 @@ export default function TicketCopyPage({
                       value={pricing[f.key]}
                       onChange={(e) => handlePricingChange(f.key, e.target.value)}
                       disabled={!editPricing}
-                      className="mt-1 w-full rounded-lg border px-3 py-2 text-xs outline-none"
+                      className="mt-1 w-full rounded-md border px-3 py-2 text-xs outline-none"
                       style={{
                         borderColor: VAR.border,
                         background: editPricing ? VAR.surface : VAR.surface2,
@@ -866,7 +866,7 @@ export default function TicketCopyPage({
                     value={pricing.notes || ""}
                     onChange={(e) => setPricing((p) => ({ ...p, notes: e.target.value }))}
                     disabled={!editPricing}
-                    className="mt-1 w-full rounded-lg border px-3 py-2 text-xs outline-none"
+                    className="mt-1 w-full rounded-md border px-3 py-2 text-xs outline-none"
                     style={{
                       borderColor: VAR.border,
                       background: editPricing ? VAR.surface : VAR.surface2,
@@ -882,7 +882,7 @@ export default function TicketCopyPage({
                     <button
                       type="button"
                       onClick={resetPricing}
-                      className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-[11px] font-semibold"
+                      className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-[11px] font-semibold"
                       style={{ background: VAR.surface, borderColor: VAR.border, color: VAR.text }}
                     >
                       <RefreshCw className="h-3.5 w-3.5" />
@@ -893,7 +893,7 @@ export default function TicketCopyPage({
                       type="button"
                       onClick={savePricing}
                       disabled={busy === "save"}
-                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-[11px] font-semibold disabled:opacity-60"
+                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-[11px] font-semibold disabled:opacity-60"
                       style={{ background: VAR.success, color: "white" }}
                     >
                       <Save className="h-3.5 w-3.5" />
@@ -906,11 +906,11 @@ export default function TicketCopyPage({
 
             {/* Quick totals card */}
             <div className="mt-4 grid grid-cols-1 gap-2">
-              <div className="rounded-xl border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
+              <div className="rounded-md border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
                 <div className="text-[10px]" style={{ color: VAR.subtle }}>Supplier Total</div>
                 <div className="text-base font-semibold" style={{ color: VAR.text }}>{fmtINR(supplierTotal)}</div>
               </div>
-              <div className="rounded-xl border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
+              <div className="rounded-md border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
                 <div className="text-[10px]" style={{ color: VAR.subtle }}>Customer Payable (Live)</div>
                 <div className="text-base font-semibold" style={{ color: VAR.text }}>{fmtINR(customerPayable)}</div>
               </div>
@@ -918,7 +918,7 @@ export default function TicketCopyPage({
           </div>
 
           {/* Document / Sharing Tools */}
-          <div className="rounded-2xl shadow-sm p-4 border" style={{ background: VAR.surface, borderColor: VAR.border }}>
+          <div className="rounded-md shadow-sm p-4 border" style={{ background: VAR.surface, borderColor: VAR.border }}>
             <div className="text-xs" style={{ color: VAR.subtle }}>Documents</div>
             <div className="text-sm font-semibold" style={{ color: VAR.text }}>Ticket & Invoice</div>
 
@@ -927,7 +927,7 @@ export default function TicketCopyPage({
                 type="button"
                 onClick={doDownload}
                 disabled={!onDownloadPdf || busy === "pdf"}
-                className="inline-flex items-center justify-between rounded-xl border px-3 py-2 text-xs font-medium disabled:opacity-60"
+                className="inline-flex items-center justify-between rounded-md border px-3 py-2 text-xs font-medium disabled:opacity-60"
                 style={{ background: VAR.surface2, borderColor: VAR.border, color: VAR.text }}
               >
                 <span className="inline-flex items-center gap-2">
@@ -940,7 +940,7 @@ export default function TicketCopyPage({
               <button
                 type="button"
                 onClick={printTicket}
-                className="inline-flex items-center justify-between rounded-xl border px-3 py-2 text-xs font-medium"
+                className="inline-flex items-center justify-between rounded-md border px-3 py-2 text-xs font-medium"
                 style={{ background: VAR.surface2, borderColor: VAR.border, color: VAR.text }}
               >
                 <span className="inline-flex items-center gap-2">
@@ -954,7 +954,7 @@ export default function TicketCopyPage({
                 type="button"
                 onClick={doEmail}
                 disabled={!onEmailTicket || busy === "email"}
-                className="inline-flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold disabled:opacity-60"
+                className="inline-flex items-center justify-between rounded-md px-3 py-2 text-xs font-semibold disabled:opacity-60"
                 style={{ background: VAR.primary, color: "white" }}
               >
                 <span className="inline-flex items-center gap-2">
@@ -967,7 +967,7 @@ export default function TicketCopyPage({
           </div>
 
           {/* Safety / Audit Notes */}
-          <div className="rounded-2xl shadow-sm p-4 border" style={{ background: VAR.surface, borderColor: VAR.border }}>
+          <div className="rounded-md shadow-sm p-4 border" style={{ background: VAR.surface, borderColor: VAR.border }}>
             <div className="text-xs" style={{ color: VAR.subtle }}>Agent Compliance</div>
             <div className="text-sm font-semibold" style={{ color: VAR.text }}>Audit Checklist</div>
             <ul className="mt-3 space-y-2 text-[11px]" style={{ color: VAR.muted }}>

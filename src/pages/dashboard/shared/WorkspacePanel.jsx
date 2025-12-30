@@ -5,7 +5,7 @@ import { NavLink } from "react-router-dom";
 export default function WorkspacePanel({ title, subtitle, icon, sections }) {
   return (
     <aside className="order-1 lg:order-1">
-      <div className="rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-sm backdrop-blur">
+      <div className="rounded-md border border-slate-200 bg-white/90 p-3 shadow-sm backdrop-blur">
         <div className="mb-3 flex items-center justify-between">
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
@@ -22,7 +22,7 @@ export default function WorkspacePanel({ title, subtitle, icon, sections }) {
           {sections.map((section) => (
             <div
               key={section.id}
-              className="rounded-xl border border-slate-200 bg-slate-50/80 p-2"
+              className="rounded-md border border-slate-200 bg-slate-50/80 p-2"
             >
               <div className="mb-1 flex items-center justify-between">
                 <span className="flex items-center gap-2">

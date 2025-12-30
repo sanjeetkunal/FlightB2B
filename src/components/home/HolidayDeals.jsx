@@ -50,7 +50,7 @@ export default function HolidayDeals() {
         {/* Left card */}
         <motion.div
           variants={leftCardVariants}
-          className="bg-slate-300 rounded-xl flex flex-col justify-between p-6 w-full md:w-1/2 relative overflow-hidden h-[210px]"
+          className="bg-slate-300 rounded-md flex flex-col justify-between p-6 w-full md:w-1/2 relative overflow-hidden h-[210px]"
         >
           <div>
             <h1 className="text-xl font-bold text-gray-900">
@@ -73,7 +73,7 @@ export default function HolidayDeals() {
         {/* Right card */}
         <motion.div
           variants={rightCardVariants}
-          className="bg-gray-100 rounded-xl flex flex-col justify-between p-6 w-full md:w-1/2 bg-cover bg-center"
+          className="bg-gray-100 rounded-md flex flex-col justify-between p-6 w-full md:w-1/2 bg-cover bg-center"
           style={{ backgroundImage: uri ? `url(${uri})` : undefined }}
         >
           <div>

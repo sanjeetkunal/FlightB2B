@@ -40,9 +40,9 @@ export default function TicketCopyRoute() {
   if (loading) {
     return (
       <div className="min-h-screen grid place-items-center bg-slate-50 px-4">
-        <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="w-full max-w-md rounded-md border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-slate-900 text-white grid place-items-center">
+            <div className="h-10 w-10 rounded-md bg-slate-900 text-white grid place-items-center">
               <span className="h-5 w-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
             </div>
             <div className="min-w-0">
@@ -71,12 +71,12 @@ export default function TicketCopyRoute() {
   if (!ticket) {
     return (
       <div className="min-h-screen grid place-items-center bg-slate-50 px-4">
-        <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="w-full max-w-md rounded-md border border-slate-200 bg-white p-5 shadow-sm">
           <div className="text-sm font-semibold text-slate-900">No ticket found</div>
           <div className="mt-1 text-xs text-slate-600">Please complete payment again.</div>
           <button
             onClick={() => nav("/flights")}
-            className="mt-3 rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800"
+            className="mt-3 rounded-md bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800"
           >
             Go to Search
           </button>

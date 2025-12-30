@@ -28,13 +28,13 @@ export default function WalletStatement() {
           </div>
           <button
             onClick={() => nav(-1)}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
           >
             Back
           </button>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div className="rounded-md border border-slate-200 bg-white p-5 shadow-sm space-y-4">
           <div className="grid gap-3 md:grid-cols-2">
             <div>
               <label className="block text-[10px] font-semibold text-slate-500">
@@ -44,7 +44,7 @@ export default function WalletStatement() {
                 type="date"
                 value={from}
                 onChange={(e) => setFrom(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-2 text-[11px]"
+                className="mt-1 w-full rounded-md border border-slate-300 px-2 py-2 text-[11px]"
               />
             </div>
             <div>
@@ -55,7 +55,7 @@ export default function WalletStatement() {
                 type="date"
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-2 text-[11px]"
+                className="mt-1 w-full rounded-md border border-slate-300 px-2 py-2 text-[11px]"
               />
             </div>
           </div>
@@ -83,7 +83,7 @@ export default function WalletStatement() {
 
           <button
             onClick={download}
-            className="w-full rounded-lg bg-sky-600 px-4 py-2 text-xs font-semibold text-white hover:bg-sky-700"
+            className="w-full rounded-md bg-sky-600 px-4 py-2 text-xs font-semibold text-white hover:bg-sky-700"
           >
             Download Statement
           </button>

@@ -153,7 +153,7 @@ export default function RecentSearches() {
     return (
       <div
         className="
-          mt-8 rounded-2xl border p-4 backdrop-blur
+          mt-8 rounded-md border p-4 backdrop-blur
           bg-[var(--surface)]/90 border-[var(--border)]
           shadow-[0_10px_25px_rgba(2,6,23,0.06)]
         "
@@ -169,7 +169,7 @@ export default function RecentSearches() {
   return (
     <div
       className="
-        relative mt-8 overflow-hidden rounded-2xl
+        relative mt-8 overflow-hidden rounded-md
         border p-4 backdrop-blur
         bg-[var(--surface)]/85 border-[var(--border)]
         shadow-[0_12px_30px_rgba(2,6,23,0.08)]
@@ -184,7 +184,7 @@ export default function RecentSearches() {
       <div className="relative mb-3 flex items-center justify-between">
         <div className="flex items-start gap-2">
           <div
-            className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-xl text-white"
+            className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-md text-white"
             style={{
               backgroundImage: aura.icon,
               boxShadow: "0 8px 18px rgba(2,6,23,0.10)",
@@ -205,7 +205,7 @@ export default function RecentSearches() {
             setItems([]);
           }}
           className="
-            inline-flex items-center gap-1.5 rounded-lg
+            inline-flex items-center gap-1.5 rounded-md
             border px-2.5 py-1.5 text-xs backdrop-blur transition
             border-[var(--border)] bg-[var(--surface)]/70 text-[var(--muted)]
             hover:bg-[var(--surface2)] hover:text-[var(--text)]
@@ -224,7 +224,7 @@ export default function RecentSearches() {
           {[...Array(5)].map((_, i) => (
             <div
               key={i}
-              className="h-[78px] rounded-xl border animate-pulse"
+              className="h-[78px] rounded-md border animate-pulse"
               style={{
                 borderColor: "var(--border)",
                 background:
@@ -246,7 +246,7 @@ export default function RecentSearches() {
                 onClick={() => navigate(`/flight-results?${r.params}`)}
                 className="
                   group relative w-full overflow-hidden text-left
-                  rounded-xl border px-3 py-2 backdrop-blur transition cursor-pointer
+                  rounded-md border px-3 py-2 backdrop-blur transition cursor-pointer
                   bg-[var(--surface)]/75 border-[var(--border)]
                   hover:shadow-[0_16px_34px_rgba(2,6,23,0.12)]
                 "
@@ -269,7 +269,7 @@ export default function RecentSearches() {
                   <div className="flex items-center gap-1.5">
                     {i === 0 && (
                       <span
-                        className="inline-flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[10px] font-semibold border"
+                        className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold border"
                         style={{
                           background: rgba(accent, 0.10),
                           color: "var(--text)",
@@ -310,7 +310,7 @@ export default function RecentSearches() {
                   <span className="text-sm font-semibold text-[var(--text)]">{r.from}</span>
 
                   <span
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl text-white"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-white"
                     style={{
                       border: `1px solid ${rgba(primary, 0.22)}`,
                       backgroundImage: aura.icon,

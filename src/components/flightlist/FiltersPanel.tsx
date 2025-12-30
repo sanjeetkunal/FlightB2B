@@ -102,7 +102,7 @@ function TimeCard({
       aria-pressed={selected}
       className={[
         "w-[110px] sm:w-[120px] h-[72px]",
-        "rounded-xl border px-3 py-2 text-center",
+        "rounded-md border px-3 py-2 text-center",
         "flex flex-col items-center justify-center gap-1",
         "text-[12px] leading-tight transition",
         selected
@@ -132,7 +132,7 @@ function Seg({
         type="button"
         onClick={() => onChange(val)}
         className={[
-          "px-3 py-1.5 text-sm rounded-lg border transition font-semibold",
+          "px-3 py-1.5 text-sm rounded-md border transition font-semibold",
           active
             ? "bg-[var(--primary)] text-white border-[var(--primary)]"
             : "bg-[var(--surface)] text-[var(--text)] border-[var(--border)] hover:bg-[var(--surface2)]",
@@ -220,7 +220,7 @@ export default function FilterPanel({
   return (
     <aside
       className={[
-        "relative overflow-hidden rounded-2xl border border-[var(--border)] mb-4",
+        "relative overflow-hidden rounded-md border border-[var(--border)] mb-4",
         "bg-[var(--surface)] text-[var(--text)]",
         mobile ? "" : "p-4",
         "sm:p-4 sticky top-[190px]",
@@ -247,7 +247,7 @@ export default function FilterPanel({
             {mobile && (
               <button
                 onClick={onClose}
-                className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-sm hover:bg-[var(--surface2)] transition"
+                className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-sm hover:bg-[var(--surface2)] transition"
               >
                 Close
               </button>
@@ -282,7 +282,7 @@ export default function FilterPanel({
               type="button"
               onClick={() => setF({ ...f, fareView: "SINGLE" })}
               className={[
-                "px-3 py-1.5 rounded-lg text-sm font-bold border transition",
+                "px-3 py-1.5 rounded-md text-sm font-bold border transition",
                 f.fareView === "SINGLE"
                   ? "bg-[var(--primary)] text-white border-[var(--primary)]"
                   : "bg-[var(--surface)] text-[var(--text)] border-[var(--border)] hover:bg-[var(--surface2)]",
@@ -295,7 +295,7 @@ export default function FilterPanel({
               type="button"
               onClick={() => setF({ ...f, fareView: "FULL" })}
               className={[
-                "px-3 py-1.5 rounded-lg text-sm font-bold border transition",
+                "px-3 py-1.5 rounded-md text-sm font-bold border transition",
                 f.fareView === "FULL"
                   ? "bg-[var(--primary)] text-white border-[var(--primary)]"
                   : "bg-[var(--surface)] text-[var(--text)] border-[var(--border)] hover:bg-[var(--surface2)]",
@@ -334,7 +334,7 @@ export default function FilterPanel({
                 />
                 <span className="text-[12px]">Non Stop</span>
               </span>
-              <span className="text-[var(--muted)] text-[14px]">
+              <span className="text-[var(--muted)] text-[12px]">
                 <Money v={meta.minPrice} />
               </span>
             </label>
@@ -349,7 +349,7 @@ export default function FilterPanel({
                 />
                 <span className="text-[12px]">Hide Nearby Airports</span>
               </span>
-              <span className="text-[var(--muted)] text-[14px]">
+              <span className="text-[var(--muted)] text-[12px]">
                 <Money v={meta.minPrice} />
               </span>
             </label>
@@ -365,7 +365,7 @@ export default function FilterPanel({
                   />
                   <span className="text-[12px]">{al}</span>
                 </span>
-                <span className="text-[var(--muted)] text-[14px]">
+                <span className="text-[var(--muted)] text-[12px]">
                   <Money v={meta.airlineMinPrice[al] ?? meta.minPrice} />
                 </span>
               </label>
@@ -423,7 +423,7 @@ export default function FilterPanel({
           type="button"
           onClick={() => setF({ ...f, depSlots: toggleSlot(f.depSlots, key) })}
           className={[
-            "w-full rounded-xl border px-2 py-2.5 transition",
+            "w-full rounded-md border px-2 py-2.5 transition",
             "flex flex-col items-center justify-center text-center",
             "min-h-[74px]",
 
@@ -470,7 +470,7 @@ export default function FilterPanel({
           type="button"
           onClick={() => setF({ ...f, arrSlots: toggleSlot(f.arrSlots, key) })}
           className={[
-            "w-full rounded-xl border px-2 py-2.5 transition",
+            "w-full rounded-md border px-2 py-2.5 transition",
             "flex flex-col items-center justify-center text-center",
             "min-h-[74px]",
             active
@@ -557,7 +557,7 @@ export default function FilterPanel({
                   />
                   <span className="text-[12px]">{a}</span>
                 </span>
-                <span className="text-[var(--muted)]">
+                <span className="text-[var(--muted)] text-[12px]">
                   <Money v={meta.airlineMinPrice[a] ?? meta.minPrice} />
                 </span>
               </label>

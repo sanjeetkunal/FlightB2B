@@ -174,7 +174,7 @@ export default function QuickActions({ disabledKeys = [] }) {
     <section>
       <div
         className="
-          relative overflow-hidden rounded-3xl border
+          relative overflow-hidden rounded-md border
           bg-[var(--surface)]/85 border-[var(--border)]
           shadow-[0_18px_45px_rgba(0,0,0,0.08)]
         "
@@ -281,7 +281,7 @@ function ActionCard({ a, onClick, focusRing }) {
       title={a.disabled ? a.disabledReason : a.desc}
       className={[
         "group relative w-full text-left",
-        "rounded-2xl border backdrop-blur",
+        "rounded-md border backdrop-blur",
         "bg-[var(--surface)]/90 border-[var(--border)]",
         "shadow-[0_8px_20px_rgba(0,0,0,0.06)]",
         "transition-all p-4",
@@ -299,20 +299,20 @@ function ActionCard({ a, onClick, focusRing }) {
     >
       {/* hover ring */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition"
+        className="pointer-events-none absolute inset-0 rounded-md opacity-0 group-hover:opacity-100 transition"
         style={{
           boxShadow: `inset 0 0 0 1px ${getVar("--border") || "rgba(15,23,42,0.12)"}`,
           background: `linear-gradient(135deg, ${getVar("--primarySoft") || "rgba(16,182,217,0.14)"}, transparent 55%)`,
         }}
       />
 
-      {a.disabled && <div className="absolute inset-0 rounded-2xl bg-[var(--surface)]/40" />}
+      {a.disabled && <div className="absolute inset-0 rounded-md bg-[var(--surface)]/40" />}
 
       <div className="relative flex h-full flex-col">
         {/* Top row */}
         <div className="flex items-start justify-between gap-3">
           <span
-            className="grid h-11 w-11 place-items-center rounded-2xl text-white shadow-sm"
+            className="grid h-11 w-11 place-items-center rounded-md text-white shadow-sm"
             style={{
               backgroundImage: `linear-gradient(135deg, ${c1}, ${c2})`,
             }}

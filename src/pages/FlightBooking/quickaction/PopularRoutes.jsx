@@ -7,7 +7,7 @@ const routes = [
 
 export default function PopularRoutes() {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+    <div className="rounded-md border border-gray-200 bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -21,7 +21,7 @@ export default function PopularRoutes() {
 
         <button
           type="button"
-          className="hidden sm:inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+          className="hidden sm:inline-flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"
         >
           View all
           <span aria-hidden>→</span>
@@ -62,7 +62,7 @@ export default function PopularRoutes() {
       {/* Footer CTA (mobile) */}
       <button
         type="button"
-        className="mt-4 w-full sm:hidden rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+        className="mt-4 w-full sm:hidden rounded-md border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"
       >
         View all routes →
       </button>

@@ -161,7 +161,7 @@ export default function AirportSelect({ label, value, onChange }) {
           className="
             absolute z-40 mt-2 left-0
             w-full max-w-[420px]
-            rounded-3xl border border-[var(--border)]
+            rounded-md border border-[var(--border)]
             bg-[var(--surface)]
             shadow-[0_24px_60px_-18px_rgba(0,0,0,0.35)]
             p-2
@@ -204,7 +204,7 @@ export default function AirportSelect({ label, value, onChange }) {
                   onMouseEnter={() => setActive(i)}
                   onClick={() => pick(a)}
                   className={[
-                    "w-full text-left px-4 py-3 flex gap-3 items-start rounded-2xl transition",
+                    "w-full text-left px-4 py-3 flex gap-3 items-start rounded-md transition",
                     i === active
                       ? "bg-[var(--primarySoft)]"
                       : "hover:bg-[var(--surface2)]",
@@ -212,7 +212,7 @@ export default function AirportSelect({ label, value, onChange }) {
                 >
                   <span
                     className="
-                      inline-flex items-center justify-center w-10 h-10 rounded-xl p-2
+                      inline-flex items-center justify-center w-10 h-10 rounded-md p-2
                       border border-[var(--border)]
                       font-bold
                       bg-[var(--surface2)]

@@ -54,7 +54,7 @@ export default function HotelDashboard() {
             title={hotelAiTitle}
             placeholderQuestion={hotelAiPlaceholder}
           />
-          <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-500 shadow-sm">
+          <div className="rounded-md border border-slate-200 bg-white p-4 text-xs text-slate-500 shadow-sm">
             Smart tip: AI se aap quickly city-wise hotel shortlist kar sakte ho
             with distance from landmark, rating & approx budget.
           </div>

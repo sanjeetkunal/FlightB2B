@@ -106,7 +106,7 @@ export default function ChatWidget() {
 
       {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-20 right-5 z-40 flex w-80 flex-col rounded-xl border border-gray-200 bg-white shadow-2xl">
+        <div className="fixed bottom-20 right-5 z-40 flex w-80 flex-col rounded-md border border-gray-200 bg-white shadow-2xl">
           {/* Header */}
           <div className="flex items-center justify-between border-b px-3 py-2">
             <div className="text-sm font-semibold">Travel AI Assistant</div>
@@ -139,7 +139,7 @@ export default function ChatWidget() {
                 }`}
               >
                 <div
-                  className={`rounded-lg px-3 py-2 ${
+                  className={`rounded-md px-3 py-2 ${
                     m.from === "user"
                       ? "bg-blue-600 text-white"
                       : "bg-gray-100 text-gray-800"
@@ -160,12 +160,12 @@ export default function ChatWidget() {
               value={msg}
               onChange={(e) => setMsg(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-              className="flex-1 rounded-lg border px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-blue-500"
+              className="flex-1 rounded-md border px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-blue-500"
               placeholder="Ask about flight booking…"
             />
             <button
               onClick={sendMessage}
-              className="rounded-lg bg-blue-600 px-3 py-1 text-xs text-white disabled:opacity-50"
+              className="rounded-md bg-blue-600 px-3 py-1 text-xs text-white disabled:opacity-50"
               disabled={!apiKey || !msg.trim() || loading}
             >
               Send

@@ -68,7 +68,7 @@ function Pill({ active, children, onClick, icon: Icon }) {
       type="button"
       onClick={onClick}
       className={[
-        "group inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition",
+        "group inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold transition",
         "focus:outline-none focus:ring-2",
         active ? "shadow-[0_10px_22px_rgba(2,6,23,0.10)]" : "hover:bg-[var(--surface2)]",
       ].join(" ")}
@@ -82,7 +82,7 @@ function Pill({ active, children, onClick, icon: Icon }) {
     >
       {Icon ? (
         <span
-          className="grid h-8 w-8 place-items-center rounded-lg border transition"
+          className="grid h-8 w-8 place-items-center rounded-md border transition"
           style={{
             borderColor: active ? "var(--primary)" : "var(--border)",
             background: "var(--surface)",
@@ -219,7 +219,7 @@ export default function HomeHero() {
             variants={fadeUp}
             initial="hidden"
             animate="visible"
-            className="relative mx-auto rounded-[22px] backdrop-blur"
+            className="relative mx-auto rounded-md backdrop-blur"
             style={{
               border: `1px solid ${heroCss.cardBorder}`,
               background: heroCss.cardBg,
@@ -228,13 +228,13 @@ export default function HomeHero() {
           >
             {/* inner gradient */}
             <div
-              className="pointer-events-none absolute inset-0 rounded-[22px]"
+              className="pointer-events-none absolute inset-0 rounded-md"
               style={{ backgroundImage: heroCss.cardInner, opacity: 0.95 }}
             />
 
             {/* bottom wash */}
             <div
-              className="pointer-events-none absolute bottom-0 left-0 right-0 h-1/2 rounded-b-[22px]"
+              className="pointer-events-none absolute bottom-0 left-0 right-0 h-1/2 rounded-b-md"
               style={{ backgroundImage: heroCss.cardBottom, opacity: 0.9 }}
             />
 
@@ -272,7 +272,7 @@ export default function HomeHero() {
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <QuickActions disabledKeys={["book_hold"]} />
           <RecentBookings />
-          <AgentAlerts />
+          {/* <AgentAlerts /> */}
         </div>
       </div>
 

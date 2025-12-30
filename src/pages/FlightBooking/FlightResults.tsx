@@ -978,7 +978,7 @@ export default function FlightResults() {
           {/* Header Card */}
           <div
             className="
-              rounded-2xl px-3 py-2 shadow-sm
+              rounded-md px-3 py-2 shadow-sm
               border border-[var(--border)]
               bg-[var(--surface)]
             "
@@ -989,7 +989,7 @@ export default function FlightResults() {
                 showModify ? "max-h-[500px] opacity-100 translate-y-0" : "max-h-0 opacity-0 -translate-y-2 pointer-events-none",
               ].join(" ")}
             >
-              <div className="rounded-xl">
+              <div className="rounded-md">
                 <FromToBar
                   onSearch={() => {
                     setShowModify(false);
@@ -1126,7 +1126,7 @@ export default function FlightResults() {
                 <button
                   onClick={() => setDrawer(true)}
                   className="
-                    rounded-lg border border-[var(--border)] bg-[var(--surface)]
+                    rounded-md border border-[var(--border)] bg-[var(--surface)]
                     px-2.5 py-1.5 text-sm shadow-sm md:hidden
                     text-[var(--text)] hover:bg-[var(--surface2)] transition
                   "
@@ -1178,6 +1178,8 @@ export default function FlightResults() {
                   onSelectOutboundFare={(rowId, fare) => setSelOutRT({ flightId: rowId, fare })}
                   onSelectReturnFare={(rowId, fare) => setSelInRT({ flightId: rowId, fare })}
                   showCommission={showCommission}
+                  paxConfig={{ adults: adt || 1, children: chd || 0, infants: inf || 0 }}
+                  fareView={activeForPanelRT.fareView}
                 />
               ) : (
                 <SpecialRoundTripResult
@@ -1235,7 +1237,7 @@ export default function FlightResults() {
                   <button
                     onClick={() => setDrawer(false)}
                     className="
-                      mt-3 w-full rounded-lg px-3 py-2 text-sm font-semibold transition
+                      mt-3 w-full rounded-md px-3 py-2 text-sm font-semibold transition
                       bg-[var(--primary)] text-[var(--surface)]
                       hover:bg-[var(--primaryHover)]
                     "
@@ -1249,7 +1251,7 @@ export default function FlightResults() {
                   <button
                     onClick={() => setDrawer(false)}
                     className="
-                      mt-3 w-full rounded-lg px-3 py-2 text-sm font-semibold transition
+                      mt-3 w-full rounded-md px-3 py-2 text-sm font-semibold transition
                       bg-[var(--primary)] text-[var(--surface)]
                       hover:bg-[var(--primaryHover)]
                     "
@@ -1264,6 +1266,6 @@ export default function FlightResults() {
       </div>
     </div>
 
-    
+
   );
 }

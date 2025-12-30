@@ -162,7 +162,7 @@ export default function SeatMap({
         onClick={() => toggleSeat(id)}
         disabled={disabled}
         title={title}
-        className="h-9 w-9 rounded-lg text-[10px] font-extrabold transition"
+        className="h-9 w-9 rounded-md text-[10px] font-extrabold transition"
         style={{ ...style, ...(extraStyle || {}) }}
         onMouseEnter={() => {
           if (!disabled && !st.isSelected) setHovered(id);
@@ -175,7 +175,7 @@ export default function SeatMap({
   };
 
   return (
-    <div className="rounded-2xl shadow-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
+    <div className="rounded-md shadow-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
       {/* Header */}
       <div className="flex items-start justify-between gap-3 px-4 py-3 sm:px-5" style={{ borderBottom: `1px solid ${VAR.border}` }}>
         <div>
@@ -188,7 +188,7 @@ export default function SeatMap({
 
           {warn ? (
             <div
-              className="mt-2 rounded-xl px-3 py-2 text-[11px] font-semibold"
+              className="mt-2 rounded-md px-3 py-2 text-[11px] font-semibold"
               style={{ background: "rgba(244,63,94,0.10)", color: VAR.danger, border: `1px solid rgba(244,63,94,0.18)` }}
             >
               {warn}
@@ -218,7 +218,7 @@ export default function SeatMap({
         </div>
 
         {/* Seat grid wrapper */}
-        <div className="inline-flex flex-col rounded-2xl px-3 py-3" style={{ background: VAR.surface2, border: `1px solid ${VAR.border}` }}>
+        <div className="inline-flex flex-col rounded-md px-3 py-3" style={{ background: VAR.surface2, border: `1px solid ${VAR.border}` }}>
           {/* Letters header */}
           <div className="mb-2 flex items-center justify-center gap-2 text-[10px]">
             {LETTERS.slice(0, aisleIndex).map((l) => (

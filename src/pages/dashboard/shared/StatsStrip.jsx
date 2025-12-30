@@ -7,7 +7,7 @@ export default function StatsStrip({ stats }) {
       {stats.map((s) => (
         <div
           key={s.label}
-          className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
+          className="rounded-md border border-slate-200 bg-white px-4 py-3 shadow-sm"
         >
           <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
             {s.label}

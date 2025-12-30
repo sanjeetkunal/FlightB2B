@@ -33,13 +33,13 @@ export default function AddFundsPage() {
           </div>
           <button
             onClick={() => nav(-1)}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
           >
             Back
           </button>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div className="rounded-md border border-slate-200 bg-white p-5 shadow-sm space-y-4">
           <div>
             <label className="text-[11px] font-semibold text-slate-600">
               Amount (₹)
@@ -49,7 +49,7 @@ export default function AddFundsPage() {
               min={100}
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value || 0))}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900"
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900"
             />
             <div className="mt-2 flex flex-wrap gap-2">
               {[2000, 5000, 10000, 25000].map((a) => (
@@ -93,20 +93,20 @@ export default function AddFundsPage() {
               value={refId}
               onChange={(e) => setRefId(e.target.value)}
               placeholder="UTR / UPI Ref / Internal note"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900"
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900"
             />
           </div>
 
           <div className="pt-2 flex gap-2">
             <button
               onClick={() => nav("/admin/wallet")}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              className="rounded-md border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
             >
               Cancel
             </button>
             <button
               onClick={submit}
-              className="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700"
+              className="flex-1 rounded-md bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700"
             >
               Proceed to Add Funds
             </button>

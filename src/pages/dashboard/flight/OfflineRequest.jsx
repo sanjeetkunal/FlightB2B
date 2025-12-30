@@ -204,7 +204,7 @@ export default function OfflineRequest() {
       {/* Toast */}
       {toast && (
         <div
-          className={`fixed right-4 top-20 z-20 rounded-lg px-3 py-2 text-xs shadow-md ${
+          className={`fixed right-4 top-20 z-20 rounded-md px-3 py-2 text-xs shadow-md ${
             toast.tone === "success"
               ? "bg-emerald-600 text-white"
               : toast.tone === "error"
@@ -238,7 +238,7 @@ export default function OfflineRequest() {
 
         {/* Summary cards */}
         <div className="mb-4 grid gap-3 md:grid-cols-3 lg:grid-cols-5 text-[11px]">
-          <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+          <div className="rounded-md border border-slate-200 bg-white px-3 py-2 shadow-sm">
             <div className="text-[10px] font-medium uppercase text-slate-500">
               Total Requests
             </div>
@@ -250,7 +250,7 @@ export default function OfflineRequest() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-amber-100 bg-amber-50 px-3 py-2 shadow-sm">
+          <div className="rounded-md border border-amber-100 bg-amber-50 px-3 py-2 shadow-sm">
             <div className="text-[10px] font-medium uppercase text-amber-700">
               In Progress / Waiting Airline
             </div>
@@ -262,7 +262,7 @@ export default function OfflineRequest() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 shadow-sm">
+          <div className="rounded-md border border-rose-100 bg-rose-50 px-3 py-2 shadow-sm">
             <div className="text-[10px] font-medium uppercase text-rose-700">
               Rejected
             </div>
@@ -271,7 +271,7 @@ export default function OfflineRequest() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-red-100 bg-red-50 px-3 py-2 shadow-sm">
+          <div className="rounded-md border border-red-100 bg-red-50 px-3 py-2 shadow-sm">
             <div className="text-[10px] font-medium uppercase text-red-700">
               Urgent Requests
             </div>
@@ -280,7 +280,7 @@ export default function OfflineRequest() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+          <div className="rounded-md border border-slate-200 bg-white px-3 py-2 shadow-sm">
             <div className="text-[10px] font-medium uppercase text-slate-500">
               Quick Shortcuts
             </div>
@@ -301,7 +301,7 @@ export default function OfflineRequest() {
         {/* New request + filters */}
         <div className="mb-4 grid gap-4 lg:grid-cols-3">
           {/* Left: New offline request form */}
-          <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm text-[11px]">
+          <div className="lg:col-span-2 rounded-md border border-slate-200 bg-white p-3 shadow-sm text-[11px]">
             <div className="mb-2 flex items-center justify-between">
               <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                 New Offline Request
@@ -320,7 +320,7 @@ export default function OfflineRequest() {
                 <select
                   value={reqType}
                   onChange={(e) => setReqType(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                  className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                 >
                   <option value="FARE_QUOTE">Fare Quote</option>
                   <option value="DATE_CHANGE">Date Change</option>
@@ -339,7 +339,7 @@ export default function OfflineRequest() {
                 <select
                   value={reqPriority}
                   onChange={(e) => setReqPriority(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                  className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                 >
                   <option value="NORMAL">Normal</option>
                   <option value="HIGH">High</option>
@@ -357,7 +357,7 @@ export default function OfflineRequest() {
                   value={reqPnr}
                   onChange={(e) => setReqPnr(e.target.value.toUpperCase())}
                   placeholder="e.g. AB12CD"
-                  className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] uppercase outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                  className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] uppercase outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                 />
               </div>
 
@@ -371,7 +371,7 @@ export default function OfflineRequest() {
                   value={reqAirline}
                   onChange={(e) => setReqAirline(e.target.value)}
                   placeholder="e.g. Vistara / Emirates"
-                  className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                  className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                 />
               </div>
 
@@ -385,7 +385,7 @@ export default function OfflineRequest() {
                   value={reqSector}
                   onChange={(e) => setReqSector(e.target.value.toUpperCase())}
                   placeholder="e.g. DEL-BOM"
-                  className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] uppercase outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                  className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] uppercase outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                 />
               </div>
 
@@ -398,7 +398,7 @@ export default function OfflineRequest() {
                   type="date"
                   value={reqTravelDate}
                   onChange={(e) => setReqTravelDate(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                  className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                 />
               </div>
 
@@ -412,7 +412,7 @@ export default function OfflineRequest() {
                   value={reqPaxName}
                   onChange={(e) => setReqPaxName(e.target.value)}
                   placeholder="e.g. Rahul Sharma / Group of 10"
-                  className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                  className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                 />
               </div>
 
@@ -455,7 +455,7 @@ export default function OfflineRequest() {
                   onChange={(e) => setReqRemark(e.target.value)}
                   rows={3}
                   placeholder="Example: Please share lowest refundable fare for DEL-BOM-DEL, travel between 3–7 Dec, 2 adults, 1 child. Or explain clearly what you need support for."
-                  className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                  className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                 />
               </div>
             </div>
@@ -474,14 +474,14 @@ export default function OfflineRequest() {
                   setReqRemark("");
                   setAttachmentName("");
                 }}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-100"
+                className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-100"
               >
                 Clear
               </button>
               <button
                 type="button"
                 onClick={handleCreateRequest}
-                className="rounded-lg bg-slate-900 px-4 py-1.5 text-[11px] font-medium text-white hover:bg-slate-800"
+                className="rounded-md bg-slate-900 px-4 py-1.5 text-[11px] font-medium text-white hover:bg-slate-800"
               >
                 🚀 Submit Offline Request
               </button>
@@ -489,7 +489,7 @@ export default function OfflineRequest() {
           </div>
 
           {/* Right: Filters panel */}
-          <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm text-[11px]">
+          <div className="rounded-md border border-slate-200 bg-white p-3 shadow-sm text-[11px]">
             <div className="mb-2 flex items-center justify-between">
               <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                 Filter Requests
@@ -521,7 +521,7 @@ export default function OfflineRequest() {
                     type="date"
                     value={fromDate}
                     onChange={(e) => setFromDate(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                    className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[10px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                   />
                 </div>
                 <div>
@@ -532,7 +532,7 @@ export default function OfflineRequest() {
                     type="date"
                     value={toDate}
                     onChange={(e) => setToDate(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                    className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[10px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                   />
                 </div>
               </div>
@@ -545,7 +545,7 @@ export default function OfflineRequest() {
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                  className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[10px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                 >
                   <option value="ALL">All</option>
                   <option value="OPEN">Open</option>
@@ -564,7 +564,7 @@ export default function OfflineRequest() {
                 <select
                   value={type}
                   onChange={(e) => setType(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                  className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[10px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                 >
                   <option value="ALL">All</option>
                   <option value="FARE_QUOTE">Fare Quote</option>
@@ -584,7 +584,7 @@ export default function OfflineRequest() {
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                  className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[10px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                 >
                   <option value="ALL">All</option>
                   <option value="NORMAL">Normal</option>
@@ -601,7 +601,7 @@ export default function OfflineRequest() {
                 <select
                   value={channel}
                   onChange={(e) => setChannel(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                  className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[10px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                 >
                   <option value="ALL">All</option>
                   <option value="PORTAL">Portal</option>
@@ -621,7 +621,7 @@ export default function OfflineRequest() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="e.g. OFF-2025 / AB12CD / Rahul / Vistara"
-                  className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-[10px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                  className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[10px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                 />
               </div>
             </div>
@@ -629,7 +629,7 @@ export default function OfflineRequest() {
         </div>
 
         {/* Requests table */}
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2 text-[11px] text-slate-500">
             <div>
               Showing{" "}

@@ -51,7 +51,7 @@ export default function BusDashboard() {
             title={busAiTitle}
             placeholderQuestion={busAiPlaceholder}
           />
-          <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-500 shadow-sm">
+          <div className="rounded-md border border-slate-200 bg-white p-4 text-xs text-slate-500 shadow-sm">
             AI ko route, timing aur sleeper/seater preference dekar customer ke
             liye best option nikalwa sakte ho.
           </div>

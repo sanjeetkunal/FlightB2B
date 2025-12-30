@@ -110,7 +110,7 @@ export default function DoMore() {
               variants={cardVariants}
               className="
                 group flex flex-col items-stretch text-left
-                rounded-2xl border border-slate-100
+                rounded-md border border-slate-100
                 bg-white/80 backdrop-blur
                 px-3.5 py-3.5 sm:px-4 sm:py-4
                 shadow-[0_10px_28px_rgba(15,23,42,0.04)]
@@ -124,7 +124,7 @@ export default function DoMore() {
                 <div
                   className="
                     inline-flex items-center justify-center
-                    rounded-2xl
+                    rounded-md
                     bg-gradient-to-br from-slate-50 via-white to-slate-100
                     ring-1 ring-slate-200/80
                     p-2.5
