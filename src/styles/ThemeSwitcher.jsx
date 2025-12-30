@@ -28,27 +28,26 @@ export default function ThemeSwitcher() {
   return (
     <>
       {/* Floating button */}
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="
-          fixed bottom-5 right-5 z-[60]
-          h-12 w-12 rounded-full
-          border border-[var(--border)]
-          bg-[var(--surface)]
-          shadow-lg
-          grid place-items-center
-          hover:bg-[var(--surface2)]
-          transition
-        "
-        aria-label="Open Theme Settings"
-        title="Theme"
-      >
-        {/* simple palette icon */}
-        <svg viewBox="0 0 24 24" className="h-5 w-5 text-[var(--text)]" fill="currentColor">
-          <path d="M12 2a10 10 0 0 0 0 20h3a3 3 0 0 0 0-6h-1a1 1 0 0 1 0-2h1a5 5 0 0 0 0-10h-3Zm-4 10a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm8-3a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm-6 8a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
-        </svg>
-      </button>
+     <button
+  type="button"
+  onClick={() => setOpen(true)}
+  className="
+    fixed top-15 right-0 z-[60]
+    h-9 w-9
+    border border-[var(--border)]
+    bg-[var(--surface)]
+    shadow-md
+    grid place-items-center
+    hover:bg-[var(--surface2)]
+    transition cursor-pointer
+  "
+  aria-label="Open Theme Settings"
+  title="Theme"
+>
+  <svg viewBox="0 0 24 24" className="h-4 w-4 text-[var(--text)]" fill="currentColor">
+    <path d="M12 2a10 10 0 0 0 0 20h3a3 3 0 0 0 0-6h-1a1 1 0 0 1 0-2h1a5 5 0 0 0 0-10h-3Zm-4 10a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm8-3a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm-6 8a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
+  </svg>
+</button>
 
       {/* Backdrop */}
       {open && (

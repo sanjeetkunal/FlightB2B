@@ -92,26 +92,28 @@ const PRESETS = [
     },
   },
   {
-    id: "dark",
-    name: "Dark",
-    vars: {
-      surface: "#0b1220",
-      surface2: "#0f1a2e",
-      text: "#e6edf7",
-      muted: "#9aa6b2",
-      border: "rgba(148, 163, 184, 0.18)",
+  id: "dark",
+  name: "Dark",
+  vars: {
+    surface: "#0b1220",
+    surface2: "#0f1a2e",
+    text: "#e6edf7",
+    muted: "#9aa6b2",
+    border: "rgba(148, 163, 184, 0.18)",
 
-      primary: "#10b6d9",
-      primaryHover: "#0ea5c3",
-      primarySoft: "rgba(16, 182, 217, 0.18)",
+    // ✅ darker cyan so white text works
+    primary: "#0a7a99",
+    primaryHover: "#086b85",
+    primarySoft: "rgba(10, 122, 153, 0.18)",
 
-      accent: "#a78bfa",
+    accent: "#a78bfa",
 
-      success: "#22c55e",
-      warning: "#f59e0b",
-      danger: "#ef4444",
-    },
+    success: "#22c55e",
+    warning: "#f59e0b",
+    danger: "#ef4444",
   },
+}
+
 ];
 
 function clampHex(hex) {
@@ -141,6 +143,39 @@ function makeSoft(hex, alpha = 0.14) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+/* ===================== NEW: onPrimary auto ===================== */
+
+function srgbToLin(v) {
+  const s = v / 255;
+  return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+}
+
+function luminance({ r, g, b }) {
+  const R = srgbToLin(r);
+  const G = srgbToLin(g);
+  const B = srgbToLin(b);
+  return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+}
+
+function contrastRatio(L1, L2) {
+  const a = Math.max(L1, L2);
+  const b = Math.min(L1, L2);
+  return (a + 0.05) / (b + 0.05);
+}
+
+function pickOnPrimary(primaryHex) {
+  const bg = hexToRgb(primaryHex);
+  const Lbg = luminance(bg);
+
+  const cWhite = contrastRatio(Lbg, 1); // white luminance
+  const cBlack = contrastRatio(Lbg, 0); // black luminance
+
+  // white or dark (use your default dark text tone)
+  return cWhite >= cBlack ? "#ffffff" : "#0b1220";
+}
+
+/* =============================================================== */
+
 function applyVars(vars) {
   const root = document.documentElement;
 
@@ -153,6 +188,9 @@ function applyVars(vars) {
   root.style.setProperty("--primary", vars.primary);
   root.style.setProperty("--primaryHover", vars.primaryHover);
   root.style.setProperty("--primarySoft", vars.primarySoft);
+
+  // ✅ NEW: onPrimary token (button text color)
+  root.style.setProperty("--onPrimary", pickOnPrimary(vars.primary));
 
   // ✅ IMPORTANT: accent should exist so right-side wash changes too
   root.style.setProperty("--accent", vars.accent || vars.primary);
@@ -203,7 +241,7 @@ export function ThemeProvider({ children }) {
     return {
       ...base,
       primary: p,
-      primaryHover: p,
+      primaryHover: p, // (tera existing behavior)
       primarySoft: makeSoft(p, 0.14),
       accent: base.accent || p, // ✅ keep preset accent, fallback to custom primary
     };
