@@ -100,7 +100,7 @@ export default function DateField({
             disabled ? "opacity-60" : "",
           ].join(" ")}
         >
-          <div className="text-[18px] leading-6 font-bold text-[var(--text)] truncate">
+          <div className="text-[18px] leading-6 font-extrabold text-[var(--text)] truncate">
             {display}
           </div>
           <div className="text-[12px] text-[var(--muted)] truncate">{dayName}</div>

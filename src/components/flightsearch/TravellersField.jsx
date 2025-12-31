@@ -11,7 +11,7 @@ export default function TravellersField({ label, text = "", onClick }) {
         onClick={onClick}
         className="w-full text-left min-w-0 cursor-pointer"
       >
-        <div className="text-[18px] leading-6 font-bold truncate text-[var(--text)]">
+        <div className="text-[18px] leading-6 font-extrabold truncate text-[var(--text)]">
           {countPart || "Select Travellers"}
         </div>
 

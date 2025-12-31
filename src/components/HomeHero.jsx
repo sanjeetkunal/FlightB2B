@@ -214,7 +214,12 @@ export default function HomeHero() {
           style={{ background: heroCss.glow2 }}
         />
 
-        <div className="relative z-10 mx-auto max-w-7xl px-4 pt-10 pb-[calc(120px+env(safe-area-inset-bottom))]">
+        <div
+  className={[
+    "relative z-10 mx-auto max-w-7xl px-4 pb-[calc(120px+env(safe-area-inset-bottom))]",
+    "pt-24 sm:pt-28 md:pt-32", // always safe
+  ].join(" ")}
+>
           <motion.div
             variants={fadeUp}
             initial="hidden"

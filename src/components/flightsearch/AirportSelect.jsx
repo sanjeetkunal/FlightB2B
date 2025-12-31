@@ -126,7 +126,7 @@ export default function AirportSelect({ label, value, onChange }) {
                 }}
                 className="w-full text-left min-w-0 cursor-pointer"
               >
-                <div className="text-[18px] leading-6 font-bold text-[var(--text)] truncate">
+                <div className="text-[18px] leading-6 font-extrabold text-[var(--text)] truncate">
                   {primary || "Select city"}
                 </div>
               </button>
