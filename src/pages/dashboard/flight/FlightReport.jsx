@@ -1,5 +1,30 @@
 // src/pages/dashboard/flight/FlightReport.jsx
 import React, { useMemo, useState } from "react";
+import {
+  CalendarDays,
+  Download,
+  Filter,
+  Info,
+  Printer,
+  RefreshCcw,
+  Search as SearchIcon,
+  SlidersHorizontal,
+} from "lucide-react";
+
+/**
+ * Enterprise Flight Report (B2B)
+ * ✅ No static colors: theme CSS vars only
+ * Expected vars:
+ * --surface, --surface2, --text, --muted, --border,
+ * --primary, --primaryHover, --primarySoft
+ *
+ * Later API:
+ * GET /api/reports/flights?from=...&to=...&sector=...&tripType=...&status=...&airline=...&q=...&page=...&pageSize=...
+ */
+
+function cx(...cls) {
+  return cls.filter(Boolean).join(" ");
+}
 
 const SAMPLE_FLIGHT_REPORT = [
   {
@@ -11,11 +36,11 @@ const SAMPLE_FLIGHT_REPORT = [
     flightNo: "UK 970",
     from: "DEL",
     to: "BOM",
-    sector: "DOM", // DOM | INTL
-    tripType: "ONEWAY", // ONEWAY | ROUND
+    sector: "DOM",
+    tripType: "ONEWAY",
     paxName: "Rahul Sharma",
     paxCount: 2,
-    status: "TICKETED", // TICKETED | CANCELLED | HOLD
+    status: "TICKETED",
     baseFare: 12000,
     tax: 3400,
     total: 15400,
@@ -66,21 +91,79 @@ function formatINR(n) {
     style: "currency",
     currency: "INR",
     maximumFractionDigits: 0,
-  }).format(n);
+  }).format(Number(n || 0));
+}
+
+function todayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function startOfMonthISO() {
+  const d = new Date();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${d.getFullYear()}-${mm}-01`;
+}
+
+function Pill({ children }) {
+  return (
+    <span
+      className={cx(
+        "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+        "border-[color:var(--border)] bg-[var(--surface2)] text-[var(--muted)]"
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+function StatusPill({ status }) {
+  // no colors, still visually different using soft surfaces
+  const base =
+    status === "TICKETED"
+      ? "bg-[var(--primarySoft)]"
+      : "bg-[var(--surface2)]";
+
+  return (
+    <span
+      className={cx(
+        "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+        "border-[color:var(--border)]",
+        base
+      )}
+    >
+      {status}
+    </span>
+  );
+}
+
+function KpiCard({ title, value, sub }) {
+  return (
+    <div className="rounded-xl border border-[color:var(--border)] bg-[var(--surface)] p-4 shadow-sm">
+      <div className="text-[11px] font-semibold text-[var(--muted)]">{title}</div>
+      <div className="mt-1 text-lg font-semibold">{value}</div>
+      {sub ? <div className="mt-1 text-[11px] text-[var(--muted)]">{sub}</div> : null}
+    </div>
+  );
 }
 
 export default function FlightReport() {
-  const todayISO = new Date().toISOString().slice(0, 10);
-
-  const [fromDate, setFromDate] = useState("2025-11-01");
-  const [toDate, setToDate] = useState(todayISO);
-  const [sector, setSector] = useState("ALL"); // ALL | DOM | INTL
-  const [tripType, setTripType] = useState("ALL"); // ALL | ONEWAY | ROUND
-  const [status, setStatus] = useState("ALL"); // ALL | TICKETED | CANCELLED | HOLD
+  const [fromDate, setFromDate] = useState(startOfMonthISO());
+  const [toDate, setToDate] = useState(todayISO());
+  const [sector, setSector] = useState("ALL");
+  const [tripType, setTripType] = useState("ALL");
+  const [status, setStatus] = useState("ALL");
   const [airline, setAirline] = useState("ALL");
-  const [search, setSearch] = useState("");
+  const [q, setQ] = useState("");
 
-  // Airline list for filter
+  // table UX
+  const [pageSize, setPageSize] = useState(10);
+  const [page, setPage] = useState(1);
+
+  // sort
+  const [sortBy, setSortBy] = useState("bookingDate"); // bookingDate | travelDate | total | commission
+  const [sortDir, setSortDir] = useState("DESC"); // ASC | DESC
+
   const airlineOptions = useMemo(() => {
     const set = new Set();
     SAMPLE_FLIGHT_REPORT.forEach((r) => set.add(r.airline));
@@ -90,6 +173,7 @@ export default function FlightReport() {
   const filtered = useMemo(() => {
     const from = fromDate ? new Date(fromDate) : null;
     const to = toDate ? new Date(toDate) : null;
+    const qq = q.trim().toLowerCase();
 
     return SAMPLE_FLIGHT_REPORT.filter((r) => {
       // booking date range
@@ -104,42 +188,45 @@ export default function FlightReport() {
       if (status !== "ALL" && r.status !== status) return false;
       if (airline !== "ALL" && r.airline !== airline) return false;
 
-      if (search.trim()) {
-        const q = search.trim().toLowerCase();
-        const haystack = (
-          r.pnr +
-          " " +
-          r.paxName +
-          " " +
-          r.from +
-          " " +
-          r.to +
-          " " +
-          r.flightNo
-        ).toLowerCase();
-        if (!haystack.includes(q)) return false;
+      if (qq) {
+        const hay = `${r.pnr} ${r.paxName} ${r.from} ${r.to} ${r.flightNo} ${r.airline}`.toLowerCase();
+        if (!hay.includes(qq)) return false;
       }
-
       return true;
     });
-  }, [fromDate, toDate, sector, tripType, status, airline, search]);
+  }, [fromDate, toDate, sector, tripType, status, airline, q]);
 
-  // Summary stats from filtered data
+  const sorted = useMemo(() => {
+    const arr = [...filtered];
+    const dir = sortDir === "ASC" ? 1 : -1;
+
+    const getVal = (r) => {
+      if (sortBy === "bookingDate") return new Date(r.bookingDate).getTime();
+      if (sortBy === "travelDate") return new Date(r.travelDate).getTime();
+      if (sortBy === "total") return Number(r.total || 0);
+      if (sortBy === "commission") return Number(r.agencyCommission || 0);
+      return 0;
+    };
+
+    arr.sort((a, b) => (getVal(a) - getVal(b)) * dir);
+    return arr;
+  }, [filtered, sortBy, sortDir]);
+
   const summary = useMemo(() => {
-    const totalBookings = filtered.length;
+    const totalBookings = sorted.length;
     let ticketed = 0;
     let cancelled = 0;
     let hold = 0;
     let totalRevenue = 0;
     let totalCommission = 0;
 
-    filtered.forEach((r) => {
+    for (const r of sorted) {
       if (r.status === "TICKETED") ticketed++;
       if (r.status === "CANCELLED") cancelled++;
       if (r.status === "HOLD") hold++;
-      totalRevenue += r.total;
-      totalCommission += r.agencyCommission;
-    });
+      totalRevenue += Number(r.total || 0);
+      totalCommission += Number(r.agencyCommission || 0);
+    }
 
     return {
       totalBookings,
@@ -149,98 +236,153 @@ export default function FlightReport() {
       totalRevenue,
       totalCommission,
     };
-  }, [filtered]);
+  }, [sorted]);
 
-  // Export dummy handler
+  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const paged = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return sorted.slice(start, start + pageSize);
+  }, [sorted, safePage, pageSize]);
+
+  const reset = () => {
+    setFromDate(startOfMonthISO());
+    setToDate(todayISO());
+    setSector("ALL");
+    setTripType("ALL");
+    setStatus("ALL");
+    setAirline("ALL");
+    setQ("");
+    setSortBy("bookingDate");
+    setSortDir("DESC");
+    setPage(1);
+  };
+
   const handleExport = () => {
-    // yahan baad me tum real CSV/Excel export laga sakte ho
-    alert("Export functionality abhi demo hai. Yahan CSV/Excel generate kar sakte ho.");
+    alert("Demo: Export started. Later yahan CSV/XLSX generate + download hoga.");
+  };
+
+  const handlePrint = () => {
+    // Tip: you can add a dedicated print stylesheet later
+    window.print();
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-slate-50">
-      <div className="mx-auto max-w-7xl px-0 py-6">
+    <div className="min-h-[calc(100vh-64px)] bg-[var(--surface2)] text-[var(--text)]">
+      <div className="mx-auto max-w-7xl px-4 py-6 space-y-4">
         {/* Header */}
-        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-slate-800">
-              Flight Ticket Report
-            </h1>
-            <p className="text-xs text-slate-500">
-              Booking date, PNR, sector, trip type, status, fare & commission ek hi screen par.
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-[260px]">
+            <div className="text-[12px] text-[var(--muted)]">
+              Reports <span className="opacity-60">/</span> Flights
+            </div>
+            <h1 className="mt-1 text-xl font-semibold">Flight Ticket Report</h1>
+            <p className="mt-1 text-xs text-[var(--muted)]">
+              Booking date, PNR, sector, trip type, status, fare & commission — one consolidated view.
             </p>
           </div>
-          <div className="flex gap-2">
+
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={handleExport}
-              className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100"
+              type="button"
+              className={cx(
+                "inline-flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-semibold",
+                "border-[color:var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]"
+              )}
             >
-              ⬇️ Export (CSV/Excel)
+              <Download size={16} />
+              Export (CSV/XLSX)
             </button>
-            <button className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800">
-              📄 Print View
+            <button
+              onClick={handlePrint}
+              type="button"
+              className={cx(
+                "inline-flex items-center gap-2 rounded-md px-3 py-2 text-xs font-semibold text-white",
+                "bg-[var(--primary)] hover:bg-[var(--primaryHover)]"
+              )}
+            >
+              <Printer size={16} />
+              Print
             </button>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="mb-4 rounded-md border border-slate-200 bg-white p-3 shadow-sm">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <div className="rounded-xl border border-[color:var(--border)] bg-[var(--surface)] shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[color:var(--border)] px-4 py-3">
+            <div className="inline-flex items-center gap-2 text-sm font-semibold">
+              <SlidersHorizontal size={16} />
               Filters
             </div>
+
             <button
-              onClick={() => {
-                setFromDate("2025-11-01");
-                setToDate(todayISO);
-                setSector("ALL");
-                setTripType("ALL");
-                setStatus("ALL");
-                setAirline("ALL");
-                setSearch("");
-              }}
-              className="text-[11px] font-medium text-blue-600 hover:text-blue-700"
+              onClick={reset}
+              type="button"
+              className={cx(
+                "inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-semibold",
+                "border-[color:var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]"
+              )}
             >
+              <RefreshCcw size={16} />
               Reset
             </button>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-6 text-[11px]">
-            {/* From date */}
-            <div>
-              <label className="mb-1 block text-[10px] font-medium text-slate-500">
+          <div className="grid gap-3 p-4 md:grid-cols-6">
+            {/* From */}
+            <div className="md:col-span-2">
+              <label className="block text-[11px] font-semibold text-[var(--muted)]">
                 Booking From
               </label>
-              <input
-                type="date"
-                value={fromDate}
-                onChange={(e) => setFromDate(e.target.value)}
-                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
-              />
+              <div className="mt-1 flex items-center gap-2 rounded-lg border border-[color:var(--border)] bg-[var(--surface)] px-3 py-2 focus-within:border-[color:var(--primary)]">
+                <CalendarDays size={16} className="opacity-70" />
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => {
+                    setFromDate(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full bg-transparent text-[12px] outline-none"
+                />
+              </div>
             </div>
 
-            {/* To date */}
-            <div>
-              <label className="mb-1 block text-[10px] font-medium text-slate-500">
+            {/* To */}
+            <div className="md:col-span-2">
+              <label className="block text-[11px] font-semibold text-[var(--muted)]">
                 Booking To
               </label>
-              <input
-                type="date"
-                value={toDate}
-                onChange={(e) => setToDate(e.target.value)}
-                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
-              />
+              <div className="mt-1 flex items-center gap-2 rounded-lg border border-[color:var(--border)] bg-[var(--surface)] px-3 py-2 focus-within:border-[color:var(--primary)]">
+                <CalendarDays size={16} className="opacity-70" />
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => {
+                    setToDate(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full bg-transparent text-[12px] outline-none"
+                />
+              </div>
             </div>
 
             {/* Sector */}
             <div>
-              <label className="mb-1 block text-[10px] font-medium text-slate-500">
+              <label className="block text-[11px] font-semibold text-[var(--muted)]">
                 Sector
               </label>
               <select
                 value={sector}
-                onChange={(e) => setSector(e.target.value)}
-                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                onChange={(e) => {
+                  setSector(e.target.value);
+                  setPage(1);
+                }}
+                className={cx(
+                  "mt-1 w-full rounded-lg border px-3 py-2 text-[12px] outline-none",
+                  "bg-[var(--surface)] border-[color:var(--border)] focus:border-[color:var(--primary)]"
+                )}
               >
                 <option value="ALL">All</option>
                 <option value="DOM">Domestic</option>
@@ -248,15 +390,21 @@ export default function FlightReport() {
               </select>
             </div>
 
-            {/* Trip Type */}
+            {/* Trip type */}
             <div>
-              <label className="mb-1 block text-[10px] font-medium text-slate-500">
+              <label className="block text-[11px] font-semibold text-[var(--muted)]">
                 Trip Type
               </label>
               <select
                 value={tripType}
-                onChange={(e) => setTripType(e.target.value)}
-                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                onChange={(e) => {
+                  setTripType(e.target.value);
+                  setPage(1);
+                }}
+                className={cx(
+                  "mt-1 w-full rounded-lg border px-3 py-2 text-[12px] outline-none",
+                  "bg-[var(--surface)] border-[color:var(--border)] focus:border-[color:var(--primary)]"
+                )}
               >
                 <option value="ALL">All</option>
                 <option value="ONEWAY">Oneway</option>
@@ -266,13 +414,19 @@ export default function FlightReport() {
 
             {/* Status */}
             <div>
-              <label className="mb-1 block text-[10px] font-medium text-slate-500">
+              <label className="block text-[11px] font-semibold text-[var(--muted)]">
                 Status
               </label>
               <select
                 value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                onChange={(e) => {
+                  setStatus(e.target.value);
+                  setPage(1);
+                }}
+                className={cx(
+                  "mt-1 w-full rounded-lg border px-3 py-2 text-[12px] outline-none",
+                  "bg-[var(--surface)] border-[color:var(--border)] focus:border-[color:var(--primary)]"
+                )}
               >
                 <option value="ALL">All</option>
                 <option value="TICKETED">Ticketed</option>
@@ -283,13 +437,19 @@ export default function FlightReport() {
 
             {/* Airline */}
             <div>
-              <label className="mb-1 block text-[10px] font-medium text-slate-500">
+              <label className="block text-[11px] font-semibold text-[var(--muted)]">
                 Airline
               </label>
               <select
                 value={airline}
-                onChange={(e) => setAirline(e.target.value)}
-                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                onChange={(e) => {
+                  setAirline(e.target.value);
+                  setPage(1);
+                }}
+                className={cx(
+                  "mt-1 w-full rounded-lg border px-3 py-2 text-[12px] outline-none",
+                  "bg-[var(--surface)] border-[color:var(--border)] focus:border-[color:var(--primary)]"
+                )}
               >
                 <option value="ALL">All</option>
                 {airlineOptions.map((a) => (
@@ -301,175 +461,230 @@ export default function FlightReport() {
             </div>
 
             {/* Search */}
-            <div className="md:col-span-2 lg:col-span-3">
-              <label className="mb-1 block text-[10px] font-medium text-slate-500">
+            <div className="md:col-span-3">
+              <label className="block text-[11px] font-semibold text-[var(--muted)]">
                 Search (PNR / Passenger / Route / Flight)
               </label>
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="e.g. AB12CD / Rahul / DEL BOM / 6E 211"
-                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-[11px] outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
-              />
+              <div className="mt-1 flex items-center gap-2 rounded-lg border border-[color:var(--border)] bg-[var(--surface)] px-3 py-2 focus-within:border-[color:var(--primary)]">
+                <SearchIcon size={16} className="opacity-70" />
+                <input
+                  value={q}
+                  onChange={(e) => {
+                    setQ(e.target.value);
+                    setPage(1);
+                  }}
+                  placeholder="e.g. AB12CD / Rahul / DEL BOM / 6E 211"
+                  className="w-full bg-transparent text-[12px] outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Sort */}
+            <div className="md:col-span-2">
+              <label className="block text-[11px] font-semibold text-[var(--muted)]">
+                Sort by
+              </label>
+              <div className="mt-1 flex gap-2">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className={cx(
+                    "w-full rounded-lg border px-3 py-2 text-[12px] outline-none",
+                    "bg-[var(--surface)] border-[color:var(--border)] focus:border-[color:var(--primary)]"
+                  )}
+                >
+                  <option value="bookingDate">Booking date</option>
+                  <option value="travelDate">Travel date</option>
+                  <option value="total">Total</option>
+                  <option value="commission">Commission</option>
+                </select>
+
+                <button
+                  type="button"
+                  onClick={() => setSortDir((d) => (d === "ASC" ? "DESC" : "ASC"))}
+                  className={cx(
+                    "rounded-lg border px-3 py-2 text-[12px] font-semibold",
+                    "border-[color:var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]"
+                  )}
+                  title="Toggle sort direction"
+                >
+                  {sortDir}
+                </button>
+              </div>
+            </div>
+
+            {/* Page size */}
+            <div>
+              <label className="block text-[11px] font-semibold text-[var(--muted)]">
+                Page size
+              </label>
+              <div className="mt-1 flex items-center gap-2 rounded-lg border border-[color:var(--border)] bg-[var(--surface)] px-3 py-2">
+                <Filter size={16} className="opacity-70" />
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="w-full bg-transparent text-[12px] outline-none"
+                >
+                  {[10, 25, 50].map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-4 pb-4">
+            <div className="inline-flex items-start gap-2 rounded-lg border border-[color:var(--border)] bg-[var(--surface2)] px-3 py-2 text-[11px] text-[var(--muted)]">
+              <Info size={14} className="mt-0.5" />
+              <span>
+                Demo data shown. Production me yahan API + server-side pagination + export service attach hoga.
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Summary Cards */}
-        <div className="mb-4 grid gap-3 md:grid-cols-3 lg:grid-cols-5">
-          <div className="rounded-md border border-slate-200 bg-white px-3 py-2 shadow-sm">
-            <div className="text-[10px] font-medium uppercase text-slate-500">
-              Total Bookings
-            </div>
-            <div className="mt-1 text-xl font-semibold text-slate-800">
-              {summary.totalBookings}
-            </div>
-          </div>
-          <div className="rounded-md border border-emerald-100 bg-emerald-50 px-3 py-2 shadow-sm">
-            <div className="text-[10px] font-medium uppercase text-emerald-700">
-              Ticketed
-            </div>
-            <div className="mt-1 text-xl font-semibold text-emerald-900">
-              {summary.ticketed}
-            </div>
-          </div>
-          <div className="rounded-md border border-amber-100 bg-amber-50 px-3 py-2 shadow-sm">
-            <div className="text-[10px] font-medium uppercase text-amber-700">
-              On Hold
-            </div>
-            <div className="mt-1 text-xl font-semibold text-amber-900">
-              {summary.hold}
-            </div>
-          </div>
-          <div className="rounded-md border border-rose-100 bg-rose-50 px-3 py-2 shadow-sm">
-            <div className="text-[10px] font-medium uppercase text-rose-700">
-              Cancelled
-            </div>
-            <div className="mt-1 text-xl font-semibold text-rose-900">
-              {summary.cancelled}
-            </div>
-          </div>
-          <div className="rounded-md border border-slate-200 bg-white px-3 py-2 shadow-sm">
-            <div className="text-[10px] font-medium uppercase text-slate-500">
-              Total Revenue
-            </div>
-            <div className="mt-1 text-base font-semibold text-slate-900">
-              {formatINR(summary.totalRevenue)}
-            </div>
-            <div className="text-[10px] text-slate-400">
-              Commission: {formatINR(summary.totalCommission)}
-            </div>
-          </div>
+        {/* KPIs */}
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3 lg:grid-cols-5">
+          <KpiCard title="Total bookings" value={summary.totalBookings} />
+          <KpiCard title="Ticketed" value={summary.ticketed} />
+          <KpiCard title="On hold" value={summary.hold} />
+          <KpiCard title="Cancelled" value={summary.cancelled} />
+          <KpiCard
+            title="Total revenue"
+            value={formatINR(summary.totalRevenue)}
+            sub={`Commission: ${formatINR(summary.totalCommission)}`}
+          />
         </div>
 
-        {/* Results Table */}
-        <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2 text-[11px] text-slate-500">
+        {/* Table */}
+        <div className="rounded-xl border border-[color:var(--border)] bg-[var(--surface)] shadow-sm overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[color:var(--border)] px-4 py-3 text-[12px] text-[var(--muted)]">
             <div>
               Showing{" "}
-              <span className="font-semibold text-slate-800">
-                {filtered.length}
-              </span>{" "}
+              <span className="font-semibold text-[var(--text)]">{sorted.length}</span>{" "}
               records
+              <span className="ml-2">
+                <Pill>
+                  {fromDate || "start"} → {toDate || "end"}
+                </Pill>
+              </span>
             </div>
-            <div className="text-[10px]">
-              Booking date between{" "}
-              <span className="font-medium">{fromDate || "start"}</span> to{" "}
-              <span className="font-medium">{toDate || "end"}</span>
+
+            <div className="text-[11px] text-[var(--muted)]">
+              Page <b className="text-[var(--text)]">{safePage}</b> /{" "}
+              <b className="text-[var(--text)]">{totalPages}</b>
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse text-[11px]">
-              <thead className="bg-slate-50">
-                <tr className="border-b border-slate-200 text-[10px] uppercase tracking-wide text-slate-500">
-                  <th className="px-3 py-2 text-left">Booking Date</th>
-                  <th className="px-3 py-2 text-left">Travel Date</th>
-                  <th className="px-3 py-2 text-left">PNR</th>
-                  <th className="px-3 py-2 text-left">Route</th>
-                  <th className="px-3 py-2 text-left">Pax</th>
-                  <th className="px-3 py-2 text-left">Airline</th>
-                  <th className="px-3 py-2 text-right">Base</th>
-                  <th className="px-3 py-2 text-right">Tax</th>
-                  <th className="px-3 py-2 text-right">Total</th>
-                  <th className="px-3 py-2 text-left">Status</th>
-                  <th className="px-3 py-2 text-left">Type</th>
-                  <th className="px-3 py-2 text-left">Sector</th>
-                  <th className="px-3 py-2 text-right">Actions</th>
+            <table className="min-w-full text-[12px]">
+              <thead className="bg-[var(--surface2)]">
+                <tr className="text-[10px] uppercase tracking-wide text-[var(--muted)]">
+                  <th className="px-4 py-3 text-left">Booking</th>
+                  <th className="px-4 py-3 text-left">Travel</th>
+                  <th className="px-4 py-3 text-left">PNR / Flight</th>
+                  <th className="px-4 py-3 text-left">Route / Pax</th>
+                  <th className="px-4 py-3 text-left">Airline</th>
+                  <th className="px-4 py-3 text-right">Base</th>
+                  <th className="px-4 py-3 text-right">Tax</th>
+                  <th className="px-4 py-3 text-right">Total</th>
+                  <th className="px-4 py-3 text-right">Commission</th>
+                  <th className="px-4 py-3 text-left">Status</th>
+                  <th className="px-4 py-3 text-left">Trip</th>
+                  <th className="px-4 py-3 text-left">Sector</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
+
               <tbody>
-                {filtered.map((r) => (
+                {paged.map((r) => (
                   <tr
                     key={r.id}
-                    className="border-b border-slate-100 hover:bg-slate-50/70"
+                    className="border-t border-[color:var(--border)] hover:bg-[var(--surface2)]/60"
                   >
-                    <td className="px-3 py-2">
-                      {r.bookingDate}
-                      <div className="text-[10px] text-slate-400">
-                        #{r.id}
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="font-semibold">{r.bookingDate}</div>
+                      <div className="text-[11px] text-[var(--muted)]">#{r.id}</div>
+                    </td>
+
+                    <td className="px-4 py-3 whitespace-nowrap">{r.travelDate}</td>
+
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="font-semibold">{r.pnr}</div>
+                      <div className="text-[11px] text-[var(--muted)]">{r.flightNo}</div>
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <div className="font-semibold">
+                        {r.from} → {r.to}
+                      </div>
+                      <div className="text-[11px] text-[var(--muted)]">
+                        {r.paxName} · Pax {r.paxCount}
                       </div>
                     </td>
-                    <td className="px-3 py-2">{r.travelDate}</td>
-                    <td className="px-3 py-2 font-semibold text-slate-800">
-                      {r.pnr}
-                      <div className="text-[10px] text-slate-400">
-                        {r.flightNo}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2">
-                      {r.from} → {r.to}
-                      <div className="text-[10px] text-slate-400">
-                        {r.paxName}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2">{r.paxCount}</td>
-                    <td className="px-3 py-2">{r.airline}</td>
-                    <td className="px-3 py-2 text-right">
+
+                    <td className="px-4 py-3 whitespace-nowrap">{r.airline}</td>
+
+                    <td className="px-4 py-3 whitespace-nowrap text-right">
                       {formatINR(r.baseFare)}
                     </td>
-                    <td className="px-3 py-2 text-right">
+                    <td className="px-4 py-3 whitespace-nowrap text-right">
                       {formatINR(r.tax)}
                     </td>
-                    <td className="px-3 py-2 text-right font-semibold text-slate-900">
+                    <td className="px-4 py-3 whitespace-nowrap text-right font-semibold">
                       {formatINR(r.total)}
                     </td>
-                    <td className="px-3 py-2">
-                      <span
-                        className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                          r.status === "TICKETED"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : r.status === "CANCELLED"
-                            ? "bg-rose-100 text-rose-800"
-                            : "bg-amber-100 text-amber-800"
-                        }`}
-                      >
-                        {r.status}
-                      </span>
+                    <td className="px-4 py-3 whitespace-nowrap text-right">
+                      {formatINR(r.agencyCommission)}
                     </td>
-                    <td className="px-3 py-2">
+
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <StatusPill status={r.status} />
+                    </td>
+
+                    <td className="px-4 py-3 whitespace-nowrap">
                       {r.tripType === "ONEWAY" ? "Oneway" : "Roundtrip"}
                     </td>
-                    <td className="px-3 py-2">
+
+                    <td className="px-4 py-3 whitespace-nowrap">
                       {r.sector === "DOM" ? "Domestic" : "International"}
                     </td>
-                    <td className="px-3 py-2 text-right">
-                      <button className="mr-1 rounded-full border border-slate-300 px-2 py-0.5 text-[10px] text-slate-600 hover:bg-slate-100">
+
+                    <td className="px-4 py-3 whitespace-nowrap text-right">
+                      <button
+                        type="button"
+                        className={cx(
+                          "mr-2 rounded-md border px-2 py-1 text-[11px] font-semibold",
+                          "border-[color:var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]"
+                        )}
+                        onClick={() => alert(`Demo: View booking ${r.pnr}`)}
+                      >
                         View
                       </button>
-                      <button className="rounded-full border border-slate-300 px-2 py-0.5 text-[10px] text-slate-600 hover:bg-slate-100">
+                      <button
+                        type="button"
+                        className={cx(
+                          "rounded-md border px-2 py-1 text-[11px] font-semibold",
+                          "border-[color:var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]"
+                        )}
+                        onClick={() => alert(`Demo: Ticket actions for ${r.pnr}`)}
+                      >
                         Ticket
                       </button>
                     </td>
                   </tr>
                 ))}
 
-                {filtered.length === 0 && (
+                {paged.length === 0 && (
                   <tr>
                     <td
                       colSpan={13}
-                      className="px-3 py-6 text-center text-xs text-slate-400"
+                      className="px-4 py-10 text-center text-sm text-[var(--muted)]"
                     >
                       No records found for selected filters.
                     </td>
@@ -479,10 +694,44 @@ export default function FlightReport() {
             </table>
           </div>
 
-          {/* Footer (placeholder for future pagination) */}
-          <div className="flex items-center justify-between border-t border-slate-200 px-3 py-2 text-[10px] text-slate-500">
-            <div>Static demo data. Later yahan API + server pagination aayega.</div>
-            <div>Page 1 of 1</div>
+          {/* Pagination */}
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[color:var(--border)] px-4 py-3 text-[12px] text-[var(--muted)]">
+            <div>
+              Showing{" "}
+              <b className="text-[var(--text)]">
+                {(safePage - 1) * pageSize + (paged.length ? 1 : 0)}–
+                {(safePage - 1) * pageSize + paged.length}
+              </b>{" "}
+              of <b className="text-[var(--text)]">{sorted.length}</b>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={safePage <= 1}
+                className={cx(
+                  "rounded-md border px-3 py-1.5 text-xs font-semibold",
+                  "border-[color:var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]",
+                  safePage <= 1 && "cursor-not-allowed opacity-50"
+                )}
+              >
+                Prev
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={safePage >= totalPages}
+                className={cx(
+                  "rounded-md border px-3 py-1.5 text-xs font-semibold",
+                  "border-[color:var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]",
+                  safePage >= totalPages && "cursor-not-allowed opacity-50"
+                )}
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
       </div>

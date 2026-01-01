@@ -24,6 +24,8 @@ import WalletHistory from "./pages/dashboard/wallet/WalletHistory";
 import WalletStatement from "./pages/dashboard/wallet/WalletStatement";
 import RefundsAdjustments from "./pages/dashboard/wallet/RefundsAdjustments";
 import TicketCopyRoute from "./pages/FlightBooking/TicketCopyRoute";
+import help from "./pages/HelpCenter";
+import HelpCenter from "./pages/HelpCenter";
 
 function Protected({ children }) {
   return isAuthed() ? children : <Navigate to="/login" replace />;
@@ -79,6 +81,7 @@ export default function App() {
         <Route path="/admin/wallet/refunds" element={<RefundsAdjustments />} />
 
         <Route path="/flights/ticket-copy" element={<TicketCopyRoute />} />
+        <Route path="/help" element={<HelpCenter />}/>
 
         {/* (optional) same report for ticket-report link bhi */}
         <Route

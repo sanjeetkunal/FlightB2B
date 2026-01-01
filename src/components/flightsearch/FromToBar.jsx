@@ -1106,7 +1106,7 @@ export default function FromToBar({ onSearch }) {
               ].join(" ")}
               style={{ color: "var(--text)" }}
             >
-              ⇄
+              <img src="https://cdn-icons-png.flaticon.com/128/10520/10520486.png" alt="Swap" className="h-5 w-5" />
             </button>
           </div>
 

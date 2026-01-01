@@ -1,11 +1,35 @@
-import { useState } from "react";
+// src/pages/dashboard/settings/AgencySettings.jsx
+import React, { useMemo, useState } from "react";
+import {
+  BadgeCheck,
+  Bell,
+  Building2,
+  CreditCard,
+  FileText,
+  Landmark,
+  RefreshCcw,
+  Save,
+  Settings,
+  SlidersHorizontal,
+} from "lucide-react";
+
+/**
+ * Enterprise Agency Settings (Theme-vars only ✅)
+ * Expected CSS vars:
+ * --surface, --surface2, --text, --muted, --border,
+ * --primary, --primaryHover, --primarySoft
+ */
+
+function cx(...cls) {
+  return cls.filter(Boolean).join(" ");
+}
 
 const TABS = [
-  { key: "profile", label: "Profile & KYC" },
-  { key: "booking", label: "Booking & Markup" },
-  { key: "invoice", label: "Invoice & GST" },
-  { key: "notifications", label: "Notifications" },
-  { key: "payout", label: "Payout & Bank" },
+  { key: "profile", label: "Profile & KYC", icon: <Building2 size={16} /> },
+  { key: "booking", label: "Booking & Markup", icon: <SlidersHorizontal size={16} /> },
+  { key: "invoice", label: "Invoice & GST", icon: <FileText size={16} /> },
+  { key: "notifications", label: "Notifications", icon: <Bell size={16} /> },
+  { key: "payout", label: "Payout & Bank", icon: <Landmark size={16} /> },
 ];
 
 export default function AgencySettings() {
@@ -49,7 +73,8 @@ export default function AgencySettings() {
     gstAddress: "301, Business Tower, Main Road, Delhi - 110092",
     invoiceType: "B2B",
     showServiceCharge: true,
-    footerNote: "This is a computer generated document and does not require signature.",
+    footerNote:
+      "This is a computer generated document and does not require signature.",
   });
 
   const [notifications, setNotifications] = useState({
@@ -77,147 +102,269 @@ export default function AgencySettings() {
     payoutMode: "NEFT",
   });
 
-  // ==== generic change helpers ====
-  const updateProfile = (field, value) =>
-    setProfile((prev) => ({ ...prev, [field]: value }));
-  const updateBooking = (field, value) =>
-    setBooking((prev) => ({ ...prev, [field]: value }));
-  const updateInvoice = (field, value) =>
-    setInvoice((prev) => ({ ...prev, [field]: value }));
-  const updateNotifications = (field, value) =>
-    setNotifications((prev) => ({ ...prev, [field]: value }));
-  const updatePayout = (field, value) =>
-    setPayout((prev) => ({ ...prev, [field]: value }));
+  // dirty tracking (enterprise UX)
+  const [dirty, setDirty] = useState(false);
+
+  const update = (setter) => (field, value) => {
+    setDirty(true);
+    setter((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const updateProfile = update(setProfile);
+  const updateBooking = update(setBooking);
+  const updateInvoice = update(setInvoice);
+  const updateNotifications = update(setNotifications);
+  const updatePayout = update(setPayout);
 
   // ==== Save handlers (wire to API) ====
-  const handleSaveProfile = () => {
-    console.log("Save profile payload:", profile);
-    // TODO: call /api/agency/profile
-    alert("Profile & KYC settings saved (demo).");
+  const handleSave = () => {
+    // later: per-tab API calls; for now, one save
+    console.log("Save payload:", { profile, booking, invoice, notifications, payout });
+    setDirty(false);
+    alert("Settings saved (demo).");
   };
 
-  const handleSaveBooking = () => {
-    console.log("Save booking settings:", booking);
-    // TODO: call /api/agency/booking-settings
-    alert("Booking & markup settings saved (demo).");
+  const handleResetDemo = () => {
+    // reset to initial demo state quickly (optional)
+    setDirty(false);
+    alert("Demo reset not implemented. Wire your API reset or reload.");
   };
 
-  const handleSaveInvoice = () => {
-    console.log("Save invoice settings:", invoice);
-    // TODO: call /api/agency/invoice-settings
-    alert("Invoice & GST settings saved (demo).");
-  };
-
-  const handleSaveNotifications = () => {
-    console.log("Save notifications:", notifications);
-    // TODO: call /api/agency/notification-settings
-    alert("Notification settings saved (demo).");
-  };
-
-  const handleSavePayout = () => {
-    console.log("Save payout settings:", payout);
-    // TODO: call /api/agency/payout-settings
-    alert("Payout & bank settings saved (demo).");
-  };
+  const meta = useMemo(
+    () => ({
+      agencyId: "V2A-2217",
+      kyc: "Verified",
+      iata: profile.iataStatus === "YES" ? "IATA: Yes" : "IATA: No",
+    }),
+    [profile.iataStatus]
+  );
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-7xl px-4 py-6">
-        {/* Page header */}
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-slate-900">
-              Agency Settings
-            </h1>
-            <p className="text-xs text-slate-500 max-w-xl mt-1">
-              Configure your agency profile, flight booking preferences, markup rules,
-              invoice format, notifications and payout bank details for the B2B flight
-              panel.
+    <div className="min-h-[calc(100vh-64px)] bg-[var(--surface2)] text-[var(--text)]">
+      <div className="mx-auto max-w-7xl px-4 py-6 space-y-4">
+        {/* Header */}
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-[260px]">
+            <div className="text-[12px] text-[var(--muted)]">
+              Settings <span className="opacity-60">/</span> Agency
+            </div>
+            <h1 className="mt-1 text-xl font-semibold">Agency Settings</h1>
+            <p className="mt-1 text-xs text-[var(--muted)] max-w-2xl">
+              Configure your agency profile, booking preferences, markup rules, GST
+              invoice format, notifications, and payout bank details.
             </p>
           </div>
-          <div className="text-[11px] text-slate-500 bg-slate-100 rounded-full px-3 py-1">
-            ID: <span className="font-semibold text-slate-700">V2A-2217</span> · KYC
-            Verified
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Pill icon={<BadgeCheck size={14} />} text={`KYC: ${meta.kyc}`} />
+            <Pill icon={<Settings size={14} />} text={`ID: ${meta.agencyId}`} />
+            <Pill icon={<CreditCard size={14} />} text={meta.iata} />
+
+            <button
+              type="button"
+              onClick={handleResetDemo}
+              className={cx(
+                "inline-flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-semibold",
+                "border-[color:var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]"
+              )}
+              title="Demo reset"
+            >
+              <RefreshCcw size={16} />
+              Reset
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSave}
+              className={cx(
+                "inline-flex items-center gap-2 rounded-md px-3 py-2 text-xs font-semibold text-white",
+                "bg-[var(--primary)] hover:bg-[var(--primaryHover)]"
+              )}
+            >
+              <Save size={16} />
+              Save
+            </button>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="mb-4 border-b border-slate-200 overflow-x-auto no-scrollbar">
-          <div className="flex gap-1">
-            {TABS.map((tab) => {
-              const active = activeTab === tab.key;
-              return (
-                <button
-                  key={tab.key}
-                  type="button"
-                  onClick={() => setActiveTab(tab.key)}
-                  className={[
-                    "px-3 sm:px-4 h-9 text-xs sm:text-[13px] font-medium border-b-2 -mb-px",
-                    active
-                      ? "border-sky-600 text-sky-700 bg-sky-50 rounded-t-lg"
-                      : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-t-lg",
-                  ].join(" ")}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        {/* Layout */}
+        <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
+          {/* Left tabs */}
+          <aside className="rounded-xl border border-[color:var(--border)] bg-[var(--surface)] shadow-sm overflow-hidden">
+            <div className="border-b border-[color:var(--border)] px-4 py-3">
+              <div className="text-sm font-semibold">Sections</div>
+              <div className="mt-1 text-[11px] text-[var(--muted)]">
+                Manage settings by category.
+              </div>
+            </div>
 
-        {/* Tab content */}
-        <div className="space-y-4">
-          {activeTab === "profile" && (
-            <ProfileTab
-              profile={profile}
-              onChange={updateProfile}
-              onSave={handleSaveProfile}
-            />
-          )}
-          {activeTab === "booking" && (
-            <BookingTab
-              booking={booking}
-              onChange={updateBooking}
-              onSave={handleSaveBooking}
-            />
-          )}
-          {activeTab === "invoice" && (
-            <InvoiceTab
-              invoice={invoice}
-              onChange={updateInvoice}
-              onSave={handleSaveInvoice}
-            />
-          )}
-          {activeTab === "notifications" && (
-            <NotificationsTab
-              notifications={notifications}
-              onChange={updateNotifications}
-              onSave={handleSaveNotifications}
-            />
-          )}
-          {activeTab === "payout" && (
-            <PayoutTab
-              payout={payout}
-              onChange={updatePayout}
-              onSave={handleSavePayout}
-            />
-          )}
+            <div className="p-2">
+              {TABS.map((t) => {
+                const active = t.key === activeTab;
+                return (
+                  <button
+                    key={t.key}
+                    type="button"
+                    onClick={() => setActiveTab(t.key)}
+                    className={cx(
+                      "w-full rounded-lg px-3 py-2 text-left transition",
+                      "border border-transparent",
+                      active
+                        ? "bg-[var(--primarySoft)] border-[color:var(--border)]"
+                        : "hover:bg-[var(--surface2)]"
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="opacity-80">{t.icon}</span>
+                      <div>
+                        <div className="text-sm font-semibold">{t.label}</div>
+                        <div className="text-[11px] text-[var(--muted)]">
+                          {tabHint(t.key)}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Dirty indicator */}
+            <div className="border-t border-[color:var(--border)] px-4 py-3">
+              <div className="flex items-center justify-between">
+                <div className="text-[11px] text-[var(--muted)]">
+                  {dirty ? "Unsaved changes" : "All changes saved"}
+                </div>
+                <span
+                  className={cx(
+                    "h-2.5 w-2.5 rounded-full border",
+                    dirty
+                      ? "bg-[var(--primary)] border-[var(--primary)]"
+                      : "bg-[var(--surface2)] border-[color:var(--border)]"
+                  )}
+                />
+              </div>
+            </div>
+          </aside>
+
+          {/* Right content */}
+          <section className="space-y-4">
+            {activeTab === "profile" && (
+              <Card
+                title="Agency Profile & KYC"
+                desc="Update agency details. PAN & GST are used for invoicing and compliance."
+              >
+                <ProfileTab profile={profile} onChange={updateProfile} />
+              </Card>
+            )}
+
+            {activeTab === "booking" && (
+              <Card
+                title="Booking & Markup"
+                desc="Control search defaults, hold settings and markup rules for fares."
+              >
+                <BookingTab booking={booking} onChange={updateBooking} />
+              </Card>
+            )}
+
+            {activeTab === "invoice" && (
+              <Card
+                title="Invoice & GST"
+                desc="Manage GST header, invoice type and footer notes for documents."
+              >
+                <InvoiceTab invoice={invoice} onChange={updateInvoice} />
+              </Card>
+            )}
+
+            {activeTab === "notifications" && (
+              <Card
+                title="Notifications"
+                desc="Control alerts and auto reports across email and SMS/WhatsApp."
+              >
+                <NotificationsTab
+                  notifications={notifications}
+                  onChange={updateNotifications}
+                />
+              </Card>
+            )}
+
+            {activeTab === "payout" && (
+              <Card
+                title="Payout & Bank"
+                desc="Bank details used for incentives and settlement payouts."
+              >
+                <PayoutTab payout={payout} onChange={updatePayout} />
+              </Card>
+            )}
+
+            {/* Bottom save bar (enterprise) */}
+            <StickySaveBar dirty={dirty} onSave={handleSave} />
+          </section>
         </div>
       </div>
     </div>
   );
 }
 
-/* ===================== TABS ===================== */
+/* ===================== UI Blocks ===================== */
 
-function ProfileTab({ profile, onChange, onSave }) {
+function Card({ title, desc, children }) {
   return (
-    <div className="rounded-md border border-slate-200 bg-white shadow-sm p-4 sm:p-6 space-y-5">
-      <SectionHeader
-        title="Agency Profile & KYC"
-        desc="Update your agency details. PAN & GST details are used for invoicing and compliance."
-      />
+    <div className="rounded-xl border border-[color:var(--border)] bg-[var(--surface)] shadow-sm overflow-hidden">
+      <div className="border-b border-[color:var(--border)] px-5 py-4">
+        <div className="text-sm font-semibold">{title}</div>
+        {desc ? <div className="mt-1 text-xs text-[var(--muted)]">{desc}</div> : null}
+      </div>
+      <div className="p-5">{children}</div>
+    </div>
+  );
+}
 
+function Pill({ icon, text }) {
+  return (
+    <span
+      className={cx(
+        "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold",
+        "border-[color:var(--border)] bg-[var(--surface)]"
+      )}
+    >
+      <span className="opacity-80">{icon}</span>
+      <span className="text-[var(--muted)]">{text}</span>
+    </span>
+  );
+}
+
+function StickySaveBar({ dirty, onSave }) {
+  return (
+    <div className="sticky bottom-3">
+      <div className="rounded-xl border border-[color:var(--border)] bg-[var(--surface)] shadow-sm px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="text-[11px] text-[var(--muted)]">
+          {dirty
+            ? "You have unsaved changes. Save to apply settings to your agency account."
+            : "Changes apply only to your agency account. Some settings are subject to system & airline rules."}
+        </div>
+        <button
+          type="button"
+          onClick={onSave}
+          disabled={!dirty}
+          className={cx(
+            "inline-flex items-center gap-2 rounded-md px-4 py-2 text-xs font-semibold text-white",
+            "bg-[var(--primary)] hover:bg-[var(--primaryHover)]",
+            !dirty && "opacity-50 cursor-not-allowed hover:bg-[var(--primary)]"
+          )}
+        >
+          <Save size={16} />
+          Save changes
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ===================== Tabs Content ===================== */
+
+function ProfileTab({ profile, onChange }) {
+  return (
+    <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
         <Field
           label="Agency / Legal Name"
@@ -231,79 +378,62 @@ function ProfileTab({ profile, onChange, onSave }) {
           onChange={(e) => onChange("tradeName", e.target.value)}
           helper="This name will appear on tickets & invoices."
         />
-        <div>
-          <Label>
-            Business Type <span className="text-red-500">*</span>
-          </Label>
-          <select
-            className="input"
-            value={profile.businessType}
-            onChange={(e) => onChange("businessType", e.target.value)}
-          >
-            <option value="PROPRIETOR">Proprietorship</option>
-            <option value="PARTNERSHIP">Partnership</option>
-            <option value="PVT_LTD">Private Limited</option>
-            <option value="LLP">LLP</option>
-            <option value="OTHER">Other</option>
-          </select>
-        </div>
 
-        {/* PAN / GST */}
-        <div>
-          <Label>PAN (read-only after KYC)</Label>
-          <input
-            className="input uppercase bg-slate-50 cursor-not-allowed"
-            value={profile.pan}
-            readOnly
-          />
-          <Helper>For any PAN change, please contact support.</Helper>
-        </div>
+        <SelectField
+          label="Business Type"
+          required
+          value={profile.businessType}
+          onChange={(e) => onChange("businessType", e.target.value)}
+          options={[
+            { value: "PROPRIETOR", label: "Proprietorship" },
+            { value: "PARTNERSHIP", label: "Partnership" },
+            { value: "PVT_LTD", label: "Private Limited" },
+            { value: "LLP", label: "LLP" },
+            { value: "OTHER", label: "Other" },
+          ]}
+        />
 
-        <div>
-          <Label>GST Number</Label>
-          <input
-            className="input uppercase"
-            value={profile.gst}
-            onChange={(e) => onChange("gst", e.target.value)}
-          />
-          <Helper>Leave blank if you do not want GST invoices.</Helper>
-        </div>
+        <Field
+          label="PAN (read-only after KYC)"
+          value={profile.pan}
+          readOnly
+          className="uppercase"
+          helper="For any PAN change, please contact support."
+          tone="readOnly"
+        />
+
+        <Field
+          label="GST Number"
+          value={profile.gst}
+          onChange={(e) => onChange("gst", e.target.value.toUpperCase())}
+          className="uppercase"
+          helper="Leave blank if you do not want GST invoices."
+        />
 
         <div>
           <Label>IATA Accredited?</Label>
-          <div className="flex gap-4 text-xs mt-1">
-            <label className="inline-flex items-center gap-1">
-              <input
-                type="radio"
-                name="iata-status"
-                className="h-3 w-3"
-                checked={profile.iataStatus === "YES"}
-                onChange={() => onChange("iataStatus", "YES")}
-              />
-              <span>Yes</span>
-            </label>
-            <label className="inline-flex items-center gap-1">
-              <input
-                type="radio"
-                name="iata-status"
-                className="h-3 w-3"
-                checked={profile.iataStatus === "NO"}
-                onChange={() => onChange("iataStatus", "NO")}
-              />
-              <span>No</span>
-            </label>
+          <div className="mt-2 flex items-center gap-4 text-[12px]">
+            <Radio
+              name="iata"
+              label="Yes"
+              checked={profile.iataStatus === "YES"}
+              onChange={() => onChange("iataStatus", "YES")}
+            />
+            <Radio
+              name="iata"
+              label="No"
+              checked={profile.iataStatus === "NO"}
+              onChange={() => onChange("iataStatus", "NO")}
+            />
           </div>
         </div>
       </div>
 
-      {/* Contact / Address */}
-      <div className="pt-4 border-t border-slate-100 space-y-4">
-        <SectionHeader
-          small
-          title="Contact & Address"
-          desc="These details are used for invoices and communication."
-        />
-        <div className="grid gap-4 md:grid-cols-2">
+      <Divider />
+
+      <div>
+        <SubTitle title="Contact & Address" desc="Used for invoices and communication." />
+        <div className="mt-3 grid gap-4 md:grid-cols-2">
           <Field
             label="Official Email"
             required
@@ -349,289 +479,188 @@ function ProfileTab({ profile, onChange, onSave }) {
         </div>
       </div>
 
-      {/* Logo */}
-      <div className="pt-4 border-t border-slate-100 space-y-3">
-        <SectionHeader
-          small
-          title="Brand Logo"
-          desc="Your logo will appear on tickets, invoices and vouchers."
-        />
-        <div className="flex flex-col sm:flex-row items-start gap-4">
-          <div className="w-24 h-24 rounded-md border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[11px] text-slate-400">
+      <Divider />
+
+      <div>
+        <SubTitle title="Brand Logo" desc="Shown on tickets, invoices and vouchers." />
+        <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-start">
+          <div className="h-24 w-28 rounded-lg border border-dashed border-[color:var(--border)] bg-[var(--surface2)] grid place-items-center text-[11px] text-[var(--muted)]">
             {profile.logoUrl ? (
               <img
                 src={profile.logoUrl}
-                alt="Agency Logo"
-                className="max-w-full max-h-full object-contain"
+                alt="Agency logo"
+                className="max-h-full max-w-full object-contain"
               />
             ) : (
               <span>Logo preview</span>
             )}
           </div>
-          <div className="flex-1 text-xs space-y-2">
+
+          <div className="flex-1 space-y-2">
             <input
               type="file"
               accept="image/*"
-              className="input-file"
+              className="block w-full text-[12px]"
               onChange={(e) =>
                 onChange(
                   "logoUrl",
-                  e.target.files?.[0]
-                    ? URL.createObjectURL(e.target.files[0])
-                    : ""
+                  e.target.files?.[0] ? URL.createObjectURL(e.target.files[0]) : ""
                 )
               }
             />
-            <p className="text-[10px] text-slate-500">
-              Recommended size: 400x120 px, PNG with transparent background.
-            </p>
+            <div className="text-[11px] text-[var(--muted)]">
+              Recommended: 400×120 PNG (transparent). Keep file size below your CDN limit.
+            </div>
           </div>
         </div>
       </div>
-
-      <FooterSaveBar onSave={onSave} />
     </div>
   );
 }
 
-function BookingTab({ booking, onChange, onSave }) {
+function BookingTab({ booking, onChange }) {
   return (
-    <div className="rounded-md border border-slate-200 bg-white shadow-sm p-4 sm:p-6 space-y-5">
-      <SectionHeader
-        title="Flight Booking & Markup"
-        desc="Control how your flight search, pricing and markup behaves in the B2B portal."
-      />
-
-      {/* Default booking behaviour */}
+    <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
-        <div>
-          <Label>Default Trip Type</Label>
-          <select
-            className="input"
-            value={booking.defaultTrip}
-            onChange={(e) => onChange("defaultTrip", e.target.value)}
-          >
-            <option value="ONEWAY">Oneway</option>
-            <option value="ROUND">Round Trip</option>
-            <option value="MULTICITY">Multi City</option>
-          </select>
-        </div>
+        <SelectField
+          label="Default Trip Type"
+          value={booking.defaultTrip}
+          onChange={(e) => onChange("defaultTrip", e.target.value)}
+          options={[
+            { value: "ONEWAY", label: "Oneway" },
+            { value: "ROUND", label: "Round Trip" },
+            { value: "MULTICITY", label: "Multi City" },
+          ]}
+        />
 
-        <div>
-          <Label>Default Sort in Results</Label>
-          <select
-            className="input"
-            value={booking.defaultSort}
-            onChange={(e) => onChange("defaultSort", e.target.value)}
-          >
-            <option value="CHEAPEST">Cheapest First</option>
-            <option value="EARLIEST">Earliest Departure</option>
-            <option value="NONSTOP">Non-stop First</option>
-          </select>
-        </div>
+        <SelectField
+          label="Default Sort in Results"
+          value={booking.defaultSort}
+          onChange={(e) => onChange("defaultSort", e.target.value)}
+          options={[
+            { value: "CHEAPEST", label: "Cheapest First" },
+            { value: "EARLIEST", label: "Earliest Departure" },
+            { value: "NONSTOP", label: "Non-stop First" },
+          ]}
+        />
 
-        <div className="flex items-center gap-3 mt-5 md:mt-0">
-          <Toggle
-            checked={booking.showNetFare}
-            onChange={(v) => onChange("showNetFare", v)}
-          />
-          <div className="text-xs">
-            <div className="font-semibold text-slate-800">
-              Show Net Fare by default
-            </div>
-            <div className="text-[10px] text-slate-500">
-              Display net (B2B) fare first instead of published fare.
-            </div>
-          </div>
-        </div>
+        <ToggleRow
+          title="Show Net Fare by default"
+          desc="Display net (B2B) fare first instead of published fare."
+          checked={booking.showNetFare}
+          onChange={(v) => onChange("showNetFare", v)}
+        />
       </div>
 
-      {/* Hold & auto-ticket */}
-      <div className="pt-4 border-t border-slate-100 space-y-3">
-        <SectionHeader
-          small
-          title="Hold & Ticketing Preferences"
-          desc="These are subject to airline and system rules."
-        />
+      <Divider />
+
+      <div className="space-y-3">
+        <SubTitle title="Hold & Ticketing Preferences" desc="Subject to airline and system rules." />
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3">
-            <Toggle
-              checked={booking.allowHold}
-              onChange={(v) => onChange("allowHold", v)}
-            />
-            <div className="text-xs">
-              <div className="font-semibold text-slate-800">
-                Allow PNR hold for eligible flights
-              </div>
-              <div className="text-[10px] text-slate-500">
-                When enabled, you will see &quot;Hold&quot; option wherever airline
-                supports time-limit booking.
-              </div>
-            </div>
-          </div>
-          {booking.allowHold && (
-            <div className="flex items-center gap-2 text-xs">
+          <ToggleRow
+            title="Allow PNR hold for eligible flights"
+            desc='When enabled, you will see "Hold" option wherever airline supports time-limit booking.'
+            checked={booking.allowHold}
+            onChange={(v) => onChange("allowHold", v)}
+            compact
+          />
+
+          {booking.allowHold ? (
+            <div className="flex items-center gap-2">
               <Label>Default hold time</Label>
               <input
                 type="number"
                 min={1}
                 max={24}
-                className="input w-20"
                 value={booking.holdTimeHours}
-                onChange={(e) =>
-                  onChange("holdTimeHours", Number(e.target.value || 0))
-                }
+                onChange={(e) => onChange("holdTimeHours", Number(e.target.value || 0))}
+                className={cx(
+                  "w-24 rounded-lg border px-3 py-2 text-[12px] outline-none",
+                  "bg-[var(--surface)] border-[color:var(--border)] focus:border-[color:var(--primary)]"
+                )}
               />
-              <span className="text-[11px] text-slate-500">hours</span>
+              <span className="text-[11px] text-[var(--muted)]">hours</span>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
-      {/* Markup controls */}
-      <div className="pt-4 border-t border-slate-100 space-y-4">
-        <SectionHeader
-          small
-          title="Flight Markup Rules"
-          desc="These preferences control how your markup is applied on B2B fares."
-        />
+      <Divider />
+
+      <div className="space-y-3">
+        <SubTitle title="Flight Markup Rules" desc="Control how markup is applied on B2B fares." />
 
         <div className="grid gap-4 md:grid-cols-2">
-          {/* Domestic */}
-          <div className="rounded-md border border-slate-200 bg-slate-50/60 p-3 space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="text-xs font-semibold text-slate-800">
-                Domestic Flights
-              </div>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 border border-sky-200">
-                India Sector
-              </span>
-            </div>
-            <div className="grid gap-2 text-xs">
-              <div>
-                <Label>Markup Type</Label>
-                <select
-                  className="input"
-                  value={booking.flightDomesticMarkupType}
-                  onChange={(e) =>
-                    onChange("flightDomesticMarkupType", e.target.value)
-                  }
-                >
-                  <option value="PER_TICKET">Fixed per Ticket (₹)</option>
-                  <option value="PER_PAX">Fixed per Pax (₹)</option>
-                  <option value="PERCENT">% of Base Fare</option>
-                </select>
-              </div>
-              <div>
-                <Label>Markup Value</Label>
-                <input
-                  type="number"
-                  className="input"
-                  value={booking.flightDomesticMarkupValue}
-                  onChange={(e) =>
-                    onChange(
-                      "flightDomesticMarkupValue",
-                      Number(e.target.value || 0)
-                    )
-                  }
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* International */}
-          <div className="rounded-md border border-slate-200 bg-slate-50/60 p-3 space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="text-xs font-semibold text-slate-800">
-                International Flights
-              </div>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">
-                Ex-India & Ex-Intl
-              </span>
-            </div>
-            <div className="grid gap-2 text-xs">
-              <div>
-                <Label>Markup Type</Label>
-                <select
-                  className="input"
-                  value={booking.flightIntlMarkupType}
-                  onChange={(e) =>
-                    onChange("flightIntlMarkupType", e.target.value)
-                  }
-                >
-                  <option value="PER_TICKET">Fixed per Ticket (₹)</option>
-                  <option value="PER_PAX">Fixed per Pax (₹)</option>
-                  <option value="PERCENT">% of Base Fare</option>
-                </select>
-              </div>
-              <div>
-                <Label>Markup Value</Label>
-                <input
-                  type="number"
-                  className="input"
-                  value={booking.flightIntlMarkupValue}
-                  onChange={(e) =>
-                    onChange(
-                      "flightIntlMarkupValue",
-                      Number(e.target.value || 0)
-                    )
-                  }
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Rounding & display */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <Label>Rounding Preference</Label>
-            <select
-              className="input"
-              value={booking.roundingMode}
-              onChange={(e) => onChange("roundingMode", e.target.value)}
-            >
-              <option value="NONE">No rounding</option>
-              <option value="ROUND_10">Nearest ₹10</option>
-              <option value="ROUND_50">Nearest ₹50</option>
-              <option value="ROUND_100">Nearest ₹100</option>
-            </select>
-            <Helper>
-              Rounding is applied on final selling fare shown to you / on B2C ticket.
-            </Helper>
-          </div>
-
-          <div className="flex items-start gap-3 mt-1">
-            <Toggle
-              checked={booking.hideMarkupOnTicket}
-              onChange={(v) => onChange("hideMarkupOnTicket", v)}
+          <Box title="Domestic Flights" badge="India Sector">
+            <SelectField
+              label="Markup Type"
+              value={booking.flightDomesticMarkupType}
+              onChange={(e) => onChange("flightDomesticMarkupType", e.target.value)}
+              options={[
+                { value: "PER_TICKET", label: "Fixed per Ticket (₹)" },
+                { value: "PER_PAX", label: "Fixed per Pax (₹)" },
+                { value: "PERCENT", label: "% of Base Fare" },
+              ]}
             />
-            <div className="text-xs">
-              <div className="font-semibold text-slate-800">
-                Hide markup breakup on print ticket
-              </div>
-              <div className="text-[10px] text-slate-500">
-                If enabled, passenger-facing ticket will not show your margin as a
-                separate line.
-              </div>
-            </div>
-          </div>
+            <Field
+              label="Markup Value"
+              type="number"
+              value={booking.flightDomesticMarkupValue}
+              onChange={(e) =>
+                onChange("flightDomesticMarkupValue", Number(e.target.value || 0))
+              }
+            />
+          </Box>
+
+          <Box title="International Flights" badge="Ex-India & Ex-Intl">
+            <SelectField
+              label="Markup Type"
+              value={booking.flightIntlMarkupType}
+              onChange={(e) => onChange("flightIntlMarkupType", e.target.value)}
+              options={[
+                { value: "PER_TICKET", label: "Fixed per Ticket (₹)" },
+                { value: "PER_PAX", label: "Fixed per Pax (₹)" },
+                { value: "PERCENT", label: "% of Base Fare" },
+              ]}
+            />
+            <Field
+              label="Markup Value"
+              type="number"
+              value={booking.flightIntlMarkupValue}
+              onChange={(e) => onChange("flightIntlMarkupValue", Number(e.target.value || 0))}
+            />
+          </Box>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <SelectField
+            label="Rounding Preference"
+            value={booking.roundingMode}
+            onChange={(e) => onChange("roundingMode", e.target.value)}
+            helper="Applied on final selling fare."
+            options={[
+              { value: "NONE", label: "No rounding" },
+              { value: "ROUND_10", label: "Nearest ₹10" },
+              { value: "ROUND_50", label: "Nearest ₹50" },
+              { value: "ROUND_100", label: "Nearest ₹100" },
+            ]}
+          />
+
+          <ToggleRow
+            title="Hide markup breakup on print ticket"
+            desc="Passenger-facing ticket will not show margin as separate line."
+            checked={booking.hideMarkupOnTicket}
+            onChange={(v) => onChange("hideMarkupOnTicket", v)}
+          />
         </div>
       </div>
-
-      <FooterSaveBar onSave={onSave} />
     </div>
   );
 }
 
-function InvoiceTab({ invoice, onChange, onSave }) {
+function InvoiceTab({ invoice, onChange }) {
   return (
-    <div className="rounded-md border border-slate-200 bg-white shadow-sm p-4 sm:p-6 space-y-5">
-      <SectionHeader
-        title="Invoice & GST Settings"
-        desc="Control how your GST invoices and ticket headers appear for your customers."
-      />
-
+    <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
         <Field
           label="Legal Name (as per GST)"
@@ -642,8 +671,10 @@ function InvoiceTab({ invoice, onChange, onSave }) {
         <Field
           label="GST Number"
           value={invoice.gstNumber}
-          onChange={(e) => onChange("gstNumber", e.target.value)}
+          onChange={(e) => onChange("gstNumber", e.target.value.toUpperCase())}
+          className="uppercase"
         />
+
         <div className="md:col-span-2">
           <Field
             label="GST Registered Address"
@@ -652,59 +683,45 @@ function InvoiceTab({ invoice, onChange, onSave }) {
             onChange={(e) => onChange("gstAddress", e.target.value)}
           />
         </div>
-        <div>
-          <Label>Default Invoice Type</Label>
-          <select
-            className="input"
-            value={invoice.invoiceType}
-            onChange={(e) => onChange("invoiceType", e.target.value)}
-          >
-            <option value="B2B">B2B Invoice (Net fare)</option>
-            <option value="B2C">B2C Invoice (With markup)</option>
-          </select>
-        </div>
-        <div className="flex items-start gap-3 mt-1">
-          <Toggle
-            checked={invoice.showServiceCharge}
-            onChange={(v) => onChange("showServiceCharge", v)}
-          />
-          <div className="text-xs">
-            <div className="font-semibold text-slate-800">
-              Show service charge separately
-            </div>
-            <div className="text-[10px] text-slate-500">
-              Displays convenience/service fee as a separate line item on invoice.
-            </div>
-          </div>
-        </div>
+
+        <SelectField
+          label="Default Invoice Type"
+          value={invoice.invoiceType}
+          onChange={(e) => onChange("invoiceType", e.target.value)}
+          options={[
+            { value: "B2B", label: "B2B Invoice (Net fare)" },
+            { value: "B2C", label: "B2C Invoice (With markup)" },
+          ]}
+        />
+
+        <ToggleRow
+          title="Show service charge separately"
+          desc="Displays convenience/service fee as a separate line item."
+          checked={invoice.showServiceCharge}
+          onChange={(v) => onChange("showServiceCharge", v)}
+        />
       </div>
 
-      <div className="pt-4 border-t border-slate-100 space-y-3">
-        <SectionHeader
-          small
-          title="Default Invoice Footer / Notes"
-          desc="Shown at the bottom of all tickets & invoices."
-        />
+      <Divider />
+
+      <div>
+        <SubTitle title="Invoice Footer / Notes" desc="Shown at the bottom of tickets & invoices." />
         <textarea
-          className="input min-h-[80px]"
+          className={cx(
+            "mt-3 w-full min-h-[110px] rounded-xl border px-3 py-2 text-[12px] outline-none",
+            "bg-[var(--surface)] border-[color:var(--border)] focus:border-[color:var(--primary)]"
+          )}
           value={invoice.footerNote}
           onChange={(e) => onChange("footerNote", e.target.value)}
         />
       </div>
-
-      <FooterSaveBar onSave={onSave} />
     </div>
   );
 }
 
-function NotificationsTab({ notifications, onChange, onSave }) {
+function NotificationsTab({ notifications, onChange }) {
   return (
-    <div className="rounded-md border border-slate-200 bg-white shadow-sm p-4 sm:p-6 space-y-5">
-      <SectionHeader
-        title="Notification & Alerts"
-        desc="Control which events you want to be notified for on email and SMS."
-      />
-
+    <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
         <SettingBlock title="Email Alerts">
           <CheckRow
@@ -750,14 +767,15 @@ function NotificationsTab({ notifications, onChange, onSave }) {
             checked={notifications.smsCancel}
             onChange={(v) => onChange("smsCancel", v)}
           />
-          <Helper>
-            SMS / WhatsApp charges may apply as per your plan. Passenger SMS can be
-            configured per booking.
-          </Helper>
+          <Hint>
+            SMS/WhatsApp charges may apply as per plan. Passenger messages can be configured per booking.
+          </Hint>
         </SettingBlock>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 pt-4 border-t border-slate-100">
+      <Divider />
+
+      <div className="grid gap-4 md:grid-cols-2">
         <SettingBlock title="Auto Reports">
           <CheckRow
             label="Daily booking summary (email)"
@@ -772,59 +790,47 @@ function NotificationsTab({ notifications, onChange, onSave }) {
         </SettingBlock>
 
         <SettingBlock title="Quiet Hours (Do not disturb)">
-          <div className="flex items-start gap-3">
-            <Toggle
-              checked={notifications.quietHours}
-              onChange={(v) => onChange("quietHours", v)}
-            />
-            <div className="text-xs">
-              <div className="font-semibold text-slate-800">
-                Limit SMS during night
-              </div>
-              <div className="text-[10px] text-slate-500">
-                SMS alerts will be paused during this window where permitted by
-                regulations.
-              </div>
-              {notifications.quietHours && (
-                <div className="mt-2 flex items-center gap-2 text-[11px]">
-                  <span>From</span>
-                  <input
-                    type="time"
-                    className="input w-28"
-                    value={notifications.quietFrom}
-                    onChange={(e) =>
-                      onChange("quietFrom", e.target.value)
-                    }
-                  />
-                  <span>to</span>
-                  <input
-                    type="time"
-                    className="input w-28"
-                    value={notifications.quietTo}
-                    onChange={(e) =>
-                      onChange("quietTo", e.target.value)
-                    }
-                  />
-                </div>
-              )}
+          <ToggleRow
+            compact
+            title="Limit SMS during night"
+            desc="SMS alerts will be paused during this window where permitted by regulations."
+            checked={notifications.quietHours}
+            onChange={(v) => onChange("quietHours", v)}
+          />
+
+          {notifications.quietHours ? (
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px]">
+              <span className="text-[var(--muted)]">From</span>
+              <input
+                type="time"
+                value={notifications.quietFrom}
+                onChange={(e) => onChange("quietFrom", e.target.value)}
+                className={cx(
+                  "w-32 rounded-lg border px-3 py-2 text-[12px] outline-none",
+                  "bg-[var(--surface)] border-[color:var(--border)] focus:border-[color:var(--primary)]"
+                )}
+              />
+              <span className="text-[var(--muted)]">to</span>
+              <input
+                type="time"
+                value={notifications.quietTo}
+                onChange={(e) => onChange("quietTo", e.target.value)}
+                className={cx(
+                  "w-32 rounded-lg border px-3 py-2 text-[12px] outline-none",
+                  "bg-[var(--surface)] border-[color:var(--border)] focus:border-[color:var(--primary)]"
+                )}
+              />
             </div>
-          </div>
+          ) : null}
         </SettingBlock>
       </div>
-
-      <FooterSaveBar onSave={onSave} />
     </div>
   );
 }
 
-function PayoutTab({ payout, onChange, onSave }) {
+function PayoutTab({ payout, onChange }) {
   return (
-    <div className="rounded-md border border-slate-200 bg-white shadow-sm p-4 sm:p-6 space-y-5">
-      <SectionHeader
-        title="Payout & Bank Details"
-        desc="We use these details for settling your incentives and commission payouts."
-      />
-
+    <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
         <Field
           label="Account Holder Name"
@@ -854,76 +860,123 @@ function PayoutTab({ payout, onChange, onSave }) {
           required
           value={payout.ifsc}
           onChange={(e) => onChange("ifsc", e.target.value.toUpperCase())}
+          className="uppercase"
         />
-        <div>
-          <Label>Preferred Payout Mode</Label>
-          <select
-            className="input"
-            value={payout.payoutMode}
-            onChange={(e) => onChange("payoutMode", e.target.value)}
-          >
-            <option value="NEFT">NEFT</option>
-            <option value="IMPS">IMPS</option>
-            <option value="RTGS">RTGS</option>
-          </select>
-        </div>
+        <SelectField
+          label="Preferred Payout Mode"
+          value={payout.payoutMode}
+          onChange={(e) => onChange("payoutMode", e.target.value)}
+          options={[
+            { value: "NEFT", label: "NEFT" },
+            { value: "IMPS", label: "IMPS" },
+            { value: "RTGS", label: "RTGS" },
+          ]}
+        />
       </div>
 
-      <Helper>
-        For any change in bank details, our team may contact you for additional
-        verification.
-      </Helper>
-
-      <FooterSaveBar onSave={onSave} />
+      <Hint>
+        For any change in bank details, our team may contact you for additional verification.
+      </Hint>
     </div>
   );
 }
 
 /* ===================== Small components ===================== */
 
-function SectionHeader({ title, desc, small = false }) {
-  return (
-    <div className="space-y-0.5">
-      <h2
-        className={
-          small
-            ? "text-xs font-semibold text-slate-900"
-            : "text-sm font-semibold text-slate-900"
-        }
-      >
-        {title}
-      </h2>
-      {desc && (
-        <p className="text-[11px] text-slate-500 max-w-2xl">
-          {desc}
-        </p>
-      )}
-    </div>
-  );
+function tabHint(key) {
+  if (key === "profile") return "KYC & business identity";
+  if (key === "booking") return "Defaults, hold & markups";
+  if (key === "invoice") return "GST header & invoice format";
+  if (key === "notifications") return "Email/SMS and reports";
+  if (key === "payout") return "Bank accounts & settlement";
+  return "";
 }
 
-function Field({ label, required, helper, className, ...rest }) {
+function Divider() {
+  return <div className="border-t border-[color:var(--border)]" />;
+}
+
+function SubTitle({ title, desc }) {
   return (
-    <div className={className}>
-      <Label>
-        {label} {required && <span className="text-red-500">*</span>}
-      </Label>
-      <input className="input" {...rest} />
-      {helper && <Helper>{helper}</Helper>}
+    <div>
+      <div className="text-sm font-semibold">{title}</div>
+      {desc ? <div className="mt-1 text-xs text-[var(--muted)]">{desc}</div> : null}
     </div>
   );
 }
 
 function Label({ children }) {
+  return <label className="text-[11px] font-semibold text-[var(--muted)]">{children}</label>;
+}
+
+function Hint({ children }) {
+  return <div className="text-[11px] text-[var(--muted)]">{children}</div>;
+}
+
+function Field({ label, required, helper, tone, className, ...rest }) {
+  const readOnly = tone === "readOnly" || rest.readOnly;
+
   return (
-    <label className="text-[11px] font-medium text-slate-700">
-      {children}
+    <div className={className}>
+      <Label>
+        {label} {required ? <span className="text-[var(--text)]">*</span> : null}
+      </Label>
+      <input
+        {...rest}
+        className={cx(
+          "mt-1 w-full rounded-xl border px-3 py-2 text-[12px] outline-none",
+          "border-[color:var(--border)] bg-[var(--surface)] focus:border-[color:var(--primary)]",
+          readOnly && "bg-[var(--surface2)] opacity-80 cursor-not-allowed"
+        )}
+      />
+      {helper ? <div className="mt-1 text-[11px] text-[var(--muted)]">{helper}</div> : null}
+    </div>
+  );
+}
+
+function SelectField({ label, required, helper, options, ...rest }) {
+  return (
+    <div>
+      <Label>
+        {label} {required ? <span className="text-[var(--text)]">*</span> : null}
+      </Label>
+      <select
+        {...rest}
+        className={cx(
+          "mt-1 w-full rounded-xl border px-3 py-2 text-[12px] outline-none",
+          "border-[color:var(--border)] bg-[var(--surface)] focus:border-[color:var(--primary)]"
+        )}
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      {helper ? <div className="mt-1 text-[11px] text-[var(--muted)]">{helper}</div> : null}
+    </div>
+  );
+}
+
+function Radio({ name, label, checked, onChange }) {
+  return (
+    <label className="inline-flex items-center gap-2 text-[12px]">
+      <input type="radio" name={name} checked={checked} onChange={onChange} />
+      <span>{label}</span>
     </label>
   );
 }
 
-function Helper({ children }) {
-  return <p className="mt-1 text-[10px] text-slate-500">{children}</p>;
+function ToggleRow({ title, desc, checked, onChange, compact }) {
+  return (
+    <div className={cx("flex items-start gap-3", compact ? "" : "mt-6 md:mt-0")}>
+      <Toggle checked={checked} onChange={onChange} />
+      <div>
+        <div className="text-[12px] font-semibold">{title}</div>
+        {desc ? <div className="text-[11px] text-[var(--muted)]">{desc}</div> : null}
+      </div>
+    </div>
+  );
 }
 
 function Toggle({ checked, onChange }) {
@@ -931,60 +984,56 @@ function Toggle({ checked, onChange }) {
     <button
       type="button"
       onClick={() => onChange(!checked)}
-      className={[
+      className={cx(
         "relative inline-flex h-5 w-9 items-center rounded-full border transition-colors",
-        checked
-          ? "bg-emerald-500 border-emerald-500"
-          : "bg-slate-200 border-slate-300",
-      ].join(" ")}
+        "border-[color:var(--border)]",
+        checked ? "bg-[var(--primary)]" : "bg-[var(--surface2)]"
+      )}
+      aria-pressed={checked}
     >
       <span
-        className={[
+        className={cx(
           "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform",
-          checked ? "translate-x-4" : "translate-x-0.5",
-        ].join(" ")}
+          checked ? "translate-x-4" : "translate-x-0.5"
+        )}
       />
     </button>
   );
 }
 
-function FooterSaveBar({ onSave }) {
-  return (
-    <div className="mt-4 pt-4 border-t border-slate-100 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-[10px] text-slate-500">
-        Changes apply only to your agency account. Some settings may still be subject
-        to system & airline rules.
-      </p>
-      <button
-        type="button"
-        onClick={onSave}
-        className="inline-flex items-center justify-center rounded-full bg-sky-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-sky-700"
-      >
-        Save Changes
-      </button>
-    </div>
-  );
-}
-
 function SettingBlock({ title, children }) {
   return (
-    <div className="rounded-md border border-slate-200 bg-slate-50/60 p-3 space-y-2">
-      <div className="text-xs font-semibold text-slate-800">{title}</div>
-      <div className="space-y-1.5">{children}</div>
+    <div className="rounded-xl border border-[color:var(--border)] bg-[var(--surface2)] p-4 space-y-2">
+      <div className="text-sm font-semibold">{title}</div>
+      <div className="space-y-2">{children}</div>
     </div>
   );
 }
 
 function CheckRow({ label, checked, onChange }) {
   return (
-    <label className="flex items-center gap-2 text-xs">
+    <label className="flex items-center gap-2 text-[12px]">
       <input
         type="checkbox"
-        className="h-3 w-3"
+        className="h-4 w-4"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
       />
       <span>{label}</span>
     </label>
+  );
+}
+
+function Box({ title, badge, children }) {
+  return (
+    <div className="rounded-xl border border-[color:var(--border)] bg-[var(--surface2)] p-4">
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-sm font-semibold">{title}</div>
+        <span className="rounded-full border border-[color:var(--border)] bg-[var(--surface)] px-2 py-0.5 text-[10px] font-semibold text-[var(--muted)]">
+          {badge}
+        </span>
+      </div>
+      <div className="mt-3 grid gap-3">{children}</div>
+    </div>
   );
 }

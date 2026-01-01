@@ -84,8 +84,13 @@ export default function Header({ variant = "private" }) {
   const wallet = { balance: 45230.0, currency: "₹", creditLimit: 200000 };
 
   const supportLinks = isPublic
-    ? ["Support", "Help"]
-    : ["Manage", "Reports", "Support", "Help"];
+    ? [
+      { label: "Support", to: "/support" },
+      { label: "Help", to: "/help" },
+    ]
+    : [
+      { label: "Help Center", to: "/help" }, // ✅ your Help Center route
+    ];
 
   const tabs = [
     { key: "flights", label: "Flights" },
@@ -104,7 +109,7 @@ export default function Header({ variant = "private" }) {
     try {
       localStorage.removeItem("tyb_user");
       localStorage.removeItem("tyb_token");
-    } catch {}
+    } catch { }
     closeAll();
     navigate("/login", { replace: true });
   };
@@ -301,8 +306,8 @@ export default function Header({ variant = "private" }) {
 
                             <div className="mt-3 border-t border-[var(--border)] pt-2">
                               {supportLinks.map((l) => (
-                                <DropItem key={l} onClick={() => {}}>
-                                  {l}
+                                <DropItem key={l.to} onClick={() => go(l.to)}>
+                                  {l.label}
                                 </DropItem>
                               ))}
                             </div>
@@ -321,7 +326,7 @@ export default function Header({ variant = "private" }) {
                           icon={<BookingsBadgeIcon />}
                           open={false}
                           caret={false}
-                          onClick={() => go("/my-bookings")}
+                          onClick={() => go("/dashboard/flight/my-bookings")}
                         />
                       </div>
 
@@ -649,7 +654,7 @@ function QuickTileButton({
       type="button"
       onClick={onClick}
       className={[
-        "h-full px-4 py-2 inline-flex items-center gap-3 text-left transition-colors rounded-md",
+        "h-full px-4 py-2 inline-flex items-center gap-3 text-left transition-colors rounded-md cursor-pointer",
         isLight ? "hover:bg-white/10" : "hover:bg-[var(--surface2)]",
       ].join(" ")}
     >
@@ -724,7 +729,7 @@ function ProfilePill({ tone = "glass", open, name, agentId, badge, onClick }) {
           </div>
         </div>
 
-       
+
       </div>
 
       <span className="ml-1">
@@ -738,7 +743,7 @@ function ProfilePill({ tone = "glass", open, name, agentId, badge, onClick }) {
 function DropItem({ children, onClick }) {
   return (
     <button
-      className="w-full text-left px-3 py-2 rounded-md hover:bg-[var(--surface2)] text-sm"
+      className="w-full text-left px-3 py-2 rounded-md hover:bg-[var(--surface2)] text-sm cursor-pointer" 
       onClick={onClick}
       type="button"
     >
@@ -823,8 +828,8 @@ function WalletBadgeIcon() {
 }
 function NotifBadgeIcon() {
   return (
- 
-  <img
+
+    <img
       src="https://cdn-icons-png.flaticon.com/128/890/890941.png"
       className="w-8"
       alt="Wallet"
