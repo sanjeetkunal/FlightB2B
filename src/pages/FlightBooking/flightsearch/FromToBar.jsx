@@ -1,12 +1,12 @@
 // src/components/flightsearch/FromToBar.jsx
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { AIRPORTS } from "../../data/airports";
+import { AIRPORTS } from "../../../data/airports";
 import AirportSelect from "./AirportSelect";
 import DateField from "./DateField";
 import TravellersField from "./TravellersField";
 import TravellerClassPicker from "./TravellerClassPicker";
-import searchbg from "../../assets/media/search.jpg";
+import searchbg from "../../../assets/media/search.jpg";
 
 import {
   BadgePercent,

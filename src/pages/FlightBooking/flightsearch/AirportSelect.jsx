@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AIRPORTS } from "../../data/airports";
+import { AIRPORTS } from "../../../data/airports";
 import FieldShell from "./FieldShell";
 
 /**

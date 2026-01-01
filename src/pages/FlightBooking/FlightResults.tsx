@@ -3,21 +3,21 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 
-import FromToBar from "../../components/flightsearch/FromToBar";
+import FromToBar from "../../pages/FlightBooking/flightsearch/FromToBar";
 
 import { searchFlights, FLIGHTS, type FlightRow, type FlightFare } from "../../data/flights";
 
-import FilterPanel, { type Filters } from "../../components/flightlist/FiltersPanel";
+import FilterPanel, { type Filters } from "./flightlist/FiltersPanel";
 
 import OnewayResult, {
   type Row as OW_Row,
   type FareOption as OW_Fare,
-} from "../../components/flightlist/OnewayResultList";
+} from "./flightlist/OnewayResultList";
 
 import RoundTripResultList, {
   type RowRT as RT_Row,
   type FareRT as RT_Fare,
-} from "../../components/flightlist/RoundTripResultList";
+} from "./flightlist/RoundTripResultList";
 
 import SpecialRoundTripResult, {
   type SpecialRTRow,
@@ -25,7 +25,7 @@ import SpecialRoundTripResult, {
   type PaxConfig as SpecialPaxConfig,
   type LegSummary,
   type PolicyRule,
-} from "../../components/flightlist/SpecialRoundTripResult";
+} from "./flightlist/SpecialRoundTripResult";
 
 /* =============== small utils =============== */
 type TimeSlot = "0-6" | "6-12" | "12-18" | "18-24";

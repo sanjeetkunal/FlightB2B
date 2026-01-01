@@ -175,9 +175,9 @@ const CONTACT = {
 };
 
 const QUICK_LINKS = [
-  { label: "Wallet & Top-up Requests", hint: "Ledger, statement, add funds", route: "/admin/wallet" },
+  { label: "Wallet & Top-up Requests", hint: "Ledger, statement, add funds", route: "/wallet" },
   { label: "My Bookings", hint: "Flights / Hotels / Trains / Buses", route: "/admin/bookings" },
-  { label: "Refunds & Adjustments", hint: "Refund status & logs", route: "/admin/wallet/refunds" },
+  { label: "Refunds & Adjustments", hint: "Refund status & logs", route: "/wallet/refunds" },
   { label: "Company Profile / GST", hint: "GSTIN & invoices", route: "/admin/settings/company" },
 ];
 

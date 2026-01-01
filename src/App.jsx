@@ -27,6 +27,7 @@ import TicketCopyRoute from "./pages/FlightBooking/TicketCopyRoute";
 import help from "./pages/HelpCenter";
 import HelpCenter from "./pages/HelpCenter";
 
+
 function Protected({ children }) {
   return isAuthed() ? children : <Navigate to="/login" replace />;
 }
@@ -74,11 +75,12 @@ export default function App() {
 
         <Route path="/pages/FlightBooking/ticket-copy" element={<TicketCopyPage />} />
 
-        <Route path="/admin/wallet" element={<WalletOverview />} />
-        <Route path="/admin/wallet/add-funds" element={<AddFundsPage />} />
-        <Route path="/admin/wallet/history" element={<WalletHistory />} />
-        <Route path="/admin/wallet/statement" element={<WalletStatement />} />
-        <Route path="/admin/wallet/refunds" element={<RefundsAdjustments />} />
+        <Route path="/wallet" element={<WalletOverview />} />
+        <Route path="/wallet/add-funds" element={<AddFundsPage />} />
+        <Route path="/wallet/history" element={<WalletHistory />} />
+        <Route path="/wallet/statement" element={<WalletStatement />} />
+        <Route path="/wallet/refunds" element={<RefundsAdjustments />} />
+   
 
         <Route path="/flights/ticket-copy" element={<TicketCopyRoute />} />
         <Route path="/help" element={<HelpCenter />}/>

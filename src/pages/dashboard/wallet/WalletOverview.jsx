@@ -72,13 +72,13 @@ export default function WalletOverview() {
 
           <div className="flex gap-2">
             <button
-              onClick={() => nav("/admin/wallet/add-funds")}
+              onClick={() => nav("/wallet/add-funds")}
               className="rounded-md bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800"
             >
               + Add Funds
             </button>
             <button
-              onClick={() => nav("/admin/wallet/statement")}
+              onClick={() => nav("/wallet/statement")}
               className="rounded-md border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
             >
               Download Statement
@@ -95,13 +95,13 @@ export default function WalletOverview() {
             title="Wallet History"
             desc="All credits/debits, booking holds, refunds"
             action="Open"
-            onClick={() => nav("/admin/wallet/history")}
+            onClick={() => nav("/wallet/history")}
           />
           <ActionCard
             title="Refunds & Adjustments"
             desc="Airline refunds, portal adjustments, disputes"
             action="Open"
-            onClick={() => nav("/admin/wallet/refunds")}
+            onClick={() => nav("/wallet/refunds")}
           />
           <ActionCard
             title="Low Balance Rules"
@@ -118,7 +118,7 @@ export default function WalletOverview() {
               Recent Transactions
             </div>
             <button
-              onClick={() => nav("/admin/wallet/history")}
+              onClick={() => nav("/wallet/history")}
               className="text-xs font-semibold text-sky-600 hover:underline"
             >
               View all

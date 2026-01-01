@@ -398,7 +398,7 @@ export default function Header({ variant = "private" }) {
                               text-sm font-semibold
                               hover:bg-[var(--primaryHover)]
                             "
-                            onClick={() => go("/admin/wallet/add-funds")}
+                            onClick={() => go("/wallet/add-funds")}
                             type="button"
                           >
                             Add Funds
@@ -414,13 +414,13 @@ export default function Header({ variant = "private" }) {
                         </div>
 
                         <div className="mt-3 border-t border-[var(--border)] pt-3">
-                          <DropItem onClick={() => go("/admin/wallet/history")}>
+                          <DropItem onClick={() => go("/wallet/history")}>
                             Wallet History
                           </DropItem>
-                          <DropItem onClick={() => go("/admin/wallet/statement")}>
+                          <DropItem onClick={() => go("/wallet/statement")}>
                             Download Statement
                           </DropItem>
-                          <DropItem onClick={() => go("/admin/wallet/refunds")}>
+                          <DropItem onClick={() => go("/wallet/refunds")}>
                             Refunds & Adjustments
                           </DropItem>
                         </div>

@@ -193,7 +193,7 @@ export default function WalletHistory() {
 
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => nav("/admin/wallet/statement")}
+              onClick={() => nav("/wallet/statement")}
               type="button"
               className={cx(
                 "inline-flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-semibold",

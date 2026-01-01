@@ -1,7 +1,7 @@
 // src/pages/PassengerDetailsPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import SeatMap from "../../components/flightlist/SeatMap";
+import SeatMap from "./flightlist/SeatMap";
 
 const currencySymbol = "₹";
 const SEAT_PRICE = 250;

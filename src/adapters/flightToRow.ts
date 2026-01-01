@@ -1,5 +1,5 @@
 import { FlightRow, FlightFare } from "../data/flights";
-import { Row, FareOption, Segment } from "../components/flightlist/OnewayResultList";
+import { Row, FareOption, Segment } from "../pages/FlightBooking/flightlist/OnewayResultList";
 
 /* ===== Fare adapter ===== */
 export function adaptFare(f: FlightFare): FareOption {

@@ -138,7 +138,7 @@ export default function WalletStatement() {
           <div className="min-w-[240px]">
             <div className="flex items-center gap-2 text-[12px] text-[var(--muted)]">
               <button
-                onClick={() => nav("/admin/wallet")}
+                onClick={() => nav("/wallet")}
                 className="hover:underline"
                 type="button"
               >

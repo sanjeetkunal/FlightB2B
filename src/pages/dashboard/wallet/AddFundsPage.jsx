@@ -154,7 +154,7 @@ export default function AddFundsPage() {
       await new Promise((r) => setTimeout(r, 600));
 
       // ✅ navigate to wallet page (or request list page)
-      nav("/admin/wallet", { replace: true });
+      nav("/wallet", { replace: true });
     } catch (err) {
       console.error(err);
       alert("Could not submit request. Please try again.");
@@ -171,7 +171,7 @@ export default function AddFundsPage() {
           <div className="min-w-[240px]">
             <div className="flex items-center gap-2 text-[12px] text-[var(--muted)]">
               <button
-                onClick={() => nav("/admin/wallet")}
+                onClick={() => nav("/wallet")}
                 className="hover:underline"
                 type="button"
               >
@@ -459,7 +459,7 @@ export default function AddFundsPage() {
             {/* Footer actions */}
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[color:var(--border)] p-5">
               <button
-                onClick={() => nav("/admin/wallet")}
+                onClick={() => nav("/wallet")}
                 type="button"
                 className={cx(
                   "rounded-md border px-4 py-2 text-xs font-semibold",
