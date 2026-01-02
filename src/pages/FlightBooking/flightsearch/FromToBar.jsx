@@ -1295,13 +1295,13 @@ export default function FromToBar({ onSearch }) {
                 type="button"
                 onClick={handleSearch}
                 className={[
-                  "group relative h-9 sm:h-10 min-w-[160px] sm:min-w-[210px] rounded-full text-sm font-extrabold tracking-wide",
+                  "group relative h-9 sm:h-10 min-w-[160px] sm:min-w-[210px] rounded-full text-sm font-bold tracking-wide",
                   "hover:brightness-95 active:scale-[0.98] transition",
                   "focus:outline-none focus:ring-4 focus:ring-[color:var(--primarySoft)]",
                 ].join(" ")}
                 style={{ ...gradientStyle, color: "var(--surface)", boxShadow: shadowHard }}
               >
-                <span className="relative z-10 inline-flex items-center gap-2">
+                <span className="relative z-10 inline-flex items-center gap-2 mt-2">
                   <SearchIcon className="h-4 w-4" />
                   SEARCH
                 </span>

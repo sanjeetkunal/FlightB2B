@@ -88,7 +88,7 @@ export default function LoginLandingPro() {
     
 
       {/* ============== HERO (responsive) ============== */}
- <section className="relative isolate overflow-hidden bg-gradient-to-b from-white via-[#f6feff] to-white">
+ <section className="relative isolate overflow-hidden pt-16 bg-gradient-to-b from-white via-[#f6feff] to-white">
   {/* background accents */}
   <div
     className="pointer-events-none absolute inset-0 -z-10 opacity-80"

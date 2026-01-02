@@ -5,32 +5,34 @@ import logo from "../assets/media/logo.png";
 
 /**
  * Behavior:
- * - ONLY on HomeHero route: header ABSOLUTE + transparent initially, scroll pe FIXED + bg surface
+ * - Hero-like routes (Home + Login): header ABSOLUTE + transparent initially, scroll pe FIXED + bg surface
  * - Other pages: header sticky + bg surface always
  *
- * UI:
- * - Hero top (transparent): Support (dropdown) + My Bookings + Wallet (dropdown) + Notifications (dropdown)
- * - White header (scrolled OR other pages): Tabs (Flights/Hotels/Trains/Buses) + Wallet (dropdown) + Notifications (dropdown)
- *
- * Dropdown:
- * - Fade-in + slide-down + arrow
- *
- * Profile:
- * - Hero top => glass/blur enterprise pill
- * - White header => solid enterprise pill
+ * ✅ Added:
+ * - Login page ko bhi HomeHero jaisa (transparent + absolute)
+ * - Notification count badge (Desktop + Mobile)
  */
+
+function cx(...cls) {
+  return cls.filter(Boolean).join(" ");
+}
+
 export default function Header({ variant = "private" }) {
   const isPublic = variant === "public";
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ HomeHero detection
-  const isHomeHero = location.pathname === "/" || location.pathname === "/home";
+  // ✅ Hero-like routes (Home + Login)
+  const HERO_ROUTES = useRef(new Set(["/", "/home", "/login"]));
+  const isHeroRoute = HERO_ROUTES.current.has(location.pathname);
 
   const [walletOpen, setWalletOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
+
+  // ✅ Notification count (mock — wire with API)
+  const [notifCount, setNotifCount] = useState(3);
 
   const [isDesktop, setIsDesktop] = useState(() =>
     typeof window !== "undefined"
@@ -85,12 +87,10 @@ export default function Header({ variant = "private" }) {
 
   const supportLinks = isPublic
     ? [
-      { label: "Support", to: "/support" },
-      { label: "Help", to: "/help" },
-    ]
-    : [
-      { label: "Help Center", to: "/help" }, // ✅ your Help Center route
-    ];
+        { label: "Support", to: "/support" },
+        { label: "Help", to: "/help" },
+      ]
+    : [{ label: "Help Center", to: "/help" }];
 
   const tabs = [
     { key: "flights", label: "Flights" },
@@ -109,7 +109,7 @@ export default function Header({ variant = "private" }) {
     try {
       localStorage.removeItem("tyb_user");
       localStorage.removeItem("tyb_token");
-    } catch { }
+    } catch {}
     closeAll();
     navigate("/login", { replace: true });
   };
@@ -162,7 +162,7 @@ export default function Header({ variant = "private" }) {
   };
 
   /* =========================
-     HomeHero scroll behavior
+     Hero-like scroll behavior (Home + Login)
      ========================= */
   const [scrolled, setScrolled] = useState(false);
   const scrolledRef = useRef(false);
@@ -172,7 +172,7 @@ export default function Header({ variant = "private" }) {
   }, [scrolled]);
 
   useEffect(() => {
-    if (!isHomeHero) {
+    if (!isHeroRoute) {
       setScrolled(false);
       return;
     }
@@ -194,34 +194,39 @@ export default function Header({ variant = "private" }) {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [isHomeHero]);
+  }, [isHeroRoute]);
 
-  const headerPos = isHomeHero
+  const headerPos = isHeroRoute
     ? scrolled
       ? "fixed top-0"
       : "absolute top-0"
     : "sticky top-0";
 
-  const headerBg = isHomeHero
+  const headerBg = isHeroRoute
     ? scrolled
       ? "bg-[var(--surface)] text-[var(--text)]"
       : "bg-transparent text-[var(--text)]"
     : "bg-[var(--surface)] text-[var(--text)]";
 
-  const headerBorderShadow = isHomeHero
+  const headerBorderShadow = isHeroRoute
     ? scrolled
       ? "border-b border-[var(--border)] shadow-sm"
       : "border-b border-transparent"
     : "border-b border-[var(--border)] shadow-sm";
 
-  // ✅ when header is white (scrolled on hero OR any other page)
-  const headerIsWhite = !isHomeHero || scrolled;
+  // ✅ when header is white (scrolled on hero-like OR any other page)
+  const headerIsWhite = !isHeroRoute || scrolled;
 
   // ✅ Tabs only when header is white (and logged-in)
   const showTabs = headerIsWhite && !isPublic;
 
-  // ✅ Support + My Bookings only when transparent on hero (and logged-in)
+  // ✅ Support + My Bookings only when transparent on hero-like (and logged-in)
   const showSupportAndBookings = !headerIsWhite && !isPublic;
+
+  // ✅ Optional: open notifications => reset count
+  useEffect(() => {
+    if (notifOpen) setNotifCount(0);
+  }, [notifOpen]);
 
   return (
     <header
@@ -266,7 +271,7 @@ export default function Header({ variant = "private" }) {
               <>
                 {/* ===== Desktop strip ===== */}
                 <div className="hidden md:flex items-stretch">
-                  {/* ✅ Support + My Bookings ONLY when transparent (hero top) */}
+                  {/* ✅ Support + My Bookings ONLY when transparent (hero-like top) */}
                   {showSupportAndBookings && (
                     <>
                       {/* Support */}
@@ -414,15 +419,9 @@ export default function Header({ variant = "private" }) {
                         </div>
 
                         <div className="mt-3 border-t border-[var(--border)] pt-3">
-                          <DropItem onClick={() => go("/wallet/history")}>
-                            Wallet History
-                          </DropItem>
-                          <DropItem onClick={() => go("/wallet/statement")}>
-                            Download Statement
-                          </DropItem>
-                          <DropItem onClick={() => go("/wallet/refunds")}>
-                            Refunds & Adjustments
-                          </DropItem>
+                          <DropItem onClick={() => go("/wallet/history")}>Wallet History</DropItem>
+                          <DropItem onClick={() => go("/wallet/statement")}>Download Statement</DropItem>
+                          <DropItem onClick={() => go("/wallet/refunds")}>Refunds & Adjustments</DropItem>
                         </div>
                       </DropdownPanel>
                     )}
@@ -430,7 +429,7 @@ export default function Header({ variant = "private" }) {
 
                   <QuickSep tone={headerIsWhite ? "dark" : "light"} />
 
-                  {/* Notifications (always) */}
+                  {/* Notifications (always) ✅ with count */}
                   <div
                     ref={notifRef}
                     className="relative"
@@ -444,14 +443,13 @@ export default function Header({ variant = "private" }) {
                       icon={<NotifBadgeIcon />}
                       open={notifOpen}
                       caret
+                      badgeCount={notifCount}
                       onClick={() => toggleMenu("notif")}
                     />
 
                     {notifOpen && (
                       <DropdownPanel widthClass="w-80">
-                        <div className="px-2 py-1 text-sm font-semibold">
-                          Notifications
-                        </div>
+                        <div className="px-2 py-1 text-sm font-semibold">Notifications</div>
                         <div className="divide-y divide-[var(--border)] max-h-80 overflow-auto">
                           <NotifItem title="PNR AD4K9Q ticketed" meta="Just now" />
                           <NotifItem title="Low wallet threshold crossed" meta="10m ago" />
@@ -495,13 +493,25 @@ export default function Header({ variant = "private" }) {
                     <WalletIcon className="w-4 h-4" />
                   </button>
 
+                  {/* ✅ Notifications mobile with badge */}
                   <button
                     onClick={() => toggleMenu("notif")}
-                    className="h-10 w-10 inline-grid place-items-center rounded-md border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]"
+                    className="relative h-10 w-10 inline-grid place-items-center rounded-md border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]"
                     type="button"
                     aria-label="Notifications"
                   >
                     <BellIcon className="w-4 h-4" />
+                    {notifCount > 0 && (
+                      <span
+                        className={cx(
+                          "absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1",
+                          "inline-flex items-center justify-center rounded-full text-[11px] font-bold",
+                          "bg-[var(--primary)] text-white border border-[var(--surface)]"
+                        )}
+                      >
+                        {notifCount > 99 ? "99+" : notifCount}
+                      </span>
+                    )}
                   </button>
                 </div>
 
@@ -643,8 +653,9 @@ function QuickTileButton({
   onClick,
   tone = "light",
   caret = true,
+  badgeCount = 0,
 }) {
-  const isLight = tone === "light"; // light = hero top (text white)
+  const isLight = tone === "light";
   const titleCls = isLight ? "text-white" : "text-[var(--text)]";
   const subCls = isLight ? "text-white/70" : "text-[var(--muted)]";
   const caretCls = isLight ? "text-white/70" : "text-[var(--muted)]";
@@ -654,11 +665,28 @@ function QuickTileButton({
       type="button"
       onClick={onClick}
       className={[
-        "h-full px-4 py-2 inline-flex items-center gap-3 text-left transition-colors rounded-md cursor-pointer",
+        "relative h-full px-4 py-2 inline-flex items-center gap-3 text-left transition-colors rounded-md cursor-pointer",
         isLight ? "hover:bg-white/10" : "hover:bg-[var(--surface2)]",
       ].join(" ")}
     >
-      <span className="grid place-items-center shrink-0">{icon}</span>
+      <span className="relative grid place-items-center shrink-0">
+        {icon}
+
+        {badgeCount > 0 && (
+          <span
+            className={cx(
+              "absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1",
+              "inline-flex items-center justify-center rounded-full text-[11px] font-bold",
+              isLight
+                ? "bg-white text-[var(--text)] border border-white/40"
+                : "bg-[var(--primary)] text-white border border-[var(--surface)]"
+            )}
+            aria-label={`${badgeCount} notifications`}
+          >
+            {badgeCount > 99 ? "99+" : badgeCount}
+          </span>
+        )}
+      </span>
 
       {(title || subtitle) && (
         <span className="leading-tight">
@@ -689,9 +717,6 @@ function QuickSep({ tone = "light" }) {
   return <div className={["w-px my-2 border-l border-dashed", cls].join(" ")} />;
 }
 
-/* =========================
-   ✅ Enterprise Profile Pill
-   ========================= */
 function ProfilePill({ tone = "glass", open, name, agentId, badge, onClick }) {
   const isGlass = tone === "glass";
 
@@ -702,10 +727,6 @@ function ProfilePill({ tone = "glass", open, name, agentId, badge, onClick }) {
   const nameCls = isGlass ? "text-white" : "text-[var(--text)]";
   const idCls = isGlass ? "text-white/70" : "text-[var(--muted)]";
   const caretCls = isGlass ? "text-white/70" : "text-[var(--muted)]";
-
-  const badgeCls = isGlass
-    ? "bg-white/10 border border-white/15 text-white/90"
-    : "bg-[var(--primarySoft)] border border-[var(--border)] text-[var(--text)]";
 
   return (
     <button
@@ -720,7 +741,7 @@ function ProfilePill({ tone = "glass", open, name, agentId, badge, onClick }) {
       <Avatar size="sm" />
 
       <div className="hidden md:flex items-center gap-2 min-w-0">
-        <div className="min-w-0 ">
+        <div className="min-w-0">
           <div className={["text-[13px] font-semibold leading-tight truncate max-w-[10.5rem]", nameCls].join(" ")}>
             {name}
           </div>
@@ -728,8 +749,6 @@ function ProfilePill({ tone = "glass", open, name, agentId, badge, onClick }) {
             ID: {agentId}
           </div>
         </div>
-
-
       </div>
 
       <span className="ml-1">
@@ -743,7 +762,7 @@ function ProfilePill({ tone = "glass", open, name, agentId, badge, onClick }) {
 function DropItem({ children, onClick }) {
   return (
     <button
-      className="w-full text-left px-3 py-2 rounded-md hover:bg-[var(--surface2)] text-sm cursor-pointer" 
+      className="w-full text-left px-3 py-2 rounded-md hover:bg-[var(--surface2)] text-sm cursor-pointer"
       onClick={onClick}
       type="button"
     >
@@ -828,11 +847,10 @@ function WalletBadgeIcon() {
 }
 function NotifBadgeIcon() {
   return (
-
     <img
       src="https://cdn-icons-png.flaticon.com/128/890/890941.png"
       className="w-8"
-      alt="Wallet"
+      alt="Notifications"
     />
   );
 }

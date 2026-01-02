@@ -26,6 +26,7 @@ import RefundsAdjustments from "./pages/dashboard/wallet/RefundsAdjustments";
 import TicketCopyRoute from "./pages/FlightBooking/TicketCopyRoute";
 import help from "./pages/HelpCenter";
 import HelpCenter from "./pages/HelpCenter";
+import AboutUs from "./pages/AboutUs";
 
 
 function Protected({ children }) {
@@ -52,6 +53,7 @@ export default function App() {
       >
 
         <Route index element={<Home />} />
+        <Route path="about" element={<AboutUs />} />
 
         <Route path="flight-results" element={<FlightResults />} />
 
