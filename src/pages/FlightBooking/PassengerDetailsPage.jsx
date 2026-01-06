@@ -1,4 +1,12 @@
 // src/pages/PassengerDetailsPage.jsx
+// ✅ DROP-IN (UPDATED for RoundTrip SeatMap + accurate fixes)
+// ✅ Seats = ADT + CHD (INF excluded) everywhere (SeatMap + trim + agent commission)
+// ✅ RoundTrip: selectedSeats supports { onward:[], return:[] } and SeatMap legs tabs
+// ✅ seatTotal works for ONEWAY (array) + ROUNDTRIP (object)
+// ✅ seat trim works for ONEWAY + ROUNDTRIP (per-leg trim)
+// ✅ Header absolute highlight works (parent relative)
+// ✅ Errors box uses theme vars (no hard tailwind colors)
+
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import SeatMap from "./flightlist/SeatMap";
@@ -34,6 +42,10 @@ function sum(arr) {
   return (arr || []).reduce((a, b) => a + Number(b || 0), 0);
 }
 
+function isObj(v) {
+  return v && typeof v === "object" && !Array.isArray(v);
+}
+
 /** ===================== THEME VARS (no hard colors needed) ===================== */
 const VAR = {
   surface: "var(--surface, rgba(255,255,255,0.92))",
@@ -58,10 +70,7 @@ function Pill({ children, tone = "default" }) {
       : { background: VAR.surface2, border: `1px solid ${VAR.border}`, color: VAR.muted };
 
   return (
-    <span
-      className="inline-flex items-center rounded-full px-2 py-[2px] text-[10px] font-semibold uppercase tracking-wide"
-      style={style}
-    >
+    <span className="inline-flex items-center rounded-full px-2 py-[2px] text-[10px] font-semibold uppercase tracking-wide" style={style}>
       {children}
     </span>
   );
@@ -236,17 +245,19 @@ function buildPaxBreakup(pricing, paxConfig) {
   return { pax, ADT: split(adtTotal), CHD: split(chdTotal), INF: split(infTotal) };
 }
 
-/** ✅ Roundtrip agent compute: accepts fares array */
-function computeAgentFigures({ grossTotal, pricing, fares = [], paxConfig }) {
-  const totalPax =
-    (paxConfig?.adults || 0) + (paxConfig?.children || 0) + (paxConfig?.infants || 0) ||
-    (pricing?.pax?.adults || 0) + (pricing?.pax?.children || 0) + (pricing?.pax?.infants || 0) ||
+/** ✅ Agent compute: use seats (ADT+CHD) for multiplier */
+function computeAgentFigures({ grossTotal, pricing, fares = [], paxConfig, seatCount }) {
+  // seats = ADT + CHD (infants excluded)
+  const seats =
+    Number(seatCount) ||
+    (paxConfig?.adults || 0) + (paxConfig?.children || 0) ||
+    (pricing?.pax?.adults || 0) + (pricing?.pax?.children || 0) ||
     1;
 
   const apiAgent = pricing?.agent || null;
 
   const fromPricingCommission = Number(apiAgent?.commissionTotal ?? pricing?.commissionTotal ?? pricing?.commissionINR ?? 0) || 0;
-  const fromFareCommission = fares.reduce((acc, f) => acc + Number(f?.commissionINR || 0), 0) * totalPax;
+  const fromFareCommission = fares.reduce((acc, f) => acc + Number(f?.commissionINR || 0), 0) * seats;
 
   const commissionTotal = fromPricingCommission > 0 ? fromPricingCommission : fromFareCommission;
 
@@ -292,6 +303,7 @@ export default function PassengerDetailsPage() {
   }, [incomingState]);
 
   const tripType = (ctx?.tripType || ctx?.searchType || "ONEWAY").toUpperCase();
+  const isRT = tripType === "ROUNDTRIP";
 
   // oneway
   const selectedFlight = ctx?.selectedFlight ?? null;
@@ -306,33 +318,30 @@ export default function PassengerDetailsPage() {
   const pricing = ctx?.pricing ?? null;
 
   /**
-   * ✅ FIX: pax resolve for ROUNDTRIP too (robust)
-   * priority:
-   * 1) ctx.paxConfig / ctx.pax / etc
-   * 2) pricing.pax
-   * 3) url query (adults/children/infants)
-   * 4) fallback search ctx from sessionStorage (if present)
+   * ✅ pax resolve (robust)
+   * priority: ctx > pricing > query > searchStore
    */
- const paxConfig = useMemo(() => {
-  const fromCtx = extractPaxFromAny(ctx);
-  const fromPricing = extractPaxFromAny(pricing);
-  const fromQuery = paxFromQuery(searchParams);
-  const fromSearchStore = readFallbackSearchPax();
+  const paxConfig = useMemo(() => {
+    const fromCtx = extractPaxFromAny(ctx);
+    const fromPricing = extractPaxFromAny(pricing);
+    const fromQuery = paxFromQuery(searchParams);
+    const fromSearchStore = readFallbackSearchPax();
+    return normalizePax(fromCtx ?? fromPricing ?? fromQuery ?? fromSearchStore, null);
+  }, [ctx, pricing, searchParams]);
 
-  // ✅ Priority: ctx > pricing > query > searchStore
-  return normalizePax(fromCtx ?? fromPricing ?? fromQuery ?? fromSearchStore, null);
-}, [ctx, pricing, searchParams]);
-
+  // ✅ seats = ADT + CHD (infants excluded)
+  const seatCount = useMemo(() => {
+    const a = Number(paxConfig?.adults || 0);
+    const c = Number(paxConfig?.children || 0);
+    return Math.max(0, a + c);
+  }, [paxConfig]);
 
   // ✅ stricter requirements (ROUNDTRIP must have both legs + both fares)
   const hasRequired = useMemo(() => {
     if (!pricing) return false;
-
-    if (tripType === "ROUNDTRIP") {
-      return Boolean(selectedFlightOnward && selectedFlightReturn && selectedFareOnward && selectedFareReturn);
-    }
+    if (isRT) return Boolean(selectedFlightOnward && selectedFlightReturn && selectedFareOnward && selectedFareReturn);
     return Boolean(selectedFlight && selectedFare);
-  }, [pricing, tripType, selectedFlight, selectedFare, selectedFlightOnward, selectedFlightReturn, selectedFareOnward, selectedFareReturn]);
+  }, [pricing, isRT, selectedFlight, selectedFare, selectedFlightOnward, selectedFlightReturn, selectedFareOnward, selectedFareReturn]);
 
   const passengers = useMemo(() => {
     const list = [];
@@ -346,10 +355,37 @@ export default function PassengerDetailsPage() {
 
   const [contact, setContact] = useState({ email: "", phone: "" });
   const [paxDetails, setPaxDetails] = useState({});
-  const [selectedSeats, setSelectedSeats] = useState([]);
+  const [selectedSeats, setSelectedSeats] = useState(() => (isRT ? { onward: [], return: [] } : []));
   const [gstEnabled, setGstEnabled] = useState(false);
   const [gstDetails, setGstDetails] = useState({ gstin: "", company: "", address: "" });
   const [errors, setErrors] = useState([]);
+
+  // ✅ keep selectedSeats shape correct if tripType changes / ctx loads late
+  useEffect(() => {
+    setSelectedSeats((prev) => {
+      if (isRT) {
+        if (isObj(prev)) {
+          return {
+            onward: Array.isArray(prev.onward) ? prev.onward : [],
+            return: Array.isArray(prev.return) ? prev.return : [],
+          };
+        }
+        // array -> treat as onward
+        return { onward: Array.isArray(prev) ? prev : [], return: [] };
+      }
+      // ONEWAY
+      if (Array.isArray(prev)) return prev;
+      return Array.isArray(prev?.onward) ? prev.onward : [];
+    });
+  }, [isRT]);
+
+  // ✅ seatSelectedCount works for array + {onward,return}
+  const seatSelectedCount = useMemo(() => {
+    if (Array.isArray(selectedSeats)) return selectedSeats.length;
+    const o = Array.isArray(selectedSeats?.onward) ? selectedSeats.onward.length : 0;
+    const r = Array.isArray(selectedSeats?.return) ? selectedSeats.return.length : 0;
+    return o + r;
+  }, [selectedSeats]);
 
   useEffect(() => {
     setPaxDetails((prev) => {
@@ -368,9 +404,32 @@ export default function PassengerDetailsPage() {
     setPaxDetails((prev) => ({ ...prev, [paxId]: { ...(prev[paxId] || {}), [field]: value } }));
   }
 
+  // ✅ trim seats by seatCount (ADT+CHD), per-leg for roundtrip
+  useEffect(() => {
+    if (seatCount <= 0) {
+      // if only infants, keep empty
+      setSelectedSeats((prev) => (isRT ? { onward: [], return: [] } : Array.isArray(prev) ? [] : []));
+      return;
+    }
+
+    setSelectedSeats((prev) => {
+      if (isRT) {
+        const o = isObj(prev) && Array.isArray(prev.onward) ? prev.onward : Array.isArray(prev) ? prev : [];
+        const r = isObj(prev) && Array.isArray(prev.return) ? prev.return : [];
+        const needTrimO = o.length > seatCount;
+        const needTrimR = r.length > seatCount;
+        if (!needTrimO && !needTrimR && isObj(prev)) return prev;
+        return { onward: needTrimO ? o.slice(0, seatCount) : o, return: needTrimR ? r.slice(0, seatCount) : r };
+      }
+
+      const arr = Array.isArray(prev) ? prev : Array.isArray(prev?.onward) ? prev.onward : [];
+      return arr.length > seatCount ? arr.slice(0, seatCount) : arr;
+    });
+  }, [seatCount, isRT]);
+
   // totals
   const baseTotalFare = Number(pricing?.totalFare ?? 0);
-  const seatTotal = selectedSeats.length * SEAT_PRICE;
+  const seatTotal = seatSelectedCount * SEAT_PRICE;
 
   const gstAmount = gstEnabled ? Number(pricing?.gstAmount ?? pricing?.gst ?? 0) : 0;
   const txnFee = Number(pricing?.transactionFee ?? pricing?.txnFee ?? 0);
@@ -383,17 +442,14 @@ export default function PassengerDetailsPage() {
       computeAgentFigures({
         grossTotal,
         pricing,
-        fares: tripType === "ROUNDTRIP" ? [selectedFareOnward, selectedFareReturn].filter(Boolean) : [selectedFare].filter(Boolean),
+        fares: isRT ? [selectedFareOnward, selectedFareReturn].filter(Boolean) : [selectedFare].filter(Boolean),
         paxConfig,
+        seatCount,
       }),
-    [grossTotal, pricing, selectedFare, selectedFareOnward, selectedFareReturn, paxConfig, tripType]
+    [grossTotal, pricing, selectedFare, selectedFareOnward, selectedFareReturn, paxConfig, isRT, seatCount]
   );
 
   const finalTotal = grossTotal;
-
-  useEffect(() => {
-    if (totalPax > 0 && selectedSeats.length > totalPax) setSelectedSeats((s) => s.slice(0, totalPax));
-  }, [totalPax, selectedSeats.length]);
 
   function validateBeforeSubmit() {
     const list = [];
@@ -457,11 +513,12 @@ export default function PassengerDetailsPage() {
         grossTotal,
         agent,
         finalTotal,
-        pax: paxConfig, // ✅ ensure pax stored here too
+        pax: paxConfig,
+        seatCount,
       },
 
-      paxConfig, // ✅ normalized
-      pax: paxConfig, // ✅ for any other page
+      paxConfig,
+      pax: paxConfig,
       contact,
       paxDetails,
 
@@ -493,17 +550,10 @@ export default function PassengerDetailsPage() {
   if (!hasRequired) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div
-          className="rounded-md px-6 py-5 text-center text-sm shadow-sm"
-          style={{ background: VAR.surface, border: `1px solid ${VAR.border}`, color: VAR.muted }}
-        >
+        <div className="rounded-md px-6 py-5 text-center text-sm shadow-sm" style={{ background: VAR.surface, border: `1px solid ${VAR.border}`, color: VAR.muted }}>
           Missing selection (flight/fare). Please go back to results and select properly.
           <div className="mt-3 flex justify-center gap-2">
-            <button
-              onClick={() => navigate(-1)}
-              className="rounded-md px-4 py-2 text-xs font-semibold"
-              style={{ background: VAR.primary, color: "var(--onPrimary, #fff)" }}
-            >
+            <button onClick={() => navigate(-1)} className="rounded-md px-4 py-2 text-xs font-semibold" style={{ background: VAR.primary, color: "var(--onPrimary, #fff)" }}>
               Go Back
             </button>
             <button
@@ -527,45 +577,107 @@ export default function PassengerDetailsPage() {
   }
 
   // ✅ refundable header logic for roundtrip
-  const refundableFlag =
-    tripType === "ROUNDTRIP"
-      ? selectedFareOnward?.refundable === "Refundable" && selectedFareReturn?.refundable === "Refundable"
-      : (selectedFare?.refundable || selectedFlight?.refundable || "Non-Refundable") === "Refundable";
+  const refundableFlag = isRT
+    ? selectedFareOnward?.refundable === "Refundable" && selectedFareReturn?.refundable === "Refundable"
+    : (selectedFare?.refundable || selectedFlight?.refundable || "Non-Refundable") === "Refundable";
+
+  // ✅ SeatMap legs metadata for roundtrip tabs
+  const seatLegs = useMemo(() => {
+    if (!isRT) return null;
+    return [
+      {
+        key: "onward",
+        label: "Onward",
+        meta: `${selectedFlightOnward?.fromIata || ""} → ${selectedFlightOnward?.toIata || ""}${selectedFlightOnward?.departDate ? ` • ${selectedFlightOnward.departDate}` : ""}`,
+        seatPrice: SEAT_PRICE,
+      },
+      {
+        key: "return",
+        label: "Return",
+        meta: `${selectedFlightReturn?.fromIata || ""} → ${selectedFlightReturn?.toIata || ""}${selectedFlightReturn?.departDate ? ` • ${selectedFlightReturn.departDate}` : ""}`,
+        seatPrice: SEAT_PRICE,
+      },
+    ];
+  }, [isRT, selectedFlightOnward, selectedFlightReturn]);
 
   return (
     <div className="min-h-screen">
-      <div className="sticky top-0 z-30 border-b" style={{ borderColor: VAR.border, background: VAR.surface }}>
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.25em]" style={{ color: VAR.subtle }}>
-              Step 2 • Traveller Details
-            </p>
-            <h1 className="text-lg sm:text-xl font-semibold" style={{ color: VAR.text }}>
-              Enter passenger details &amp; review your fare
-            </h1>
-            <div className="mt-1 flex flex-wrap items-center gap-2">
-              <Pill>{tripType === "ROUNDTRIP" ? "Round Trip" : tripType === "SPECIAL" ? "Special Fare" : "One Way"}</Pill>
-              <Pill tone={refundableFlag ? "ok" : "warn"}>{refundableFlag ? "Refundable" : "Non-Refundable"}</Pill>
-              <Pill>{`Pax: ${paxConfig.adults}A ${paxConfig.children}C ${paxConfig.infants}I`}</Pill>
+      <div className="border-b relative" style={{ borderColor: VAR.border, background: VAR.surface }}>
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: VAR.border }} />
+
+        <div className="mx-auto w-full max-w-7xl px-4">
+          <div className="flex items-start justify-between gap-4 py-3 sm:py-4">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span
+                  className="inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em]"
+                  style={{ borderColor: VAR.border, color: VAR.subtle, background: VAR.surface }}
+                >
+                  Step 2
+                </span>
+
+                <span className="text-[11px] font-semibold uppercase tracking-[0.22em]" style={{ color: VAR.subtle }}>
+                  Traveller Details
+                </span>
+
+                <span className="hidden sm:inline text-[11px]" style={{ color: VAR.muted }}>
+                  • Review &amp; confirm
+                </span>
+              </div>
+
+              <h1 className="mt-1 text-[17px] sm:text-xl font-semibold leading-tight" style={{ color: VAR.text }}>
+                Enter passenger details &amp; review your fare
+              </h1>
+
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <Pill>{isRT ? "Round Trip" : tripType === "SPECIAL" ? "Special Fare" : "One Way"}</Pill>
+                <Pill tone={refundableFlag ? "ok" : "warn"}>{refundableFlag ? "Refundable" : "Non-Refundable"}</Pill>
+                <Pill>{`Pax: ${paxConfig.adults}A ${paxConfig.children}C ${paxConfig.infants}I`}</Pill>
+                <Pill>{`Seats: ${seatCount}`}</Pill>
+              </div>
+            </div>
+
+            <div className="hidden sm:flex shrink-0 flex-col items-end gap-2">
+              <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs" style={{ borderColor: VAR.border, background: VAR.surface, color: VAR.muted }}>
+                <span className="h-2 w-2 rounded-full" style={{ background: VAR.success }} />
+                <span className="font-semibold" style={{ color: VAR.text }}>
+                  Secure booking
+                </span>
+                <span style={{ color: VAR.muted }}>• SSL</span>
+              </div>
+
+              <div className="text-[11px]" style={{ color: VAR.muted }}>
+                Please ensure names match passport/ID.
+              </div>
             </div>
           </div>
 
-          <div className="hidden sm:flex items-center gap-2 text-xs" style={{ color: VAR.muted }}>
-            <span className="h-2 w-2 rounded-full" style={{ background: VAR.success }} />
-            <span>Secure booking</span>
+          <div className="pb-3 sm:pb-4">
+            <div className="h-1.5 w-full overflow-hidden rounded-full" style={{ background: VAR.border }}>
+              <div className="h-full rounded-full" style={{ width: "66%", background: VAR.primary || VAR.text }} />
+            </div>
+
+            <div className="mt-2 flex items-center justify-between text-[11px]" style={{ color: VAR.muted }}>
+              <span>Search</span>
+              <span style={{ color: VAR.text, fontWeight: 600 }}>Traveller</span>
+              <span>Payment</span>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="mx-auto max-w-7xl px-4 pt-6 pb-10 lg:flex lg:items-start lg:gap-6">
-        {/* LEFT */}
         <section className="flex-1 space-y-4">
           <SectionCard title="Passenger Details" subtitle="Ensure names match the government ID / passport exactly.">
             <form onSubmit={handleSubmit} className="space-y-5">
               {errors.length > 0 && (
                 <div
                   className="rounded-md px-4 py-3 text-sm"
-                  style={{ border: `1px solid rgba(244,63,94,0.25)`, background: "rgba(244,63,94,0.08)", color: "rgba(127,29,29,0.95)" }}
+                  style={{
+                    border: `1px solid var(--dangerBorder, rgba(244,63,94,0.25))`,
+                    background: "var(--dangerSoft, rgba(244,63,94,0.08))",
+                    color: "var(--dangerText, rgba(127,29,29,0.95))",
+                  }}
                 >
                   <div className="font-semibold mb-1">Please fix:</div>
                   <ul className="list-disc pl-5 space-y-1">
@@ -580,11 +692,7 @@ export default function PassengerDetailsPage() {
                 const d = paxDetails[p.id] || { title: "MR", firstName: "", lastName: "", gender: "", dob: "" };
 
                 return (
-                  <div
-                    key={p.id}
-                    className="space-y-3 rounded-md px-3.5 py-3.5 sm:px-4 sm:py-4"
-                    style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2 }}
-                  >
+                  <div key={p.id} className="space-y-3 rounded-md px-3.5 py-3.5 sm:px-4 sm:py-4" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2 }}>
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
                         <div className="text-sm font-semibold" style={{ color: VAR.text }}>
@@ -737,7 +845,10 @@ export default function PassengerDetailsPage() {
                 </div>
               </div>
 
-              <SeatMap totalPax={totalPax} selectedSeats={selectedSeats} onChange={setSelectedSeats} />
+              {/* ✅ SeatMap: seats only if seatCount > 0 (ADT+CHD). Roundtrip tabs via legs */}
+              {seatCount > 0 ? (
+                <SeatMap totalPax={seatCount} selectedSeats={selectedSeats} onChange={setSelectedSeats} seatPrice={SEAT_PRICE} legs={seatLegs} />
+              ) : null}
 
               {/* GST */}
               <div className="space-y-3 rounded-md px-3.5 py-3.5 sm:px-4 sm:py-4" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
@@ -803,11 +914,7 @@ export default function PassengerDetailsPage() {
               </div>
 
               <div className="flex justify-end pt-1">
-                <button
-                  type="submit"
-                  className="inline-flex items-center justify-center rounded-md px-6 py-2.5 text-sm font-semibold shadow-sm"
-                  style={{ background: VAR.primary, color: "var(--onPrimary, #fff)" }}
-                >
+                <button type="submit" className="inline-flex items-center justify-center rounded-md px-6 py-2.5 text-sm font-semibold shadow-sm" style={{ background: VAR.primary, color: "var(--onPrimary, #fff)" }}>
                   Continue to payment
                 </button>
               </div>
@@ -817,9 +924,9 @@ export default function PassengerDetailsPage() {
 
         {/* RIGHT */}
         <aside className="mt-6 w-full space-y-4 lg:mt-0 lg:w-[360px] lg:flex-shrink-0 lg:sticky lg:top-24">
-          <SectionCard title="Selected Flight" subtitle={tripType === "ROUNDTRIP" ? "Onward + Return" : "Summary"}>
+          <SectionCard title="Selected Flight" subtitle={isRT ? "Onward + Return" : "Summary"}>
             {/* ONEWAY */}
-            {tripType !== "ROUNDTRIP" && selectedFlight ? (
+            {!isRT && selectedFlight ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <img src={selectedFlight.logo} alt={selectedFlight.airline} className="h-9 w-9 object-contain" />
@@ -843,7 +950,7 @@ export default function PassengerDetailsPage() {
             ) : null}
 
             {/* ROUNDTRIP */}
-            {tripType === "ROUNDTRIP" ? (
+            {isRT ? (
               <div className="space-y-3">
                 {selectedFlightOnward ? (
                   <div className="rounded-md px-3 py-3" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2 }}>

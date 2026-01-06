@@ -1,8 +1,9 @@
 // TicketCopyPage.tsx (drop-in replacement)
-// ✅ Static colors removed (no bg-slate-*, text-slate-*, border-slate-* color classes)
-// ✅ Uses CSS variables (same pattern like your PaymentConfirmationPage VAR object)
+// ✅ Better booking summary + clean details
+// ✅ Print prints ONLY ticket copy section (iframe print)
+// ✅ Uses CSS variables via VAR (no tailwind static colors)
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -40,6 +41,7 @@ const VAR = {
   warnSoft: "var(--warnSoft, rgba(245,158,11,0.14))",
   danger: "var(--danger, rgb(244,63,94))",
   dangerSoft: "var(--dangerSoft, rgba(244,63,94,0.12))",
+  onPrimary: "var(--onPrimary, #fff)", // allow theme override
 };
 
 const nfIN = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
@@ -147,6 +149,16 @@ const statusTone = (s: string) => {
   return { bg: VAR.surface2, fg: VAR.muted, border: VAR.border };
 };
 
+const pillStyle = (tone: { bg: string; fg: string; border: string }) => ({
+  background: tone.bg,
+  color: tone.fg,
+  borderColor: tone.border,
+});
+
+function uniq<T>(arr: T[]) {
+  return Array.from(new Set(arr.filter(Boolean as any)));
+}
+
 /* ===================== Demo data ===================== */
 
 const DEMO_TICKET: TicketData = {
@@ -224,6 +236,8 @@ export default function TicketCopyPage({
   const brandName = ticket.brand?.name || "B2B Flight Portal";
   const brandTagline = ticket.brand?.tagline || "Ticket Copy";
 
+  const ticketRef = useRef<HTMLDivElement | null>(null);
+
   const [mode, setMode] = useState<"CUSTOMER" | "AGENT">("CUSTOMER");
   const [editPricing, setEditPricing] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
@@ -255,6 +269,19 @@ export default function TicketCopyPage({
     const sf = safeNum(pricing.serviceFee);
     return supplierTotal + m + sf;
   }, [supplierTotal, pricing.markup, pricing.serviceFee]);
+
+  const pnrList = useMemo(
+    () => uniq(ticket.passengers.map((p) => p.airlinePnr).filter(Boolean) as string[]),
+    [ticket.passengers]
+  );
+  const ticketNoList = useMemo(
+    () => uniq(ticket.passengers.map((p) => p.ticketNumber).filter(Boolean) as string[]),
+    [ticket.passengers]
+  );
+  const airlineList = useMemo(
+    () => uniq(ticket.segments.map((s) => `${s.airlineName} (${s.airlineCode})`).filter(Boolean) as string[]),
+    [ticket.segments]
+  );
 
   const fareRows = useMemo(() => {
     const f = ticket.fare;
@@ -322,13 +349,91 @@ export default function TicketCopyPage({
     }
   };
 
-  const printTicket = () => window.print();
+  /** ✅ PRINT ONLY TICKET AREA (reliable) */
+  const printTicketOnly = () => {
+    const node = ticketRef.current;
+    if (!node) return;
+
+    const html = node.innerHTML;
+
+    // Create hidden iframe
+    const frame = document.createElement("iframe");
+    frame.style.position = "fixed";
+    frame.style.right = "0";
+    frame.style.bottom = "0";
+    frame.style.width = "0";
+    frame.style.height = "0";
+    frame.style.border = "0";
+    document.body.appendChild(frame);
+
+    const doc = frame.contentWindow?.document;
+    if (!doc) {
+      document.body.removeChild(frame);
+      return;
+    }
+
+    doc.open();
+    doc.write(`
+      <!doctype html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <title>Ticket Copy - ${ticket.bookingId}</title>
+          <style>
+            :root {
+              --page: ${VAR.page};
+              --surface: ${VAR.surface};
+              --surface2: ${VAR.surface2};
+              --border: ${VAR.border};
+              --text: ${VAR.text};
+              --muted: ${VAR.muted};
+              --subtle: ${VAR.subtle};
+              --primary: ${VAR.primary};
+              --accent: ${VAR.accent};
+            }
+            * { box-sizing: border-box; }
+            body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; color: var(--text); background: white; }
+            .print-wrap { padding: 18px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+            thead th { background: rgba(0,0,0,0.02); color: var(--muted); font-weight: 700; font-size: 12px; }
+            .section-title { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 800; margin: 14px 0 8px; }
+            .card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+            .muted { color: var(--muted); }
+            .subtle { color: var(--subtle); }
+            .pill { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 999px; padding: 6px 10px; font-size: 11px; font-weight: 700; }
+            .grid { display: grid; gap: 10px; }
+            .grid-2 { grid-template-columns: 1fr 1fr; }
+            .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+            @media print {
+              @page { size: A4; margin: 12mm; }
+              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-wrap">${html}</div>
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    const win = frame.contentWindow!;
+    win.focus();
+    win.print();
+
+    // cleanup
+    setTimeout(() => {
+      document.body.removeChild(frame);
+    }, 300);
+  };
 
   const titleGradient = `linear-gradient(90deg, ${VAR.primary}, ${VAR.accent})`;
   const bookingTone = statusTone(ticket.bookingStatus);
 
   return (
-    <div className="min-h-screen" >
+    <div className="min-h-screen" style={{ background: VAR.page }}>
       {/* ================= Top Bar ================= */}
       <div
         className="sticky top-0 z-30 border-b backdrop-blur"
@@ -358,7 +463,10 @@ export default function TicketCopyPage({
 
           <div className="flex flex-wrap items-center gap-2">
             {/* Mode switch */}
-            <div className="inline-flex rounded-md border p-1" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
+            <div
+              className="inline-flex rounded-md border p-1"
+              style={{ borderColor: VAR.border, background: VAR.surface2 }}
+            >
               {([
                 { key: "CUSTOMER", label: "Customer Copy" },
                 { key: "AGENT", label: "Agent Copy" },
@@ -372,7 +480,7 @@ export default function TicketCopyPage({
                     className="rounded-md px-3 py-1.5 text-[11px] font-semibold transition"
                     style={{
                       background: active ? VAR.primary : "transparent",
-                      color: active ? "white" : VAR.muted,
+                      color: active ? VAR.onPrimary : VAR.muted,
                     }}
                   >
                     {m.label}
@@ -384,12 +492,12 @@ export default function TicketCopyPage({
             {/* Actions */}
             <button
               type="button"
-              onClick={printTicket}
+              onClick={printTicketOnly}
               className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-medium"
               style={{ borderColor: VAR.border, background: VAR.surface2, color: VAR.text }}
             >
               <Printer className="h-4 w-4" />
-              Print
+              Print Ticket
             </button>
 
             <button
@@ -407,7 +515,7 @@ export default function TicketCopyPage({
               type="button"
               onClick={doEmail}
               className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-xs font-semibold disabled:opacity-60"
-              style={{ background: VAR.primary, color: "white" }}
+              style={{ background: VAR.primary, color: VAR.onPrimary }}
               disabled={!onEmailTicket || busy === "email"}
             >
               <Mail className="h-4 w-4" />
@@ -419,7 +527,11 @@ export default function TicketCopyPage({
 
       <div className="mx-auto max-w-7xl px-4 py-6 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
         {/* ================= Printable Ticket Sheet ================= */}
-        <div className="rounded-md shadow-sm overflow-hidden border" style={{ background: VAR.surface, borderColor: VAR.border }}>
+        <div
+          ref={ticketRef}
+          className="rounded-md shadow-sm overflow-hidden border"
+          style={{ background: VAR.surface, borderColor: VAR.border }}
+        >
           {/* Header strip */}
           <div className="p-5 border-b" style={{ borderColor: VAR.border }}>
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -427,7 +539,10 @@ export default function TicketCopyPage({
               <div className="flex items-start gap-3">
                 <div
                   className="h-10 w-10 rounded-md flex items-center justify-center text-xs font-bold"
-                  style={{ background: `linear-gradient(135deg, ${VAR.primary}, ${VAR.accent})`, color: "white" }}
+                  style={{
+                    background: `linear-gradient(135deg, ${VAR.primary}, ${VAR.accent})`,
+                    color: VAR.onPrimary,
+                  }}
                 >
                   {brandName
                     .split(" ")
@@ -443,7 +558,7 @@ export default function TicketCopyPage({
                     </span>
                   </div>
                   <div className="text-xs" style={{ color: VAR.subtle }}>
-                    {brandTagline}
+                    {brandTagline} • {mode === "AGENT" ? "Agent Copy" : "Customer Copy"}
                   </div>
                 </div>
               </div>
@@ -452,7 +567,7 @@ export default function TicketCopyPage({
               <div className="flex flex-col sm:items-end gap-2">
                 <div
                   className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold border"
-                  style={{ background: bookingTone.bg, color: bookingTone.fg, borderColor: bookingTone.border }}
+                  style={pillStyle(bookingTone)}
                 >
                   <BadgeCheck className="h-3.5 w-3.5" />
                   {String(ticket.bookingStatus).toUpperCase().includes("CONF") ? "Booking Confirmed" : ticket.bookingStatus}
@@ -461,7 +576,7 @@ export default function TicketCopyPage({
                 <div className="flex flex-wrap gap-2 text-[11px]" style={{ color: VAR.muted }}>
                   <span className="inline-flex items-center gap-1">
                     <CalendarDays className="h-3.5 w-3.5" />
-                    Booking Date: <span className="font-medium" style={{ color: VAR.text }}>{ticket.bookingDate}</span>
+                    Booking: <span className="font-medium" style={{ color: VAR.text }}>{ticket.bookingDate}</span>
                   </span>
                   <span className="inline-flex items-center gap-1">
                     <Clock className="h-3.5 w-3.5" />
@@ -471,29 +586,44 @@ export default function TicketCopyPage({
               </div>
             </div>
 
-            {/* Greeting */}
-            <div className="mt-4 text-sm" style={{ color: VAR.text }}>
-              <span className="font-medium">Hi,</span>
-              <div className="mt-1 text-[13px]" style={{ color: VAR.muted }}>
-                Your flight ticket for <span className="font-semibold" style={{ color: VAR.text }}>{ticket.routeLabel}</span> is
-                <span className="font-semibold" style={{ color: VAR.text }}> {String(ticket.bookingStatus).toLowerCase()}</span>.{" "}
-                Please use this copy for communication with your customer or back-office.
-              </div>
-              <div className="mt-2 text-[12px]" style={{ color: VAR.muted }}>
-                Your Booking ID is <span className="font-semibold" style={{ color: VAR.text }}>{ticket.bookingId}</span>
-              </div>
+            {/* Booking Summary (NEW) */}
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+              {[
+                { k: "Booking ID", v: ticket.bookingId },
+                { k: "Trip Type", v: ticket.tripType || "-" },
+                { k: "Passengers", v: `${ticket.passengers.length}` },
+                { k: "Airline", v: airlineList.length ? airlineList.join(", ") : "-" },
+                { k: "Airline PNR", v: pnrList.length ? pnrList.join(", ") : "-" },
+                { k: "Ticket No.", v: ticketNoList.length ? ticketNoList.join(", ") : "-" },
+              ].map((x) => (
+                <div key={x.k} className="rounded-md border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
+                  <div className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: VAR.muted }}>
+                    {x.k}
+                  </div>
+                  <div className="mt-1 text-[12px] font-semibold" style={{ color: VAR.text, wordBreak: "break-word" }}>
+                    {x.v}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Friendly note */}
+            <div className="mt-4 text-[12px]" style={{ color: VAR.muted }}>
+              Share this ticket copy with the traveler/customer. For any change/refund, always mention{" "}
+              <span className="font-semibold" style={{ color: VAR.text }}>Booking ID</span> and{" "}
+              <span className="font-semibold" style={{ color: VAR.text }}>PNR</span>.
             </div>
           </div>
 
           {/* Segment summary */}
           <div className="px-5 py-4 border-b" style={{ borderColor: VAR.border }}>
-            <div className="space-y-3">
+            <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: VAR.muted }}>
+              Flight Itinerary
+            </div>
+
+            <div className="mt-3 space-y-3">
               {ticket.segments.map((s, idx) => (
-                <div
-                  key={s.id}
-                  className="rounded-md border p-4"
-                  style={{ borderColor: VAR.border, background: VAR.surface2 }}
-                >
+                <div key={s.id} className="rounded-md border p-4" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <div
@@ -506,39 +636,28 @@ export default function TicketCopyPage({
                         <div className="text-sm font-semibold" style={{ color: VAR.text }}>
                           {s.airlineName}
                           <span style={{ color: VAR.subtle, fontWeight: 400 }}> · </span>
-                          <span style={{ color: VAR.muted }}>{s.airlineCode} {s.flightNo}</span>
+                          <span style={{ color: VAR.muted }}>
+                            {s.airlineCode} {s.flightNo}
+                          </span>
                         </div>
                         <div className="text-[11px]" style={{ color: VAR.subtle }}>
                           {ticket.tripType || "Trip"} · {s.cabin || "Cabin"}
                           {s.refundable ? ` · ${s.refundable}` : ""}
+                          {s.baggage?.checkIn || s.baggage?.cabin ? ` · Baggage: ${s.baggage?.checkIn || "-"} / ${s.baggage?.cabin || "-"}` : ""}
                         </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 text-[11px]" style={{ color: VAR.muted }}>
                       {s.durationMins ? (
-                        <span
-                          className="inline-flex items-center gap-1 rounded-full border px-2 py-1"
-                          style={{ background: VAR.surface, borderColor: VAR.border, color: VAR.muted }}
-                        >
+                        <span className="inline-flex items-center gap-1 rounded-full border px-2 py-1" style={{ background: VAR.surface, borderColor: VAR.border }}>
                           <Clock className="h-3 w-3" />
                           {toMinsLabel(s.durationMins)}
                         </span>
                       ) : null}
 
-                      <span
-                        className="inline-flex items-center gap-1 rounded-full border px-2 py-1"
-                        style={{ background: VAR.surface, borderColor: VAR.border, color: bookingTone.fg }}
-                      >
-                        <ShieldCheck className="h-3 w-3" />
-                        {ticket.bookingStatus}
-                      </span>
-
-                      {idx === 0 && ticket.segments.length > 1 ? (
-                        <span
-                          className="inline-flex items-center gap-1 rounded-full border px-2 py-1"
-                          style={{ background: VAR.surface, borderColor: VAR.border, color: VAR.muted }}
-                        >
+                      {ticket.segments.length > 1 ? (
+                        <span className="inline-flex items-center gap-1 rounded-full border px-2 py-1" style={{ background: VAR.surface, borderColor: VAR.border }}>
                           <Tag className="h-3 w-3" />
                           Segment {idx + 1}
                         </span>
@@ -560,11 +679,8 @@ export default function TicketCopyPage({
 
                     <div className="hidden md:flex flex-col items-center justify-center">
                       <div className="h-[2px] w-full" style={{ background: `linear-gradient(90deg, transparent, ${VAR.border}, transparent)` }} />
-                      <div
-                        className="-mt-2 rounded-full px-2 text-[10px]"
-                        style={{ background: VAR.surface, border: `1px solid ${VAR.border}`, color: VAR.subtle }}
-                      >
-                        Non-stop
+                      <div className="-mt-2 rounded-full px-2 text-[10px]" style={{ background: VAR.surface, border: `1px solid ${VAR.border}`, color: VAR.subtle }}>
+                        {ticket.segments.length === 1 ? "Non-stop" : "Layover"}
                       </div>
                     </div>
 
@@ -588,7 +704,7 @@ export default function TicketCopyPage({
           <div className="px-5 py-4 border-b" style={{ borderColor: VAR.border }}>
             <div className="flex items-center justify-between">
               <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: VAR.muted }}>
-                Passengers
+                Passenger Details
               </div>
               <div className="text-[11px]" style={{ color: VAR.subtle }}>
                 {ticket.passengers.length} passenger{ticket.passengers.length > 1 ? "s" : ""}
@@ -600,11 +716,11 @@ export default function TicketCopyPage({
                 <thead>
                   <tr style={{ background: VAR.surface2, color: VAR.muted }}>
                     <th className="text-left font-semibold px-3 py-2 rounded-l-lg">Passenger</th>
-                    <th className="text-left font-semibold px-3 py-2">Airline</th>
+                    <th className="text-left font-semibold px-3 py-2">Type</th>
                     <th className="text-left font-semibold px-3 py-2">Status</th>
                     <th className="text-left font-semibold px-3 py-2">Sector</th>
-                    <th className="text-left font-semibold px-3 py-2">Airline PNR</th>
-                    <th className="text-left font-semibold px-3 py-2 rounded-r-lg">Ticket Number</th>
+                    <th className="text-left font-semibold px-3 py-2">PNR</th>
+                    <th className="text-left font-semibold px-3 py-2 rounded-r-lg">Ticket No.</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -616,18 +732,14 @@ export default function TicketCopyPage({
                           <div className="font-medium" style={{ color: VAR.text }}>
                             {(p.title ? p.title + " " : "") + p.firstName + " " + p.lastName}
                           </div>
-                          <div className="text-[10px]" style={{ color: VAR.subtle }}>{p.paxType || "ADT"}</div>
                         </td>
-                        <td className="px-3 py-2" style={{ color: VAR.muted }}>{p.airline || "-"}</td>
+                        <td className="px-3 py-2" style={{ color: VAR.muted }}>{p.paxType || "ADT"}</td>
                         <td className="px-3 py-2">
-                          <span
-                            className="inline-flex rounded-full px-2 py-0.5 font-semibold border"
-                            style={{ background: tone.bg, color: tone.fg, borderColor: VAR.border }}
-                          >
+                          <span className="inline-flex rounded-full px-2 py-0.5 font-semibold border" style={{ ...pillStyle(tone), borderColor: VAR.border }}>
                             {p.status}
                           </span>
                         </td>
-                        <td className="px-3 py-2" style={{ color: VAR.muted }}>{p.sector}</td>
+                        <td className="px-3 py-2" style={{ color: VAR.muted }}>{p.sector || "-"}</td>
                         <td className="px-3 py-2" style={{ color: VAR.muted }}>{p.airlinePnr || "-"}</td>
                         <td className="px-3 py-2" style={{ color: VAR.muted }}>{p.ticketNumber || "-"}</td>
                       </tr>
@@ -636,35 +748,13 @@ export default function TicketCopyPage({
                 </tbody>
               </table>
             </div>
-          </div>
 
-          {/* Baggage */}
-          <div className="px-5 py-4 border-b" style={{ borderColor: VAR.border }}>
-            <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: VAR.muted }}>
-              Baggage Info
-            </div>
-
-            <div className="mt-3 overflow-x-auto">
-              <table className="min-w-full text-[11px]">
-                <thead>
-                  <tr style={{ background: VAR.surface2, color: VAR.muted }}>
-                    <th className="text-left font-semibold px-3 py-2 rounded-l-lg">Airline</th>
-                    <th className="text-left font-semibold px-3 py-2">Sector</th>
-                    <th className="text-left font-semibold px-3 py-2">Check-in</th>
-                    <th className="text-left font-semibold px-3 py-2 rounded-r-lg">Cabin</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ticket.segments.map((s) => (
-                    <tr key={s.id} className="border-b last:border-b-0" style={{ borderColor: VAR.border }}>
-                      <td className="px-3 py-2" style={{ color: VAR.muted }}>{s.airlineCode}</td>
-                      <td className="px-3 py-2" style={{ color: VAR.muted }}>{s.from.code}-{s.to.code}</td>
-                      <td className="px-3 py-2" style={{ color: VAR.muted }}>{s.baggage?.checkIn || "As per airline"}</td>
-                      <td className="px-3 py-2" style={{ color: VAR.muted }}>{s.baggage?.cabin || "As per airline"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            {/* Quick note */}
+            <div className="mt-3 inline-flex items-start gap-2 rounded-md border px-3 py-2 text-[11px]" style={{ background: VAR.surface2, borderColor: VAR.border, color: VAR.muted }}>
+              <ShieldCheck className="h-4 w-4" style={{ color: VAR.subtle }} />
+              <span>
+                For support/refund/amendments, share <b style={{ color: VAR.text }}>Booking ID</b> & <b style={{ color: VAR.text }}>PNR</b>.
+              </span>
             </div>
           </div>
 
@@ -675,7 +765,7 @@ export default function TicketCopyPage({
                 Fare Details
               </div>
               <div className="text-[10px]" style={{ color: VAR.subtle }}>
-                {mode === "AGENT" ? "Agent view includes internal pricing" : "Customer view"}
+                {mode === "AGENT" ? "Agent view may include internal pricing" : "Customer view"}
               </div>
             </div>
 
@@ -688,7 +778,7 @@ export default function TicketCopyPage({
                   {fareRows.map((r, i) => (
                     <div key={i} className="flex items-center justify-between text-[11px]">
                       <span style={{ color: VAR.subtle }}>{r.label}</span>
-                      <span style={{ fontWeight: 600, color: r.amount < 0 ? VAR.success : VAR.text }}>
+                      <span style={{ fontWeight: 700, color: r.amount < 0 ? VAR.success : VAR.text }}>
                         {fmtINR(r.amount)}
                       </span>
                     </div>
@@ -708,31 +798,31 @@ export default function TicketCopyPage({
                 <div className="mt-2 space-y-1">
                   <div className="flex items-center justify-between text-[11px]">
                     <span style={{ color: VAR.subtle }}>Supplier Total</span>
-                    <span style={{ fontWeight: 600, color: VAR.text }}>{fmtINR(supplierTotal)}</span>
+                    <span style={{ fontWeight: 700, color: VAR.text }}>{fmtINR(supplierTotal)}</span>
                   </div>
 
-                  {safeNum(pricing.markup) > 0 || mode === "AGENT" ? (
+                  {(safeNum(pricing.markup) > 0 || mode === "AGENT") && (
                     <div className="flex items-center justify-between text-[11px]">
                       <span style={{ color: VAR.subtle }}>{mode === "AGENT" ? "Agent Markup" : "Service Add-on"}</span>
-                      <span style={{ fontWeight: 600, color: VAR.text }}>{fmtINR(safeNum(pricing.markup))}</span>
+                      <span style={{ fontWeight: 700, color: VAR.text }}>{fmtINR(safeNum(pricing.markup))}</span>
                     </div>
-                  ) : null}
+                  )}
 
-                  {safeNum(pricing.serviceFee) > 0 || mode === "AGENT" ? (
+                  {(safeNum(pricing.serviceFee) > 0 || mode === "AGENT") && (
                     <div className="flex items-center justify-between text-[11px]">
                       <span style={{ color: VAR.subtle }}>{mode === "AGENT" ? "Service Fee" : "Convenience Fee"}</span>
-                      <span style={{ fontWeight: 600, color: VAR.text }}>{fmtINR(safeNum(pricing.serviceFee))}</span>
+                      <span style={{ fontWeight: 700, color: VAR.text }}>{fmtINR(safeNum(pricing.serviceFee))}</span>
                     </div>
-                  ) : null}
+                  )}
 
-                  {mode === "AGENT" && safeNum(pricing.commissionOverride) > 0 ? (
+                  {mode === "AGENT" && safeNum(pricing.commissionOverride) > 0 && (
                     <div className="flex items-center justify-between text-[11px]">
                       <span style={{ color: VAR.subtle }}>Commission (Display)</span>
-                      <span style={{ fontWeight: 700, color: VAR.success }}>
+                      <span style={{ fontWeight: 800, color: VAR.success }}>
                         {fmtINR(safeNum(pricing.commissionOverride))}
                       </span>
                     </div>
-                  ) : null}
+                  )}
                 </div>
 
                 <div className="mt-2 pt-2 border-t flex items-center justify-between text-[11px]" style={{ borderColor: VAR.border }}>
@@ -740,11 +830,11 @@ export default function TicketCopyPage({
                   <span className="font-semibold" style={{ color: VAR.text }}>{fmtINR(customerPayable)}</span>
                 </div>
 
-                {mode === "AGENT" ? (
+                {mode === "AGENT" && (
                   <div className="mt-2 text-[10px]" style={{ color: VAR.subtle }}>
-                    Agent Net (to supplier): <span style={{ fontWeight: 600, color: VAR.text }}>{fmtINR(agentNetTotal)}</span>
+                    Agent Net (to supplier): <span style={{ fontWeight: 700, color: VAR.text }}>{fmtINR(agentNetTotal)}</span>
                   </div>
-                ) : null}
+                )}
               </div>
             </div>
           </div>
@@ -774,7 +864,7 @@ export default function TicketCopyPage({
                     ticket.cancellation!.airlineFeeRules!.map((r, i) => (
                       <div key={i} className="flex items-center justify-between text-[11px]">
                         <span style={{ color: VAR.subtle }}>{r.label}</span>
-                        <span style={{ fontWeight: 600, color: VAR.text }}>{r.amount}</span>
+                        <span style={{ fontWeight: 700, color: VAR.text }}>{r.amount}</span>
                       </div>
                     ))
                   ) : (
@@ -894,7 +984,7 @@ export default function TicketCopyPage({
                       onClick={savePricing}
                       disabled={busy === "save"}
                       className="inline-flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-[11px] font-semibold disabled:opacity-60"
-                      style={{ background: VAR.success, color: "white" }}
+                      style={{ background: VAR.success, color: VAR.onPrimary }}
                     >
                       <Save className="h-3.5 w-3.5" />
                       {busy === "save" ? "Saving..." : "Save Pricing"}
@@ -904,7 +994,7 @@ export default function TicketCopyPage({
               </div>
             </div>
 
-            {/* Quick totals card */}
+            {/* Quick totals */}
             <div className="mt-4 grid grid-cols-1 gap-2">
               <div className="rounded-md border p-3" style={{ borderColor: VAR.border, background: VAR.surface2 }}>
                 <div className="text-[10px]" style={{ color: VAR.subtle }}>Supplier Total</div>
@@ -939,15 +1029,15 @@ export default function TicketCopyPage({
 
               <button
                 type="button"
-                onClick={printTicket}
+                onClick={printTicketOnly}
                 className="inline-flex items-center justify-between rounded-md border px-3 py-2 text-xs font-medium"
                 style={{ background: VAR.surface2, borderColor: VAR.border, color: VAR.text }}
               >
                 <span className="inline-flex items-center gap-2">
                   <Printer className="h-4 w-4" />
-                  Print Ticket
+                  Print Ticket (Only)
                 </span>
-                <span className="text-[10px]" style={{ color: VAR.subtle }}>Ctrl/Cmd + P</span>
+                <span className="text-[10px]" style={{ color: VAR.subtle }}>A4</span>
               </button>
 
               <button
@@ -955,55 +1045,18 @@ export default function TicketCopyPage({
                 onClick={doEmail}
                 disabled={!onEmailTicket || busy === "email"}
                 className="inline-flex items-center justify-between rounded-md px-3 py-2 text-xs font-semibold disabled:opacity-60"
-                style={{ background: VAR.primary, color: "white" }}
+                style={{ background: VAR.primary, color: VAR.onPrimary }}
               >
                 <span className="inline-flex items-center gap-2">
                   <Send className="h-4 w-4" />
                   Email Ticket
                 </span>
-                <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.8)" }}>Auto template</span>
+                <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.85)" }}>Auto template</span>
               </button>
             </div>
           </div>
-
-          {/* Safety / Audit Notes */}
-          <div className="rounded-md shadow-sm p-4 border" style={{ background: VAR.surface, borderColor: VAR.border }}>
-            <div className="text-xs" style={{ color: VAR.subtle }}>Agent Compliance</div>
-            <div className="text-sm font-semibold" style={{ color: VAR.text }}>Audit Checklist</div>
-            <ul className="mt-3 space-y-2 text-[11px]" style={{ color: VAR.muted }}>
-              {[
-                "Verify passenger names match government ID.",
-                "Confirm sector and travel date before sharing customer copy.",
-                "Save markup changes to keep reports accurate.",
-              ].map((t, i) => (
-                <li key={i} className="flex gap-2">
-                  <span
-                    className="mt-0.5 h-4 w-4 rounded-full flex items-center justify-center text-[10px] font-bold border"
-                    style={{ background: VAR.successSoft, color: VAR.success, borderColor: VAR.border }}
-                  >
-                    ✓
-                  </span>
-                  {t}
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
       </div>
-
-      {/* ================= Print Styles ================= */}
-      <style>{`
-        @media print {
-          body { background: white !important; }
-          .sticky { position: static !important; }
-          /* Hide right panel + top controls while printing */
-          .lg\\:grid-cols-\\[1fr_360px\\] { grid-template-columns: 1fr !important; }
-          .lg\\:grid-cols-\\[1fr_360px\\] > div:last-child { display: none !important; }
-          button { display: none !important; }
-          a { text-decoration: none !important; }
-          .shadow-sm { box-shadow: none !important; }
-        }
-      `}</style>
     </div>
   );
 }

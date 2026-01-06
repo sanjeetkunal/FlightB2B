@@ -27,6 +27,8 @@ import TicketCopyRoute from "./pages/FlightBooking/TicketCopyRoute";
 import help from "./pages/HelpCenter";
 import HelpCenter from "./pages/HelpCenter";
 import AboutUs from "./pages/AboutUs";
+import BookingConfirmationPage from "./pages/FlightBooking/BookingConfirmationPage";
+
 
 
 function Protected({ children }) {
@@ -75,6 +77,7 @@ export default function App() {
         <Route path="dashboard/flight/pnr-import" element={<PNRImport />} />
         <Route path="dashboard/flight/offline-request" element={<OfflineRequest />} />
 
+        <Route path="/booking/confirm/:bookingId" element={<BookingConfirmationPage />} />
         <Route path="/pages/FlightBooking/ticket-copy" element={<TicketCopyPage />} />
 
         <Route path="/wallet" element={<WalletOverview />} />
@@ -82,10 +85,10 @@ export default function App() {
         <Route path="/wallet/history" element={<WalletHistory />} />
         <Route path="/wallet/statement" element={<WalletStatement />} />
         <Route path="/wallet/refunds" element={<RefundsAdjustments />} />
-   
+
 
         <Route path="/flights/ticket-copy" element={<TicketCopyRoute />} />
-        <Route path="/help" element={<HelpCenter />}/>
+        <Route path="/help" element={<HelpCenter />} />
 
         {/* (optional) same report for ticket-report link bhi */}
         <Route
@@ -98,6 +101,6 @@ export default function App() {
       <Route path="*" element={<Navigate to={isAuthed() ? "/" : "/login"} replace />} />
     </Routes>
 
-    
+
   );
 }

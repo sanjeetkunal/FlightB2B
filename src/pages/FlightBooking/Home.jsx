@@ -8,12 +8,14 @@ import RecentSearches from "../../pages/FlightBooking/flightsearch/RecentSearche
 import QuickActions from "../FlightBooking/quickaction/QuickActions";
 import RecentBookings from "../FlightBooking/quickaction/RecentBookings";
 // import { AgentAlerts } from "../FlightBooking/quickaction/AgentAlerts";
+import FixedDepartureSectors from "../../pages/FlightBooking/FixedDeparture/FixedDepartureSectors";
 
 import MonthlyTargetOfferModal from "../../components/offers/MonthlyTargetOfferModal";
 
 
 
 import heroBg from "../../assets/media/hero-bg.jpg";
+import ModuleNav from "../../components/common/ModuleNav";
 
 /* ---------- helpers (theme vars -> rgba) ---------- */
 function clampHex(hex) {
@@ -167,37 +169,47 @@ function HomeHeroInline() {
           style={{ background: heroCss.glow2 }}
         />
 
-        <div
-          className={[
-            "relative z-10 mx-auto max-w-7xl px-4 pb-[calc(120px+env(safe-area-inset-bottom))]",
-            "pt-24 sm:pt-28 md:pt-32",
-          ].join(" ")}
-        >
-          <motion.div
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            className="relative mx-auto rounded-md backdrop-blur"
-            style={{
-              border: `1px solid ${heroCss.cardBorder}`,
-              background: heroCss.cardBg,
-              boxShadow: "0 26px 60px rgba(2,6,23,0.22)",
-            }}
-          >
-            {/* inner gradient */}
-            <div className="pointer-events-none absolute inset-0 rounded-md" style={{ backgroundImage: heroCss.cardInner, opacity: 0.95 }} />
+      <div
+  className={[
+    "relative z-10 mx-auto max-w-7xl px-4 pb-[calc(120px+env(safe-area-inset-bottom))]",
+    "pt-24 sm:pt-28 md:pt-32",
+  ].join(" ")}
+>
+  <motion.div
+    variants={fadeUp}
+    initial="hidden"
+    animate="visible"
+    className="relative mx-auto rounded-md backdrop-blur"
+    style={{
+      border: `1px solid ${heroCss.cardBorder}`,
+      background: heroCss.cardBg,
+      boxShadow: "0 26px 60px rgba(2,6,23,0.22)",
+    }}
+  >
+    {/* inner gradient */}
+    <div
+      className="pointer-events-none absolute inset-0 rounded-md"
+      style={{ backgroundImage: heroCss.cardInner, opacity: 0.95 }}
+    />
 
-            {/* bottom wash */}
-            <div
-              className="pointer-events-none absolute bottom-0 left-0 right-0 h-1/2 rounded-b-md"
-              style={{ backgroundImage: heroCss.cardBottom, opacity: 0.9 }}
-            />
+    {/* bottom wash */}
+    <div
+      className="pointer-events-none absolute bottom-0 left-0 right-0 h-1/2 rounded-b-md"
+      style={{ backgroundImage: heroCss.cardBottom, opacity: 0.9 }}
+    />
 
-            <div className="relative p-4 sm:p-5">
-              <FromToBar onSearch={onSearch} />
-            </div>
-          </motion.div>
-        </div>
+    {/* ✅ MMT-like top strip (NOT overlay) */}
+    {/* <div className="absolute left-1/2 -translate-x-1/2 top-0 translate-y-[98%] z-20">
+      <ModuleNav rightText="Book International and Domestic Flights" />
+    </div> */}
+
+    {/* search content */}
+    <div className="relative z-10 p-4 sm:p-5">
+      <FromToBar onSearch={onSearch} />
+    </div>
+  </motion.div>
+</div>
+
 
         {/* Scroll hint */}
         <div className="pointer-events-none absolute inset-x-0 bottom-3 z-10 flex flex-col items-center gap-2">
@@ -222,6 +234,20 @@ function HomeHeroInline() {
       {/* BELOW CONTENT */}
       <div className="relative z-10 mx-auto max-w-7xl px-4 pb-10">
         <RecentSearches />
+
+        <FixedDepartureSectors
+          onSelectSector={(s) => {
+            // example route
+            // navigate(`/fixed-departures?from=${s.fromIata}&to=${s.toIata}`);
+            console.log("Selected FD sector:", s);
+          }}
+          onExploreAll={() => {
+            // navigate("/fixed-departures");
+            console.log("Explore all fixed departures");
+          }}
+        />
+
+
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <QuickActions disabledKeys={["book_hold"]} />
           <RecentBookings />
@@ -250,7 +276,7 @@ export default function Home() {
   return (
     <>
       <HomeHeroInline />
-    
+
     </>
   );
 }

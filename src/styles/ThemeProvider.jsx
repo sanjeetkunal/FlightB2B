@@ -8,26 +8,28 @@ const THEME_KEY = "v2a_theme_v1";
  */
 const PRESETS = [
   {
-    id: "logo-default",
-    name: "Logo Default",
-    vars: {
-      surface: "#ffffff",
-      surface2: "#f6f8fb",
-      text: "#0b1220",
-      muted: "#667085",
-      border: "rgba(15, 23, 42, 0.12)",
+  id: "logo-default",
+  name: "Logo Default",
+  vars: {
+    surface: "#ffffff",
+    surface2: "#f6f8fb",
+    text: "#0b1220",
+    muted: "#667085",
+    border: "rgba(15, 23, 42, 0.12)",
 
-      primary: "#10b6d9",
-      primaryHover: "#0ea5c3",
-      primarySoft: "rgba(16, 182, 217, 0.14)",
+    primary: "#10b6d9",
+    primaryHover: "#0ea5c3",
+    primarySoft: "rgba(16, 182, 217, 0.14)",
 
-      accent: "#7c3aed",
+    onPrimary: "#ffffff", // ✅ add this (button text/icons white)
 
-      success: "#16a34a",
-      warning: "#f59e0b",
-      danger: "#ef4444",
-    },
+    accent: "#7c3aed",
+    success: "#16a34a",
+    warning: "#f59e0b",
+    danger: "#ef4444",
   },
+}
+,
   {
     id: "ocean",
     name: "Ocean Blue",

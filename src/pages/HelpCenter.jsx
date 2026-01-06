@@ -14,6 +14,7 @@ import {
   Info,
   LifeBuoy,
   Mail,
+  MapPin,
   Phone,
   Search as SearchIcon,
   ShieldCheck,
@@ -282,13 +283,38 @@ const CONTACT = {
   email: "support@yourcompany.com",
   hours: "Mon–Sat, 10:00 AM – 7:00 PM",
   sla: "Typical response: within 2–4 business hours",
+
+  // ✅ new: location + map
+  locationLabel: "Support Office",
+  addressLine: "Your office address, City, State, India",
+  // Replace with your embed url (Google Maps embed)
+  mapEmbedUrl:
+    "https://www.google.com/maps?q=India&output=embed",
+  // Replace with your map link (opens in browser)
+  mapOpenUrl: "https://www.google.com/maps?q=India",
 };
 
 const QUICK_LINKS = [
-  { label: "Wallet & Top-up Requests", hint: "Ledger, statement, add funds", route: "/wallet" },
-  { label: "My Bookings", hint: "Flights / Hotels / Trains / Buses", route: "/admin/bookings" },
-  { label: "Refunds & Adjustments", hint: "Refund status & logs", route: "/wallet/refunds" },
-  { label: "Company Profile / GST", hint: "GSTIN & invoices", route: "/admin/settings/company" },
+  {
+    label: "Wallet & Top-up Requests",
+    hint: "Ledger, statement, add funds",
+    route: "/wallet",
+  },
+  {
+    label: "My Bookings",
+    hint: "Flights / Hotels / Trains / Buses",
+    route: "/admin/bookings",
+  },
+  {
+    label: "Refunds & Adjustments",
+    hint: "Refund status & logs",
+    route: "/wallet/refunds",
+  },
+  {
+    label: "Company Profile / GST",
+    hint: "GSTIN & invoices",
+    route: "/admin/settings/company",
+  },
 ];
 
 /* ---------- UI bits ---------- */
@@ -374,9 +400,80 @@ function CardShell({ children, className }) {
   );
 }
 
+
+/* ✅ DROP-IN UPGRADE (Enterprise + Professional + Easy UX)
+   Paste these helper bits JUST BELOW CardShell() (above export default).
+   Then replace your HelpCenter() return with the new return further below.
+*/
+
+/* ---------- tiny UI helpers ---------- */
+
+function KpiChip({ icon, label, value }) {
+  return (
+    <div className="inline-flex items-center gap-2 rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] px-3 py-2 text-[11px]">
+      <span className="opacity-80">{icon}</span>
+      <span className="text-[var(--muted)]">{label}</span>
+      <span className="font-semibold">{value}</span>
+    </div>
+  );
+}
+
+function Badge({ children }) {
+  return (
+    <span className="inline-flex items-center rounded-full border border-[color:var(--border)] bg-[var(--surface2)] px-2 py-0.5 text-[10px] font-semibold text-[var(--muted)]">
+      {children}
+    </span>
+  );
+}
+
+function highlightText(text, q) {
+  const query = (q || "").trim();
+  if (!query) return text;
+
+  const safe = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`(${safe})`, "ig");
+  const parts = String(text).split(re);
+
+  return parts.map((part, idx) => {
+    const match = part.toLowerCase() === query.toLowerCase();
+    return match ? (
+      <mark
+        key={idx}
+        className="rounded-lg border border-[color:var(--border)] bg-[var(--primarySoft)] px-1 py-0.5 text-[var(--text)]"
+      >
+        {part}
+      </mark>
+    ) : (
+      <span key={idx}>{part}</span>
+    );
+  });
+}
+
+function SectionTitle({ icon, title, subtitle, right }) {
+  return (
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="flex items-start gap-3">
+        <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--primarySoft)]">
+          {icon}
+        </div>
+        <div>
+          <div className="text-sm font-semibold">{title}</div>
+          {subtitle ? (
+            <div className="mt-1 text-xs text-[var(--muted)]">{subtitle}</div>
+          ) : null}
+        </div>
+      </div>
+      {right ? <div className="flex items-center gap-2">{right}</div> : null}
+    </div>
+  );
+}
+
+
 /* ---------- main ---------- */
 
 export default function HelpCenter() {
+  const [locOpen, setLocOpen] = useState(true);
+
   const nav = useNavigate();
 
   const [activeCat, setActiveCat] = useState("FLIGHT");
@@ -397,139 +494,118 @@ export default function HelpCenter() {
 
   const showAll = useMemo(() => query.trim().length > 0, [query]);
 
-  return (
-    <div className="relative min-h-[calc(100vh-64px)] bg-[var(--surface2)] text-[var(--text)]">
-      <PatternBackdrop />
+  // ✅ DROP-IN: Replace ONLY your current `return ( ... )` inside HelpCenter()
+// with this FULL return. (Keep your data arrays + other components as-is.)
 
-      <div className="relative mx-auto max-w-7xl px-4 py-6 space-y-4">
-        {/* Header + Hero */}
-        <CardShell className="overflow-hidden">
-          <div className="relative p-5">
-            <div
-              className="absolute inset-0 opacity-[0.8]"
-              style={{
-                background:
-                  "radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--primarySoft) 90%, transparent), transparent 58%)",
-              }}
-            />
-            <div className="relative flex flex-wrap items-start justify-between gap-4">
-              <div className="min-w-[260px] max-w-[720px]">
-                <div className="text-[12px] text-[var(--muted)]">
-                  Support <span className="opacity-60">/</span> Help Center
-                </div>
-                <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-                  Help Center
-                </h1>
-                <p className="mt-1 text-sm text-[var(--muted)]">
-                  Quick answers for B2B Flights, Hotels, Trains & Buses — plus wallet, refunds & invoicing.
-                </p>
+return (
+  <div className="relative min-h-[calc(100vh-64px)] bg-[var(--surface2)] text-[var(--text)]">
+    <PatternBackdrop />
 
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <Pill tone="primary">
-                    <BadgeCheck size={12} />
-                    Enterprise support
-                  </Pill>
-                  <Pill>
-                    <Clock size={12} />
-                    {CONTACT.hours}
-                  </Pill>
-                  <Pill>
-                    <MessagesSquare size={12} />
-                    {CONTACT.sla}
-                  </Pill>
-                </div>
+    <div className="relative mx-auto max-w-7xl px-4 py-6 space-y-4">
+      {/* ================= HEADER ================= */}
+      <CardShell className="overflow-hidden">
+        <div className="relative p-5">
+          <div
+            className="absolute inset-0 opacity-[0.85]"
+            style={{
+              background:
+                "radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--primarySoft) 90%, transparent), transparent 58%)",
+            }}
+          />
+
+          <div className="relative flex items-start justify-between gap-4">
+            <div>
+              <div className="text-[12px] text-[var(--muted)]">
+                Support <span className="opacity-60">/</span> Help Center
               </div>
+              <div className="mt-1 text-2xl font-semibold tracking-tight">
+                Help Center
+              </div>
+              <div className="mt-1 text-sm text-[var(--muted)]">
+                Find answers quickly or contact support for booking, refunds, wallet & invoicing.
+              </div>
+            </div>
 
-              <div className="flex items-center gap-2">
+            <button
+              onClick={() => nav(-1)}
+              type="button"
+              className={cx(
+                "inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-semibold",
+                "border-[color:var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]"
+              )}
+            >
+              <ArrowLeft size={16} />
+              Back
+            </button>
+          </div>
+
+          {/* ✅ Big Search bar inside header */}
+          <div className="relative mt-4">
+            <div className="flex items-center gap-2 rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] px-3 py-3 focus-within:border-[color:var(--primary)]">
+              <SearchIcon size={16} className="opacity-70" />
+              <input
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setOpenId(null);
+                  setActiveCat("ALL");
+                }}
+                placeholder="Search: refund, GST, voucher, PNR, hold..."
+                className="w-full bg-transparent text-[13px] outline-none placeholder:text-[color:var(--muted)]"
+              />
+              {query?.trim() ? (
                 <button
-                  onClick={() => nav(-1)}
                   type="button"
+                  onClick={() => {
+                    setQuery("");
+                    setOpenId(null);
+                    setActiveCat("FLIGHT");
+                  }}
+                  className="rounded-xl border border-[color:var(--border)] bg-[var(--surface)] px-3 py-1.5 text-[11px] font-semibold hover:bg-[var(--surface2)]"
+                >
+                  Clear
+                </button>
+              ) : null}
+            </div>
+
+            {/* Quick search chips */}
+            <div className="mt-3 flex flex-wrap gap-2">
+              {["refund", "GST", "voucher", "PNR", "hold", "cancellation"].map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => {
+                    setQuery(k);
+                    setOpenId(null);
+                    setActiveCat("ALL");
+                  }}
                   className={cx(
-                    "inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-semibold",
+                    "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[11px] font-semibold",
                     "border-[color:var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]"
                   )}
                 >
-                  <ArrowLeft size={16} />
-                  Back
+                  <Sparkles size={12} className="opacity-80" />
+                  {k}
                 </button>
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <HeroIllustration />
+              ))}
             </div>
           </div>
-        </CardShell>
+        </div>
+      </CardShell>
 
-        {/* Top: Search + Contact */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.25fr_0.75fr]">
-          {/* Search card */}
+      {/* ================= MAIN GRID ================= */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.35fr_0.65fr]">
+        {/* ========== LEFT: Categories + FAQs ========== */}
+        <div className="space-y-4">
+          {/* Categories */}
           <CardShell>
-            <div className="border-b border-[color:var(--border)] p-5">
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--primarySoft)]">
-                  <BookOpen size={18} />
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm font-semibold">Search help articles</div>
-                  <div className="mt-1 text-xs text-[var(--muted)]">
-                    Try: “refund timeline”, “GST invoice”, “hold”, “PNR”, “voucher”.
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <div className="flex items-center gap-2 rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] px-3 py-3 focus-within:border-[color:var(--primary)]">
-                  <SearchIcon size={16} className="opacity-70" />
-                  <input
-                    value={query}
-                    onChange={(e) => {
-                      setQuery(e.target.value);
-                      setOpenId(null);
-                    }}
-                    placeholder="Search in Help Center..."
-                    className="w-full bg-transparent text-[13px] outline-none placeholder:text-[color:var(--muted)]"
-                  />
-                  {query?.trim() ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setQuery("");
-                        setOpenId(null);
-                      }}
-                      className="rounded-xl border border-[color:var(--border)] bg-[var(--surface)] px-3 py-1.5 text-[11px] font-semibold hover:bg-[var(--surface2)]"
-                    >
-                      Clear
-                    </button>
-                  ) : null}
-                </div>
-
-                {/* Popular chips */}
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {["refund", "GST", "voucher", "PNR", "hold", "cancellation"].map((k) => (
-                    <button
-                      key={k}
-                      type="button"
-                      onClick={() => {
-                        setQuery(k);
-                        setOpenId(null);
-                        setActiveCat("ALL");
-                      }}
-                      className={cx(
-                        "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[11px] font-semibold",
-                        "border-[color:var(--border)] bg-[var(--surface2)] hover:bg-[var(--surface)]"
-                      )}
-                      title={`Search “${k}”`}
-                    >
-                      <Sparkles size={12} className="opacity-80" />
-                      {k}
-                    </button>
-                  ))}
-                </div>
+            <div className="border-b border-[color:var(--border)] p-4">
+              <div className="text-sm font-semibold">Browse categories</div>
+              <div className="mt-1 text-xs text-[var(--muted)]">
+                Choose a category or search above.
               </div>
             </div>
 
-            {/* Category tabs */}
             <div className="p-4">
               <div className="flex flex-wrap gap-2">
                 <button
@@ -544,7 +620,6 @@ export default function HelpCenter() {
                       ? "border-[color:var(--primary)] bg-[var(--primarySoft)]"
                       : "border-[color:var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]"
                   )}
-                  title="Show all categories"
                 >
                   <LifeBuoy size={16} />
                   All
@@ -575,20 +650,19 @@ export default function HelpCenter() {
                 })}
               </div>
 
-              {/* Category description */}
               <div className="mt-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface2)] px-4 py-3 text-[12px] text-[var(--muted)]">
                 <div className="flex items-start gap-2">
                   <Info size={14} className="mt-0.5" />
                   <div>
                     {showAll ? (
                       <span>
-                        Showing <b className="text-[var(--text)]">all</b> results because you searched “
+                        Showing all results for “
                         <b className="text-[var(--text)]">{query.trim()}</b>”.
                       </span>
                     ) : (
                       <span>
                         {CATEGORIES.find((x) => x.key === activeCat)?.desc ||
-                          "Browse all categories or search above."}
+                          "Browse categories or search above."}
                       </span>
                     )}
                   </div>
@@ -597,256 +671,239 @@ export default function HelpCenter() {
             </div>
           </CardShell>
 
-          {/* Contact + Quick links */}
-          <div className="space-y-4">
-            <CardShell className="p-5">
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--primarySoft)]">
-                  <Headphones size={18} />
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm font-semibold">Contact support</div>
-                  <div className="mt-1 text-xs text-[var(--muted)]">{CONTACT.sla}</div>
-                </div>
+          {/* FAQs */}
+          <CardShell className="overflow-hidden">
+            <div className="flex items-center justify-between border-b border-[color:var(--border)] px-5 py-3">
+              <div className="inline-flex items-center gap-2 text-sm font-semibold">
+                <LifeBuoy size={16} />
+                FAQs
               </div>
-
-              <div className="mt-4 space-y-2 text-xs">
-                <div className="flex items-center justify-between rounded-2xl border border-[color:var(--border)] bg-[var(--surface2)] px-3 py-2.5">
-                  <div className="inline-flex items-center gap-2">
-                    <Phone size={16} />
-                    <span className="font-semibold">Phone</span>
-                  </div>
-                  <span className="text-[var(--muted)]">{CONTACT.phone}</span>
-                </div>
-
-                <div className="flex items-center justify-between rounded-2xl border border-[color:var(--border)] bg-[var(--surface2)] px-3 py-2.5">
-                  <div className="inline-flex items-center gap-2">
-                    <Mail size={16} />
-                    <span className="font-semibold">Email</span>
-                  </div>
-                  <span className="text-[var(--muted)]">{CONTACT.email}</span>
-                </div>
-
-                <div className="flex items-center justify-between rounded-2xl border border-[color:var(--border)] bg-[var(--surface2)] px-3 py-2.5">
-                  <div className="inline-flex items-center gap-2">
-                    <Clock size={16} />
-                    <span className="font-semibold">Hours</span>
-                  </div>
-                  <span className="text-[var(--muted)]">{CONTACT.hours}</span>
-                </div>
+              <div className="text-[11px] text-[var(--muted)]">
+                <b className="text-[var(--text)]">{filteredFaq.length}</b> result(s)
               </div>
+            </div>
 
-              {/* CTA buttons (more visible) */}
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <a
-                  href={`tel:${CONTACT.phone}`}
-                  className={cx(
-                    "inline-flex items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-xs font-semibold",
-                    "border-[color:var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]"
-                  )}
-                >
-                  <Phone size={16} />
-                  Call
-                </a>
-                <a
-                  href={`mailto:${CONTACT.email}`}
-                  className={cx(
-                    "inline-flex items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-xs font-semibold",
-                    "border-[color:var(--primary)] bg-[var(--primarySoft)] hover:opacity-90"
-                  )}
-                >
-                  <Mail size={16} />
-                  Email
-                </a>
-              </div>
+            <div className="p-4 space-y-2">
+              {filteredFaq.length === 0 ? (
+                <EmptyState
+                  title="No results found"
+                  desc="Try: refund, GST, voucher, PNR, hold, cancellation."
+                />
+              ) : (
+                filteredFaq.map((item) => {
+                  const open = openId === item.id;
 
-              <div className="mt-4 inline-flex items-start gap-2 rounded-2xl border border-[color:var(--border)] bg-[var(--surface2)] px-3 py-2 text-[11px] text-[var(--muted)]">
-                <ShieldCheck size={14} className="mt-0.5" />
-                <span>
-                  For faster resolution, share <b className="text-[var(--text)]">PNR / Booking Ref</b>, passenger name and
-                  issue summary.
-                </span>
-              </div>
-            </CardShell>
+                  return (
+                    <div
+                      key={item.id}
+                      className={cx(
+                        "rounded-2xl border bg-[var(--surface)] transition",
+                        open ? "border-[color:var(--primary)]" : "border-[color:var(--border)]"
+                      )}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setOpenId(open ? null : item.id)}
+                        className="w-full px-4 py-3 text-left"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex min-w-0 gap-3">
+                            <div className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[var(--primarySoft)]">
+                              <CategoryIcon category={item.category} />
+                            </div>
 
-            <CardShell className="p-5">
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--primarySoft)]">
-                  <FileText size={18} />
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm font-semibold">Quick links</div>
-                  <div className="mt-1 text-xs text-[var(--muted)]">Jump to commonly used pages.</div>
-                </div>
-              </div>
+                            <div className="min-w-0">
+                              <div className="text-[14px] font-semibold leading-snug">
+                                {item.q}
+                              </div>
+                              <div className="mt-1 flex flex-wrap gap-1">
+                                <Pill tone={open ? "primary" : "muted"}>
+                                  {item.category === "FLIGHT"
+                                    ? "Flights"
+                                    : item.category === "HOTEL"
+                                    ? "Hotels"
+                                    : item.category === "TRAIN"
+                                    ? "Trains"
+                                    : "Buses"}
+                                </Pill>
+                                {(item.tags || []).slice(0, 3).map((t) => (
+                                  <Pill key={t}>{t}</Pill>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
 
-              <div className="mt-4 space-y-2">
-                {QUICK_LINKS.map((x) => (
-                  <button
-                    key={x.label}
-                    type="button"
-                    onClick={() => nav(x.route)}
-                    className={cx(
-                      "group w-full rounded-2xl border px-3 py-3 text-left text-xs transition",
-                      "border-[color:var(--border)] bg-[var(--surface2)] hover:bg-[var(--surface)]"
-                    )}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div>
-                        <div className="font-semibold">{x.label}</div>
-                        <div className="text-[11px] text-[var(--muted)]">{x.hint}</div>
-                      </div>
-                      <ExternalLink
-                        size={16}
-                        className="opacity-70 transition group-hover:translate-x-0.5"
-                      />
+                          <ChevronDown
+                            size={18}
+                            className={cx("mt-1 opacity-70 transition", open && "rotate-180")}
+                          />
+                        </div>
+                      </button>
+
+                      {open ? (
+                        <div className="border-t border-[color:var(--border)] px-4 py-3">
+                          <div className="relative overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[var(--surface2)] px-4 py-3 text-[13px] text-[var(--muted)]">
+                            <div
+                              className="absolute left-0 top-0 h-full w-1"
+                              style={{
+                                background:
+                                  "color-mix(in srgb, var(--primary) 65%, transparent)",
+                              }}
+                            />
+                            <div className="relative">{item.a}</div>
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
-                  </button>
-                ))}
-              </div>
-            </CardShell>
-          </div>
+                  );
+                })
+              )}
+            </div>
+          </CardShell>
         </div>
 
-        {/* FAQ list */}
-        <CardShell className="overflow-hidden">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[color:var(--border)] px-5 py-3">
-            <div className="inline-flex items-center gap-2 text-sm font-semibold">
-              <LifeBuoy size={16} />
-              FAQs
+        {/* ========== RIGHT: Support Sidebar ========== */}
+        <div className="space-y-4">
+          {/* Support card */}
+          <CardShell className="p-5">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--primarySoft)]">
+                <Headphones size={18} />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm font-semibold">Contact support</div>
+                <div className="mt-1 text-xs text-[var(--muted)]">{CONTACT.sla}</div>
+              </div>
             </div>
-            <div className="text-[11px] text-[var(--muted)]">
-              Showing <b className="text-[var(--text)]">{filteredFaq.length}</b> result(s)
+
+            <div className="mt-4 space-y-2 text-xs">
+              <div className="flex items-center justify-between rounded-2xl border border-[color:var(--border)] bg-[var(--surface2)] px-3 py-2.5">
+                <div className="inline-flex items-center gap-2">
+                  <Phone size={16} />
+                  <span className="font-semibold">Phone</span>
+                </div>
+                <span className="text-[var(--muted)]">{CONTACT.phone}</span>
+              </div>
+
+              <div className="flex items-center justify-between rounded-2xl border border-[color:var(--border)] bg-[var(--surface2)] px-3 py-2.5">
+                <div className="inline-flex items-center gap-2">
+                  <Mail size={16} />
+                  <span className="font-semibold">Email</span>
+                </div>
+                <span className="text-[var(--muted)]">{CONTACT.email}</span>
+              </div>
+
+              <div className="flex items-center justify-between rounded-2xl border border-[color:var(--border)] bg-[var(--surface2)] px-3 py-2.5">
+                <div className="inline-flex items-center gap-2">
+                  <Clock size={16} />
+                  <span className="font-semibold">Hours</span>
+                </div>
+                <span className="text-[var(--muted)]">{CONTACT.hours}</span>
+              </div>
             </div>
-          </div>
 
-          <div className="p-4 space-y-2">
-            {filteredFaq.length === 0 ? (
-              <EmptyState
-                title="No results found"
-                desc="Try different keywords like “refund”, “GST”, “voucher”, “PNR”, “hold”, “cancellation”."
-              />
-            ) : (
-              filteredFaq.map((item) => {
-                const open = openId === item.id;
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <a
+                href={`tel:${CONTACT.phone}`}
+                className={cx(
+                  "inline-flex items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-xs font-semibold",
+                  "border-[color:var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]"
+                )}
+              >
+                <Phone size={16} />
+                Call
+              </a>
+              <a
+                href={`mailto:${CONTACT.email}?subject=Support%20Request&body=Booking%20Ref%2FPNR%3A%0APassenger%20Name%3A%0ATravel%20Date%3A%0AIssue%3A%0A`}
+                className={cx(
+                  "inline-flex items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-xs font-semibold",
+                  "border-[color:var(--primary)] bg-[var(--primarySoft)] hover:opacity-90"
+                )}
+              >
+                <FileText size={16} />
+                Ticket
+              </a>
+            </div>
 
-                return (
-                  <div
-                    key={item.id}
-                    className={cx(
-                      "rounded-2xl border bg-[var(--surface)] transition",
-                      open
-                        ? "border-[color:var(--primary)]"
-                        : "border-[color:var(--border)]"
-                    )}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setOpenId(open ? null : item.id)}
-                      className="w-full px-4 py-3 text-left"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex min-w-0 gap-3">
-                          <div className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[var(--primarySoft)]">
-                            <CategoryIcon category={item.category} />
-                          </div>
+            <div className="mt-4 inline-flex items-start gap-2 rounded-2xl border border-[color:var(--border)] bg-[var(--surface2)] px-3 py-2 text-[11px] text-[var(--muted)]">
+              <ShieldCheck size={14} className="mt-0.5" />
+              <span>
+                Share <b className="text-[var(--text)]">PNR / Booking Ref</b> + passenger name for faster resolution.
+              </span>
+            </div>
+          </CardShell>
 
-                          <div className="min-w-0">
-                            <div className="text-[14px] font-semibold leading-snug">
-                              {item.q}
-                            </div>
-                            <div className="mt-1 flex flex-wrap gap-1">
-                              <Pill tone={open ? "primary" : "muted"}>
-                                {item.category === "FLIGHT"
-                                  ? "Flights"
-                                  : item.category === "HOTEL"
-                                  ? "Hotels"
-                                  : item.category === "TRAIN"
-                                  ? "Trains"
-                                  : "Buses"}
-                              </Pill>
-                              {(item.tags || []).slice(0, 3).map((t) => (
-                                <Pill key={t}>{t}</Pill>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
 
-                        <ChevronDown
-                          size={18}
-                          className={cx(
-                            "mt-1 opacity-70 transition",
-                            open && "rotate-180"
-                          )}
-                        />
-                      </div>
-                    </button>
-
-                    {open ? (
-                      <div className="border-t border-[color:var(--border)] px-4 py-3">
-                        <div className="relative overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[var(--surface2)] px-4 py-3 text-[13px] text-[var(--muted)]">
-                          {/* left accent */}
-                          <div
-                            className="absolute left-0 top-0 h-full w-1"
-                            style={{
-                              background:
-                                "color-mix(in srgb, var(--primary) 65%, transparent)",
-                            }}
-                          />
-                          <div className="relative">{item.a}</div>
-                        </div>
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </CardShell>
-
-        {/* Category cards (discoverability) */}
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
-          {CATEGORIES.map((c) => (
+          {/* Location (simple toggle) */}
+          <CardShell className="overflow-hidden">
             <button
-              key={c.key}
               type="button"
-              onClick={() => {
-                setActiveCat(c.key);
-                setQuery("");
-                setOpenId(null);
-              }}
-              className={cx(
-                "group relative overflow-hidden rounded-2xl border p-4 text-left transition",
-                "border-[color:var(--border)] bg-[var(--surface)] hover:border-[color:var(--primary)]"
-              )}
-              title={c.desc}
+              onClick={() => setLocOpen((s) => !s)}
+              className="w-full border-b border-[color:var(--border)] px-5 py-3 text-left"
             >
-              <div
-                className="absolute -right-10 -top-10 h-32 w-32 rounded-full blur-2xl opacity-80"
-                style={{
-                  background:
-                    "radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--primarySoft) 90%, transparent), transparent 60%)",
-                }}
-              />
-
-              <div className="relative flex items-start gap-3">
-                <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--primarySoft)]">
-                  {c.icon}
+              <div className="flex items-center justify-between">
+                <div className="inline-flex items-center gap-2 text-sm font-semibold">
+                  <MapPin size={16} />
+                  Location
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <div className="text-sm font-semibold">{c.title}</div>
-                    <span className="opacity-0 transition group-hover:opacity-100">
-                      <Pill tone="primary">Explore</Pill>
-                    </span>
-                  </div>
-                  <div className="mt-1 text-xs text-[var(--muted)]">{c.desc}</div>
-                </div>
+                <ChevronDown
+                  size={18}
+                  className={cx("opacity-70 transition", locOpen && "rotate-180")}
+                />
+              </div>
+              <div className="mt-1 text-xs text-[var(--muted)]">
+                {CONTACT.locationLabel} • {CONTACT.addressLine}
               </div>
             </button>
-          ))}
+
+            {locOpen ? (
+              <div className="p-4">
+                <div className="overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[var(--surface2)]">
+                  <div className="relative h-[220px]">
+                    {CONTACT.mapEmbedUrl ? (
+                      <iframe
+                        title="Support location map"
+                        src={CONTACT.mapEmbedUrl}
+                        className="absolute inset-0 h-full w-full"
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        style={{ border: 0, background: "var(--surface2)" }}
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center p-6 text-center">
+                        <div>
+                          <div className="text-sm font-semibold">Map not configured</div>
+                          <div className="mt-1 text-xs text-[var(--muted)]">
+                            Add <code>CONTACT.mapEmbedUrl</code>.
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {CONTACT.mapOpenUrl ? (
+                  <a
+                    href={CONTACT.mapOpenUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={cx(
+                      "mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-xs font-semibold",
+                      "border-[color:var(--border)] bg-[var(--surface)] hover:bg-[var(--surface2)]"
+                    )}
+                  >
+                    <ExternalLink size={16} className="opacity-80" />
+                    Open in Maps
+                  </a>
+                ) : null}
+              </div>
+            ) : null}
+          </CardShell>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
+
+
 }

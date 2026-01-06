@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import FareCalendarStrip, { FareDay } from "./FareCalendarStrip";
+import { ShieldCheck, ShieldX } from "lucide-react";
 
 /** ==== TYPES ==== */
 export type FareOption = {
@@ -63,8 +65,8 @@ export type Row = {
   durationMin: number;
   totalFareINR: number;
 
-  commissionUSD: number; // treat as INR for UI
-  agentFareUSD: number; // treat as INR for UI
+  commissionUSD: number; // treat as INR for UI (fallback)
+  agentFareUSD: number; // treat as INR for UI (fallback)
 
   refundable: "Refundable" | "Non-Refundable";
   extras?: string[];
@@ -129,6 +131,7 @@ const VAR = {
   muted: "var(--muted, rgba(71,85,105,0.9))",
   subtle: "var(--subtle, rgba(100,116,139,0.85))",
   primary: "var(--primary, rgb(37,99,235))",
+  onPrimary: "var(--onPrimary, rgba(255,255,255,1))", // ✅ add
   primarySoft: "var(--primarySoft, rgba(37,99,235,0.14))",
   accent: "var(--accent, rgb(16,182,217))",
   accentSoft: "var(--accentSoft, rgba(16,182,217,0.12))",
@@ -136,6 +139,7 @@ const VAR = {
   danger: "var(--danger, rgb(244,63,94))",
   warn: "var(--warn, rgb(245,158,11))",
 };
+
 
 /* ================== small utils ================== */
 const Money = ({ v, fractionDigits = 0 }: { v: number; fractionDigits?: number }) => (
@@ -148,20 +152,26 @@ const Money = ({ v, fractionDigits = 0 }: { v: number; fractionDigits?: number }
   </>
 );
 
+const CALENDAR_DAYS: FareDay[] = [
+  { date: "2026-01-14", price: 15702, trend: "normal" },
+  { date: "2026-01-15", price: 14962, trend: "normal" },
+  { date: "2026-01-16", price: 14342, trend: "deal" },
+  { date: "2026-01-17", price: 14962, trend: "normal" },
+  { date: "2026-01-18", price: 14342, trend: "deal" },
+  { date: "2026-01-19", price: 13392, trend: "deal" },
+  { date: "2026-01-20", price: 14342, trend: "deal" },
+  { date: "2026-01-21", price: 13817, trend: "deal" },
+];
+
 function inferStopsFromLabel(label?: string): number | null {
   if (!label) return null;
   const s = label.toLowerCase().trim();
-
-  // common cases
   if (s.includes("non-stop") || s.includes("non stop") || s.includes("direct")) return 0;
-
-  // "2 stops", "1 stop"
   const m = s.match(/(\d+)\s*stop/);
   if (m?.[1]) {
     const n = parseInt(m[1], 10);
     return Number.isFinite(n) ? n : null;
   }
-
   return null;
 }
 
@@ -172,6 +182,15 @@ const minsToLabel = (m?: number | null) => {
   const h = Math.floor(mmSafe / 60);
   const mm = mmSafe % 60;
   return `${h}h ${String(mm).padStart(2, "0")}m`;
+};
+
+/** ✅ treat only fallback row values 0 as "missing" */
+const fallbackOrUndef = (n: unknown) => {
+  if (typeof n !== "number") return undefined;
+  if (!Number.isFinite(n)) return undefined;
+  // row fallback fields sometimes come as 0; treat as missing
+  if (n <= 0) return undefined;
+  return n;
 };
 
 /* ================== tiny atoms ================== */
@@ -476,49 +495,35 @@ function toUtcMs(dateStr: string, timeStr: string): number | null {
   );
 }
 
-function diffMinUtc(
-  aDate: string,
-  aTime: string,
-  bDate: string,
-  bTime: string
-): number | null {
+function diffMinUtc(aDate: string, aTime: string, bDate: string, bTime: string): number | null {
   const a = toUtcMs(aDate, aTime);
   const b = toUtcMs(bDate, bTime);
   if (a == null || b == null) return null;
   return Math.max(0, Math.round((b - a) / 60000));
 }
 
-
-function buildStopSummary(
-  segs: Segment[] | undefined,
-  fallback?: { stops: number; stopLabel: string }
-) {
+function buildStopSummary(segs: Segment[] | undefined, fallback?: { stops: number; stopLabel: string }) {
   const list = Array.isArray(segs) ? segs : [];
 
-  const inferredStops =
-    fallback
-      ? (Number.isFinite(fallback.stops) && fallback.stops > 0
-        ? fallback.stops
-        : inferStopsFromLabel(fallback.stopLabel) ?? 0)
-      : 0;
+  const inferredStops = fallback
+    ? Number.isFinite(fallback.stops) && fallback.stops > 0
+      ? fallback.stops
+      : inferStopsFromLabel(fallback.stopLabel) ?? 0
+    : 0;
 
-  // ❌ no segments OR single segment → no real layover possible
   if (list.length <= 1) {
     if (fallback && (inferredStops > 0 || fallback.stopLabel)) {
       return {
         stops: inferredStops,
         items: [],
         fallbackOnly: true as const,
-        fallbackLabel:
-          fallback.stopLabel ||
-          (inferredStops === 0 ? "Non-stop" : `${inferredStops} stops`),
+        fallbackLabel: fallback.stopLabel || (inferredStops === 0 ? "Non-stop" : `${inferredStops} stops`),
       };
     }
     return null;
   }
 
-  const items = [];
-
+  const items: any[] = [];
   for (let i = 0; i < list.length - 1; i++) {
     const a = list[i];
     const b = list[i + 1];
@@ -526,12 +531,7 @@ function buildStopSummary(
     let mins =
       typeof a.layoverMin === "number"
         ? a.layoverMin
-        : diffMinUtc(
-          a.arriveDate,
-          a.arriveTime,
-          b.departDate,
-          b.departTime
-        );
+        : diffMinUtc(a.arriveDate, a.arriveTime, b.departDate, b.departTime);
 
     items.push({
       at: a.layoverAt || a.toIata,
@@ -546,15 +546,8 @@ function buildStopSummary(
     });
   }
 
-  return {
-    stops: items.length,
-    items,
-    fallbackOnly: false as const,
-  };
+  return { stops: items.length, items, fallbackOnly: false as const };
 }
-
-
-
 
 function ItineraryPanel({
   segs,
@@ -571,41 +564,27 @@ function ItineraryPanel({
   rowStops: number;
   rowStopLabel: string;
 }) {
-  const summary = useMemo(
-    () => buildStopSummary(segs, { stops: rowStops, stopLabel: rowStopLabel }),
-    [segs, rowStops, rowStopLabel]
-  );
+  const summary = useMemo(() => buildStopSummary(segs, { stops: rowStops, stopLabel: rowStopLabel }), [segs, rowStops, rowStopLabel]);
 
   return (
     <div className="space-y-3">
-      {/* ✅ Stop summary (works even if segments missing) */}
       {summary && (
-        <div
-          className="rounded-md p-3 text-sm"
-          style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}
-        >
+        <div className="rounded-md p-3 text-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="font-semibold" style={{ color: VAR.text }}>
               Stops: {summary.stops} {summary.stops === 1 ? "stop" : "stops"}
             </div>
 
-            {/* If segments available, show each layover chip */}
             {!summary.fallbackOnly && summary.items.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {summary.items.map((x, idx) => (
                   <span
                     key={`${x.at}-${idx}`}
                     className="rounded-md px-2 py-1 text-[12px]"
-                    style={{
-                      background: VAR.surface2,
-                      border: `1px solid ${VAR.border}`,
-                      color: VAR.muted,
-                    }}
+                    style={{ background: VAR.surface2, border: `1px solid ${VAR.border}`, color: VAR.muted }}
                     title={
                       x.mins != null
-                        ? `${x.city ? `${x.city} (${x.at})` : x.at} • ${minsToLabel(
-                          x.mins
-                        )} • Arr ${x.arrTime} • Dep ${x.depTime}`
+                        ? `${x.city ? `${x.city} (${x.at})` : x.at} • ${minsToLabel(x.mins)} • Arr ${x.arrTime} • Dep ${x.depTime}`
                         : `${x.city ? `${x.city} (${x.at})` : x.at} • Layover time not available`
                     }
                   >
@@ -615,13 +594,12 @@ function ItineraryPanel({
               </div>
             ) : (
               <div className="text-[12px]" style={{ color: VAR.muted }}>
-                {summary.fallbackLabel}
+                {(summary as any).fallbackLabel}
               </div>
             )}
           </div>
 
-          {/* If fallback only, explain why */}
-          {summary.fallbackOnly && (
+          {(summary as any).fallbackOnly && (
             <div className="mt-2 text-[11px]" style={{ color: VAR.subtle }}>
               Stop details not available.
             </div>
@@ -629,53 +607,42 @@ function ItineraryPanel({
         </div>
       )}
 
-      {/* ✅ Segment cards + ✅ layover detail card between segments */}
       {segs?.map((s, i) => {
         const next = segs[i + 1];
         return (
           <div key={`${s.carrier}-${s.flightNo}-${i}`}>
-            <SegmentCard
-              s={s}
-              logo={logo}
-              airline={airline}
-              rowBaggage={rowBaggage}
-            />
+            <SegmentCard s={s} logo={logo} airline={airline} rowBaggage={rowBaggage} />
 
-            {next && (() => {
-              const atIata = s.layoverAt || s.toIata;
-              const atCity = s.toCity;
+            {next &&
+              (() => {
+                const atIata = s.layoverAt || s.toIata;
+                const atCity = s.toCity;
 
-              let layoverMin: number | null =
-                typeof s.layoverMin === "number"
-                  ? s.layoverMin
-                  : diffMinUtc(
-                    s.arriveDate,
-                    s.arriveTime,
-                    next.departDate,
-                    next.departTime
-                  );
+                let layoverMin: number | null =
+                  typeof s.layoverMin === "number"
+                    ? s.layoverMin
+                    : diffMinUtc(s.arriveDate, s.arriveTime, next.departDate, next.departTime);
 
-              return (
-                <LayoverDetailsCard
-                  atIata={atIata}
-                  atCity={atCity}
-                  layoverMin={layoverMin ?? 0}
-                  arrDate={s.arriveDate}
-                  arrTime={s.arriveTime}
-                  depDate={next.departDate}
-                  depTime={next.departTime}
-                  terminalArr={s.toTerminal}
-                  terminalDep={next.fromTerminal}
-                />
-              );
-            })()}
+                return (
+                  <LayoverDetailsCard
+                    atIata={atIata}
+                    atCity={atCity}
+                    layoverMin={layoverMin ?? 0}
+                    arrDate={s.arriveDate}
+                    arrTime={s.arriveTime}
+                    depDate={next.departDate}
+                    depTime={next.departTime}
+                    terminalArr={s.toTerminal}
+                    terminalDep={next.fromTerminal}
+                  />
+                );
+              })()}
           </div>
         );
       })}
     </div>
   );
 }
-
 
 function BaggagePanel({ hand, check, piece }: { hand?: number; check?: number; piece?: string }) {
   return (
@@ -702,15 +669,7 @@ function BaggagePanel({ hand, check, piece }: { hand?: number; check?: number; p
   );
 }
 
-function CancellationPanel({
-  refund,
-  change,
-  noShowUSD,
-}: {
-  refund: PolicyRule[];
-  change: PolicyRule[];
-  noShowUSD?: number;
-}) {
+function CancellationPanel({ refund, change, noShowUSD }: { refund: PolicyRule[]; change: PolicyRule[]; noShowUSD?: number }) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <div className="rounded-md p-3" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
@@ -760,7 +719,10 @@ function CancellationPanel({
 }
 
 /* ========== TABs ========== */
+type PriceMode = "SELL" | "AGENT_NET" | "COMMISSION";
+
 type DetailsTab = "itinerary" | "baggage" | "cancellation" | "fare";
+type AgentMode = "SELL" | "NET" | "COMM" | "BOTH";
 
 function RowTabs({ active, onChange }: { active: DetailsTab; onChange: (t: DetailsTab) => void }) {
   const tabs: { id: DetailsTab; label: string }[] = [
@@ -782,7 +744,7 @@ function RowTabs({ active, onChange }: { active: DetailsTab; onChange: (t: Detai
             className="shrink-0 px-4 py-2 text-xs font-semibold tracking-wide uppercase transition"
             style={{
               background: isActive ? VAR.primary : "transparent",
-              color: isActive ? "white" : VAR.text,
+              color: isActive ? VAR.onPrimary : VAR.text,
               borderLeft: i !== 0 ? `1px solid ${VAR.border}` : undefined,
             }}
           >
@@ -794,22 +756,70 @@ function RowTabs({ active, onChange }: { active: DetailsTab; onChange: (t: Detai
   );
 }
 
+function AgentModeToggle({
+  value,
+  onChange,
+}: {
+  value: AgentMode;
+  onChange: (v: AgentMode) => void;
+}) {
+  const opts: { id: AgentMode; label: string }[] = [
+    { id: "SELL", label: "Sell" },
+    { id: "NET", label: "Net" },
+    { id: "COMM", label: "Comm" },
+    { id: "BOTH", label: "Both" },
+  ];
+
+  return (
+    <div className="inline-flex overflow-hidden rounded-md" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
+      {opts.map((o, idx) => {
+        const active = value === o.id;
+        return (
+          <button
+            key={o.id}
+            type="button"
+            onClick={() => onChange(o.id)}
+            className="px-3 py-1.5 text-[12px] font-semibold transition"
+            style={{
+              background: active ? VAR.primary : "transparent",
+              color: active ? VAR.onPrimary : VAR.text,
+              borderLeft: idx ? `1px solid ${VAR.border}` : undefined,
+            }}
+          >
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function SelectedFarePanel({
   fare,
-  showCommission,
+  agentMode,
   agentNetFallback,
   commissionFallback,
+  paxTotal,
+  fareView,
 }: {
   fare: FareOption;
-  showCommission: boolean;
+  agentMode: AgentMode;
   agentNetFallback?: number;
   commissionFallback?: number;
+  paxTotal: number;
+  fareView: "SINGLE" | "FULL";
 }) {
   const refundableTone = fare.refundable === "Refundable" ? VAR.success : VAR.danger;
 
-  const agentNet = fare.agentFareINR != null ? fare.agentFareINR : agentNetFallback;
-  const commission = fare.commissionINR != null ? fare.commissionINR : commissionFallback;
-  const hasAgentInfo = agentNet != null || commission != null;
+  // per pax values
+  const netPerPax = typeof fare.agentFareINR === "number" ? fare.agentFareINR : agentNetFallback;
+  const commPerPax = typeof fare.commissionINR === "number" ? fare.commissionINR : commissionFallback;
+
+  const net = netPerPax != null ? (fareView === "FULL" ? netPerPax * paxTotal : netPerPax) : undefined;
+  const comm = commPerPax != null ? (fareView === "FULL" ? commPerPax * paxTotal : commPerPax) : undefined;
+
+  const showNet = agentMode === "NET" || agentMode === "BOTH";
+  const showComm = agentMode === "COMM" || agentMode === "BOTH";
 
   return (
     <div className="rounded-md p-3" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
@@ -850,29 +860,33 @@ function SelectedFarePanel({
         </div>
       </div>
 
-      {showCommission && (
+      {(showNet || showComm) && (
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <div className="rounded-md p-3" style={{ background: VAR.primarySoft, border: `1px solid ${VAR.border}` }}>
-            <div className="text-[11px]" style={{ color: VAR.muted }}>
-              Agent Net Fare
+          {showNet && (
+            <div className="rounded-md p-3" style={{ background: VAR.primarySoft, border: `1px solid ${VAR.border}` }}>
+              <div className="text-[11px]" style={{ color: VAR.muted }}>
+                Agent Net {fareView === "FULL" ? "(Total)" : "(Per Pax)"}
+              </div>
+              <div className="mt-0.5 text-sm font-semibold" style={{ color: VAR.text }}>
+                {net != null ? <Money v={net} /> : "—"}
+              </div>
             </div>
-            <div className="mt-0.5 text-sm font-semibold" style={{ color: VAR.text }}>
-              {agentNet != null ? <Money v={agentNet} /> : "—"}
-            </div>
-          </div>
+          )}
 
-          <div className="rounded-md p-3" style={{ background: VAR.accentSoft, border: `1px solid ${VAR.border}` }}>
-            <div className="text-[11px]" style={{ color: VAR.muted }}>
-              Your Commission
+          {showComm && (
+            <div className="rounded-md p-3" style={{ background: VAR.accentSoft, border: `1px solid ${VAR.border}` }}>
+              <div className="text-[11px]" style={{ color: VAR.muted }}>
+                Commission {fareView === "FULL" ? "(Total)" : "(Per Pax)"}
+              </div>
+              <div className="mt-0.5 text-sm font-semibold" style={{ color: VAR.text }}>
+                {comm != null ? <Money v={comm} /> : "—"}
+              </div>
             </div>
-            <div className="mt-0.5 text-sm font-semibold" style={{ color: VAR.text }}>
-              {commission != null ? <Money v={commission} /> : "—"}
-            </div>
-          </div>
+          )}
 
-          {!hasAgentInfo && (
+          {net == null && comm == null && (
             <div className="col-span-full text-[11px]" style={{ color: VAR.subtle }}>
-              Commission info not available for this fare.
+              Agent Net / Commission info not available for this fare.
             </div>
           )}
         </div>
@@ -988,6 +1002,31 @@ function IconBtn({
   );
 }
 
+function RefundablePill({ value }: { value: "Refundable" | "Non-Refundable" | string }) {
+  const isRefundable = String(value).toLowerCase().includes("refundable") && !String(value).toLowerCase().includes("non");
+  const label = isRefundable ? "Refundable" : "Non-Refundable";
+  const Icon = isRefundable ? ShieldCheck : ShieldX;
+
+  const tone = isRefundable ? VAR.success : VAR.danger;
+
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold leading-none"
+      style={{
+        background: `color-mix(in srgb, ${tone} 14%, ${VAR.surface})`,
+        border: `1px solid color-mix(in srgb, ${tone} 28%, ${VAR.border})`,
+        color: `color-mix(in srgb, ${tone} 88%, ${VAR.text})`,
+      }}
+      title={label}
+      aria-label={label}
+    >
+      <Icon className="h-3.5 w-3.5" />
+      {label}
+    </span>
+  );
+}
+
+
 /* =============== SINGLE ROW =============== */
 function B2BRow({
   r,
@@ -1001,6 +1040,7 @@ function B2BRow({
   shareMode,
   selectedIds,
   onToggleSelect,
+  agentMode,
 }: {
   r: Row;
   expanded: boolean;
@@ -1013,11 +1053,11 @@ function B2BRow({
   shareMode: boolean;
   selectedIds: Set<string>;
   onToggleSelect: (rowId: string) => void;
+  agentMode: AgentMode;
 }) {
   const nav = useNavigate();
   const [tab, setTab] = useState<DetailsTab>("itinerary");
 
-  // ✅ detect mobile (<= md)
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
@@ -1040,12 +1080,42 @@ function B2BRow({
   const effFare = localFare;
 
   const totalPax = (paxConfig?.adults ?? 1) + (paxConfig?.children ?? 0) + (paxConfig?.infants ?? 0);
-  const singleFare = effFare.price;
-  const fullFare = effFare.price * totalPax;
-  const displayFare = fareView === "FULL" ? fullFare : singleFare;
+  const singleSell = effFare.price;
+  const totalSell = effFare.price * totalPax;
+  const sellDisplay = fareView === "FULL" ? totalSell : singleSell;
 
-  const agentNetDisplay = effFare.agentFareINR != null ? effFare.agentFareINR : r.agentFareUSD ?? undefined;
-  const commissionDisplay = effFare.commissionINR != null ? effFare.commissionINR : r.commissionUSD ?? undefined;
+  // ✅ get per-pax net/comm from fare first, else from row fallback (but treat 0 fallback as missing)
+  const netPerPax = typeof effFare.agentFareINR === "number" ? effFare.agentFareINR : fallbackOrUndef(r.agentFareUSD);
+  const commPerPax = typeof effFare.commissionINR === "number" ? effFare.commissionINR : fallbackOrUndef(r.commissionUSD);
+
+  const netDisplay = netPerPax != null ? (fareView === "FULL" ? netPerPax * totalPax : netPerPax) : undefined;
+  const commDisplay = commPerPax != null ? (fareView === "FULL" ? commPerPax * totalPax : commPerPax) : undefined;
+
+  const mainLabel =
+    !showCommission || agentMode === "SELL"
+      ? fareView === "FULL"
+        ? "Total"
+        : "Per Pax"
+      : agentMode === "NET"
+        ? fareView === "FULL"
+          ? "Net (Total)"
+          : "Net (Per Pax)"
+        : agentMode === "COMM"
+          ? fareView === "FULL"
+            ? "Commission (Total)"
+            : "Commission (Per Pax)"
+          : fareView === "FULL"
+            ? "Total"
+            : "Per Pax";
+
+  const mainValue =
+    !showCommission || agentMode === "SELL"
+      ? sellDisplay
+      : agentMode === "NET"
+        ? (netDisplay ?? sellDisplay)
+        : agentMode === "COMM"
+          ? (commDisplay ?? sellDisplay)
+          : sellDisplay;
 
   const chooseFare = (f: FareOption) => {
     setLocalFare(f);
@@ -1062,8 +1132,9 @@ function B2BRow({
 
     const selectedFlight = adaptRowToSelectedFlight(r, effFare);
 
-    const agentNetPerPax = effFare.agentFareINR != null ? effFare.agentFareINR : r.agentFareUSD ?? null;
-    const commissionPerPax = effFare.commissionINR != null ? effFare.commissionINR : r.commissionUSD ?? null;
+    // book ctx should store per pax values if available
+    const agentNetPerPax = typeof effFare.agentFareINR === "number" ? effFare.agentFareINR : fallbackOrUndef(r.agentFareUSD) ?? null;
+    const commissionPerPax = typeof effFare.commissionINR === "number" ? effFare.commissionINR : fallbackOrUndef(r.commissionUSD) ?? null;
 
     const sellPerPax = effFare.price;
 
@@ -1107,7 +1178,6 @@ function B2BRow({
   const faresToRenderDesktop = showAllFaresDesktop ? r.fares : visibleFaresDesktop;
   const faresToRenderMobile = r.fares;
 
-  // ✅ theme washes
   const themeFx = useMemo(
     () => ({
       leftWash: `radial-gradient(70% 110% at 0% 40%, ${VAR.primarySoft}, transparent 65%)`,
@@ -1122,16 +1192,12 @@ function B2BRow({
   return (
     <div
       className="relative overflow-hidden rounded-md p-3 transition-shadow hover:shadow-lg"
-      style={{
-        background: VAR.surface,
-        border: `1px solid ${VAR.border}`,
-      }}
+      style={{ background: VAR.surface, border: `1px solid ${VAR.border}` }}
     >
-      <div className="pointer-events-none absolute inset-0" style={{ background: themeFx.leftWash }} />
+      {/* <div className="pointer-events-none absolute inset-0" style={{ background: themeFx.leftWash }} />
       <div className="pointer-events-none absolute inset-0" style={{ background: themeFx.rightWash }} />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2" style={{ background: themeFx.bottom }} />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2" style={{ background: themeFx.bottom }} /> */}
 
-      {/* ✅ share checkbox */}
       {shareMode && (
         <button
           type="button"
@@ -1143,7 +1209,7 @@ function B2BRow({
           style={{
             borderColor: VAR.border,
             background: selectedIds.has(r.id) ? VAR.primary : VAR.surface,
-            color: selectedIds.has(r.id) ? "white" : VAR.subtle,
+            color: selectedIds.has(r.id) ? VAR.onPrimary : VAR.subtle,
           }}
           aria-label="Select to share"
           title="Select to share"
@@ -1152,13 +1218,8 @@ function B2BRow({
         </button>
       )}
 
-      {/* ===================== MOBILE LAYOUT (md:hidden) ===================== */}
+      {/* ===================== MOBILE LAYOUT ===================== */}
       <div className="md:hidden">
-        {/* ... SAME as your code (unchanged) */}
-        {/* (Keeping as-is to keep response size reasonable) */}
-
-        {/* IMPORTANT: Mobile/desktop layouts are unchanged. Only flight-details stop/layover fix is applied above. */}
-
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
             <ImageLogo src={r.logo} alt={r.airline} />
@@ -1174,14 +1235,21 @@ function B2BRow({
 
           <div className="shrink-0 text-right">
             <div className="text-[11px]" style={{ color: VAR.subtle }}>
-              {fareView === "FULL" ? "Total" : "Per Pax"}
+              {mainLabel}
             </div>
             <div className="text-[18px] font-extrabold leading-tight" style={{ color: VAR.text }}>
-              <Money v={displayFare} />
+              <Money v={mainValue} />
             </div>
-            {fareView === "FULL" && totalPax > 1 && (
-              <div className="text-[10px]" style={{ color: VAR.subtle }}>
-                {totalPax} pax total
+
+            {/* ✅ when BOTH, show net + comm chips under main sell */}
+            {showCommission && agentMode === "BOTH" && (
+              <div className="mt-1 flex flex-wrap justify-end gap-1 text-[10px]">
+                <span className="rounded px-2 py-0.5" style={{ background: VAR.primarySoft, border: `1px solid ${VAR.border}`, color: VAR.text }}>
+                  Net: {netDisplay != null ? <Money v={netDisplay} /> : "—"}
+                </span>
+                <span className="rounded px-2 py-0.5" style={{ background: VAR.accentSoft, border: `1px solid ${VAR.border}`, color: VAR.text }}>
+                  Comm: {commDisplay != null ? <Money v={commDisplay} /> : "—"}
+                </span>
               </div>
             )}
           </div>
@@ -1226,23 +1294,10 @@ function B2BRow({
             </div>
           </div>
 
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
-            <span className="font-semibold" style={{ color: refundableColor }}>
-              {effFare.refundable}
-            </span>
-
-            {r.extras?.map((x) => (
-              <span
-                key={x}
-                className="rounded px-2 py-0.5"
-                style={{ background: VAR.surface, border: `1px solid ${VAR.border}`, color: VAR.muted }}
-              >
-                {x}
-              </span>
-            ))}
+          <div className="flex flex-wrap items-center gap-2 text-[11px]">
+            <RefundablePill value={effFare.refundable} />
           </div>
 
-          {/* ✅ MOBILE fares: always show all */}
           <div className="mt-3 grid gap-2">
             {faresToRenderMobile.map((f) => {
               const active = effFare.code === f.code;
@@ -1303,9 +1358,8 @@ function B2BRow({
         </div>
       </div>
 
-      {/* ===================== DESKTOP LAYOUT (hidden md:block) ===================== */}
+      {/* ===================== DESKTOP LAYOUT ===================== */}
       <div className="hidden md:block">
-        {/* desktop unchanged (same as your code) */}
         <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
           <div className="flex items-center gap-2">
             <ImageLogo src={r.logo} alt={r.airline} />
@@ -1417,21 +1471,10 @@ function B2BRow({
 
         <hr className="my-2 border-t border-dashed" style={{ borderColor: VAR.border }} />
 
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex min-w-0 flex-1 items-center gap-2 text-[12px]">
-            <span className="font-medium" style={{ color: refundableColor }}>
-              {effFare.refundable}
-            </span>
-            {r.extras?.map((x) => (
-              <span
-                key={x}
-                className="rounded px-1.5 py-0.5"
-                style={{ background: VAR.surface2, border: `1px solid ${VAR.border}`, color: VAR.muted }}
-              >
-                {x}
-              </span>
-            ))}
-          </div>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2 text-[11px]">
+  <RefundablePill value={effFare.refundable} />
+</div>
 
           <div className="relative flex items-center gap-2">
             <button
@@ -1447,13 +1490,24 @@ function B2BRow({
             </button>
 
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
+              <div className="text-right">
                 <div className="text-[12px]" style={{ color: VAR.subtle }}>
-                  Selected Fare {fareView === "FULL" ? "(Total)" : "(Per Pax)"}
+                  {mainLabel}
                 </div>
                 <div className="text-[18px] font-bold" style={{ color: VAR.text }}>
-                  <Money v={displayFare} />
+                  <Money v={mainValue} />
                 </div>
+
+                {showCommission && agentMode === "BOTH" && (
+                  <div className="mt-1 flex flex-wrap justify-end gap-1 text-[10px]">
+                    <span className="rounded px-2 py-0.5" style={{ background: VAR.primarySoft, border: `1px solid ${VAR.border}`, color: VAR.text }}>
+                      Net: {netDisplay != null ? <Money v={netDisplay} /> : "—"}
+                    </span>
+                    <span className="rounded px-2 py-0.5" style={{ background: VAR.accentSoft, border: `1px solid ${VAR.border}`, color: VAR.text }}>
+                      Comm: {commDisplay != null ? <Money v={commDisplay} /> : "—"}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <button
@@ -1475,30 +1529,32 @@ function B2BRow({
           <div className="mb-2">
             <RowTabs active={tab} onChange={setTab} />
           </div>
+
           {tab === "itinerary" && (
             <ItineraryPanel
               segs={r.segments}
               logo={r.logo}
               airline={r.airline}
               rowBaggage={r.baggage}
-              rowStops={
-                (Number.isFinite(r.stops) && r.stops > 0)
-                  ? r.stops
-                  : (inferStopsFromLabel(r.stopLabel) ?? 0)
-              }
+              rowStops={(Number.isFinite(r.stops) && r.stops > 0) ? r.stops : (inferStopsFromLabel(r.stopLabel) ?? 0)}
               rowStopLabel={r.stopLabel}
             />
           )}
+
           {tab === "baggage" && <BaggagePanel hand={r.baggage.handKg} check={r.baggage.checkKg} piece={r.baggage.piece} />}
+
           {tab === "cancellation" && (
             <CancellationPanel refund={r.cancellation.refund} change={r.cancellation.change} noShowUSD={r.cancellation.noShowUSD} />
           )}
+
           {tab === "fare" && (
             <SelectedFarePanel
               fare={effFare}
-              showCommission={showCommission}
-              agentNetFallback={agentNetDisplay}
-              commissionFallback={commissionDisplay}
+              agentMode={showCommission ? agentMode : "SELL"}
+              agentNetFallback={fallbackOrUndef(r.agentFareUSD)}
+              commissionFallback={fallbackOrUndef(r.commissionUSD)}
+              paxTotal={totalPax}
+              fareView={fareView}
             />
           )}
         </div>
@@ -1532,6 +1588,14 @@ export default function OnewayResultList({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
 
+  // ✅ Agent view mode (Sell / Net / Comm / Both)
+  const [agentMode, setAgentMode] = useState<AgentMode>(showCommission ? "NET" : "SELL");
+  useEffect(() => {
+    if (!showCommission) setAgentMode("SELL");
+    else if (agentMode === "SELL") setAgentMode("NET");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showCommission]);
+
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -1539,6 +1603,8 @@ export default function OnewayResultList({
       return next;
     });
   };
+
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date("2026-01-17"));
 
   const clearSelection = () => setSelectedIds(new Set());
   const selectAll = () => setSelectedIds(new Set(rows.map((r) => r.id)));
@@ -1582,10 +1648,19 @@ export default function OnewayResultList({
 
   return (
     <div className="space-y-2">
-      {/* ✅ Share top bar */}
+      {/* ✅ Top bar */}
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-md px-3 py-2" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
-        <div className="text-sm font-semibold" style={{ color: VAR.text }}>
-          Flight Results
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="text-sm font-semibold" style={{ color: VAR.text }}>
+            Flight Results
+          </div>
+
+          {/* ✅ Separate option to view: Sell / Net / Comm / Both */}
+          {showCommission && (
+            <div className="ml-1">
+              <AgentModeToggle value={agentMode} onChange={setAgentMode} />
+            </div>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -1599,7 +1674,7 @@ export default function OnewayResultList({
             style={{
               borderColor: VAR.border,
               background: shareMode ? VAR.primary : VAR.surface,
-              color: shareMode ? "white" : VAR.text,
+              color: shareMode ? VAR.onPrimary : VAR.text,
             }}
           >
             {shareMode ? "Exit Share Mode" : "Share"}
@@ -1614,11 +1689,21 @@ export default function OnewayResultList({
                 </span>
               </div>
 
-              <button type="button" onClick={selectAll} className="rounded-md border px-3 py-1.5 text-xs font-semibold" style={{ borderColor: VAR.border, background: VAR.surface, color: VAR.text }}>
+              <button
+                type="button"
+                onClick={selectAll}
+                className="rounded-md border px-3 py-1.5 text-xs font-semibold"
+                style={{ borderColor: VAR.border, background: VAR.surface, color: VAR.text }}
+              >
                 Select All
               </button>
 
-              <button type="button" onClick={clearSelection} className="rounded-md border px-3 py-1.5 text-xs font-semibold" style={{ borderColor: VAR.border, background: VAR.surface, color: VAR.text }}>
+              <button
+                type="button"
+                onClick={clearSelection}
+                className="rounded-md border px-3 py-1.5 text-xs font-semibold"
+                style={{ borderColor: VAR.border, background: VAR.surface, color: VAR.text }}
+              >
                 Clear
               </button>
 
@@ -1642,6 +1727,16 @@ export default function OnewayResultList({
         </div>
       </div>
 
+      {/* Fare calendar */}
+      <FareCalendarStrip
+        items={CALENDAR_DAYS}
+        value={selectedDate}
+        onChange={(d) => {
+          setSelectedDate(d);
+          // ✅ yahan aap API refetch / filter by date kar sakte ho
+        }}
+      />
+
       {rows.map((r) => (
         <B2BRow
           key={r.id}
@@ -1656,6 +1751,7 @@ export default function OnewayResultList({
           shareMode={shareMode}
           selectedIds={selectedIds}
           onToggleSelect={toggleSelect}
+          agentMode={agentMode}
         />
       ))}
     </div>

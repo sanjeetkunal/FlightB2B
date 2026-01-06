@@ -31,8 +31,6 @@ import {
 /* ---------------- RECENT SEARCH HELPERS ---------------- */
 const RECENT_KEY = "flight_recent_searches";
 
-
-
 const getRecentSearches = () => {
   try {
     return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
@@ -214,6 +212,59 @@ function QuickBtn({ children, onClick, icon: Icon }) {
   );
 }
 
+/* ✅ NEW: Enterprise Direct Flight Switch (theme via CSS vars) */
+function DirectSwitch({
+  checked,
+  onChange,
+  label = "Direct flights",
+  desc = "Show non-stop only",
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="min-w-0">
+        <div className="text-[12px] font-extrabold leading-4 text-[var(--text)]">
+          {label}
+        </div>
+        <div className="mt-0.5 text-[11px] font-semibold leading-4 text-[var(--muted)]">
+          {desc}
+        </div>
+      </div>
+
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        onClick={() => onChange(!checked)}
+        className={[
+          "relative h-7 w-[46px] rounded-full border transition-all",
+          "focus:outline-none focus-visible:ring-2",
+        ].join(" ")}
+        style={{
+          borderColor: "var(--border)",
+          background: checked
+            ? "var(--primarySoft, color-mix(in srgb, var(--primary) 18%, transparent))"
+            : "var(--surface2, rgba(248,250,252,0.92))",
+          boxShadow: "0 10px 22px color-mix(in srgb, var(--text) 14%, transparent)",
+          // Tailwind ring color
+          // eslint-disable-next-line react/no-unknown-property
+          "--tw-ring-color": "var(--primary, rgba(59,130,246,1))",
+        }}
+        title="Direct flights only"
+      >
+        <span
+          className="absolute top-1/2 -translate-y-1/2 h-5 w-5 rounded-full border transition-all"
+          style={{
+            left: checked ? "calc(100% - 22px)" : "4px",
+            background: "var(--surface, rgba(255,255,255,0.95))",
+            borderColor: "var(--border)",
+            boxShadow: "0 12px 26px color-mix(in srgb, var(--text) 16%, transparent)",
+          }}
+        />
+      </button>
+    </div>
+  );
+}
+
 /* ---------------- MOBILE SHEET ---------------- */
 function MobileSheet({ open, title, subtitle, onClose, children }) {
   useEffect(() => {
@@ -316,11 +367,11 @@ function MobileSummaryCard({
       ? depart && ret
         ? `${depart} → ${ret}`
         : depart
-          ? `${depart} → Select return`
-          : "Select dates"
+        ? `${depart} → Select return`
+        : "Select dates"
       : depart
-        ? depart
-        : "Select date";
+      ? depart
+      : "Select date";
 
   return (
     <div
@@ -482,6 +533,9 @@ export default function FromToBar({ onSearch }) {
 
   const [mobileSheet, setMobileSheet] = useState(null);
 
+  /* ✅ NEW: Direct flight toggle state */
+  const [directOnly, setDirectOnly] = useState(false);
+
   const openTCDeferred = (e) => {
     e?.preventDefault?.();
     e?.stopPropagation?.();
@@ -579,6 +633,10 @@ export default function FromToBar({ onSearch }) {
 
     const fare = qs.get("fare");
     setSpecialFare(fare === "special");
+
+    /* ✅ NEW: direct flight param */
+    const d = qs.get("direct");
+    setDirectOnly(d === "1" || d === "true");
   }, [location.search]);
 
   useEffect(() => {
@@ -656,6 +714,9 @@ export default function FromToBar({ onSearch }) {
       cabin: tc.cabin,
     });
 
+    /* ✅ NEW: direct flight param */
+    if (directOnly) params.set("direct", "1");
+
     let dateLabel = "";
     if (tripType === "roundtrip") {
       params.set("depart", depart);
@@ -686,11 +747,25 @@ export default function FromToBar({ onSearch }) {
       ...tc,
       sector,
       farePreset,
+      directOnly,
       specialFare: sector === "intl" && tripType === "roundtrip" ? specialFare : false,
     });
 
     navigate(`/flight-results?${params.toString()}`);
-  }, [trip, sector, fromAP, toAP, tc, depart, ret, farePreset, specialFare, navigate, onSearch]);
+  }, [
+    trip,
+    sector,
+    fromAP,
+    toAP,
+    tc,
+    depart,
+    ret,
+    farePreset,
+    specialFare,
+    directOnly,
+    navigate,
+    onSearch,
+  ]);
 
   useEffect(() => {
     const onKey = (e) => {
@@ -753,9 +828,7 @@ export default function FromToBar({ onSearch }) {
               className={[
                 "rounded-full px-4 py-1.5 text-sm font-semibold transition",
                 focusRing,
-                trip === k
-                  ? "shadow"
-                  : "text-[var(--muted)] hover:text-[var(--text)]",
+                trip === k ? "shadow" : "text-[var(--muted)] hover:text-[var(--text)]",
               ].join(" ")}
               style={
                 trip === k
@@ -767,8 +840,6 @@ export default function FromToBar({ onSearch }) {
             </button>
           ))}
         </div>
-
-
       </div>
 
       {/* Main area */}
@@ -822,12 +893,8 @@ export default function FromToBar({ onSearch }) {
                     <BadgePercent className="h-5 w-5" />
                   </span>
                   <div className="min-w-0">
-                    <div className="text-sm font-extrabold text-[var(--text)]">
-                      Fare Preferences
-                    </div>
-                    <div className="text-[11px] font-medium text-[var(--muted)]">
-                      {presetHint}
-                    </div>
+                    <div className="text-sm font-extrabold text-[var(--text)]">Fare Preferences</div>
+                    <div className="text-[11px] font-medium text-[var(--muted)]">{presetHint}</div>
                   </div>
                   <div className="ml-auto">
                     <button
@@ -842,8 +909,6 @@ export default function FromToBar({ onSearch }) {
                       Change
                     </button>
                   </div>
-
-
                 </div>
 
                 <div className="mt-3">
@@ -861,28 +926,65 @@ export default function FromToBar({ onSearch }) {
                   </button>
                 </div>
 
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <span className="text-[11px] font-extrabold text-[var(--muted)]">Cabin:</span>
-                  <Chip active={tc.cabin === "Economy"} onClick={() => setCabin("Economy")} icon={Armchair}>
-                    Economy
-                  </Chip>
-                  <Chip active={tc.cabin === "Premium Economy"} onClick={() => setCabin("Premium Economy")}>
-                    Premium
-                  </Chip>
-                  <Chip active={tc.cabin === "Business"} onClick={() => setCabin("Business")}>
-                    Business
-                  </Chip>
-                  <Chip active={tc.cabin === "First"} onClick={() => setCabin("First")}>
-                    First
-                  </Chip>
+                {/* ✅ UPDATED: Cabin + Quick PAX LEFT (with separator) + Direct switch RIGHT */}
+                <div
+                  className="mt-3 flex flex-col gap-3 rounded-md border p-3"
+                  style={{
+                    borderColor: "var(--border)",
+                    background: "var(--surface2, rgba(248,250,252,0.92))",
+                  }}
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    {/* LEFT group */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[11px] font-extrabold text-[var(--muted)]">Cabin:</span>
+                        <Chip
+                          active={tc.cabin === "Economy"}
+                          onClick={() => setCabin("Economy")}
+                          icon={Armchair}
+                        >
+                          Economy
+                        </Chip>
+                        <Chip
+                          active={tc.cabin === "Premium Economy"}
+                          onClick={() => setCabin("Premium Economy")}
+                        >
+                          Premium
+                        </Chip>
+                        <Chip active={tc.cabin === "Business"} onClick={() => setCabin("Business")}>
+                          Business
+                        </Chip>
+                        <Chip active={tc.cabin === "First"} onClick={() => setCabin("First")}>
+                          First
+                        </Chip>
+                      </div>
 
-                  <span className="mx-1 h-6 w-px" style={{ background: "var(--border)" }} />
+                      <span className="my-1 h-px w-full sm:hidden" style={{ background: "var(--border)" }} />
+                      <span className="mx-2 hidden h-6 w-px sm:inline-block" style={{ background: "var(--border)" }} />
 
-                  <span className="text-[11px] font-extrabold text-[var(--muted)]">Quick PAX:</span>
-                  <QuickBtn onClick={() => bump("adults", 1)} icon={UserPlus}>+1 Adult</QuickBtn>
-                  <QuickBtn onClick={() => bump("children", 1)} icon={Baby}>+1 Child</QuickBtn>
-                  <QuickBtn onClick={() => bump("infants", 1)} icon={Baby}>+1 Infant</QuickBtn>
-                  <QuickBtn onClick={resetPax} icon={RotateCcw}>Reset</QuickBtn>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[11px] font-extrabold text-[var(--muted)]">Quick PAX:</span>
+                        <QuickBtn onClick={() => bump("adults", 1)} icon={UserPlus}>
+                          +1 Adult
+                        </QuickBtn>
+                        <QuickBtn onClick={() => bump("children", 1)} icon={Baby}>
+                          +1 Child
+                        </QuickBtn>
+                        <QuickBtn onClick={() => bump("infants", 1)} icon={Baby}>
+                          +1 Infant
+                        </QuickBtn>
+                        <QuickBtn onClick={resetPax} icon={RotateCcw}>
+                          Reset
+                        </QuickBtn>
+                      </div>
+                    </div>
+
+                    {/* RIGHT switch */}
+                    <div className="shrink-0">
+                      <DirectSwitch checked={directOnly} onChange={setDirectOnly} />
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -946,8 +1048,8 @@ export default function FromToBar({ onSearch }) {
                 minDate={returnMinDate}
                 offsetDays={1}
                 onDisabledClick={() => {
-                  setTrip("round");          // ✅ oneway -> round
-                  setOpenReturnOnce(true);   // ✅ and open calendar
+                  setTrip("round");
+                  setOpenReturnOnce(true);
                 }}
                 forceOpen={openReturnOnce && trip === "round"}
                 onForceOpenConsumed={() => setOpenReturnOnce(false)}
@@ -979,6 +1081,11 @@ export default function FromToBar({ onSearch }) {
             subtitle="Passengers (max 9) and class"
           >
             <div className="space-y-3">
+              {/* ✅ optional: direct switch in travellers sheet (enterprise feel) */}
+              <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-3">
+                <DirectSwitch checked={directOnly} onChange={setDirectOnly} />
+              </div>
+
               <div className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-3">
                 <div className="text-xs font-extrabold text-[var(--muted)]">Cabin</div>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -1126,7 +1233,6 @@ export default function FromToBar({ onSearch }) {
             onForceOpenConsumed={() => setOpenReturnOnce(false)}
           />
 
-
           <div className="relative min-w-0">
             <TravellersField label="Travellers & Class" text={travellersLabel} onClick={() => setOpenTC(true)} />
             <TravellerClassPicker
@@ -1163,29 +1269,46 @@ export default function FromToBar({ onSearch }) {
 
         {!isModifySearch && (
           <div className="hidden md:block">
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+            {/* ✅ UPDATED: Left (Cabin + Quick PAX with separator) + Right (Direct switch) */}
+            <div
+              className="mt-3 flex flex-col gap-3 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between"
+              style={{
+                borderColor: "var(--border)",
+                background: "var(--surface, rgba(255,255,255,0.92))",
+                boxShadow: shadowSoft,
+              }}
+            >
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[11px] font-extrabold text-[var(--muted)]">Quick PAX:</span>
-                <QuickBtn onClick={() => bump("adults", 1)} icon={UserPlus}>+1 Adult</QuickBtn>
-                <QuickBtn onClick={() => bump("children", 1)} icon={Baby}>+1 Child</QuickBtn>
-                <QuickBtn onClick={() => bump("infants", 1)} icon={Baby}>+1 Infant</QuickBtn>
-                <QuickBtn onClick={resetPax} icon={RotateCcw}>Reset</QuickBtn>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[11px] font-extrabold text-[var(--muted)]">Cabin:</span>
+                  <Chip active={tc.cabin === "Economy"} onClick={() => setCabin("Economy")} icon={Armchair}>
+                    Economy
+                  </Chip>
+                  <Chip active={tc.cabin === "Premium Economy"} onClick={() => setCabin("Premium Economy")}>
+                    Premium
+                  </Chip>
+                  <Chip active={tc.cabin === "Business"} onClick={() => setCabin("Business")}>
+                    Business
+                  </Chip>
+                  <Chip active={tc.cabin === "First"} onClick={() => setCabin("First")}>
+                    First
+                  </Chip>
+                </div>
+
+                <span className="my-1 h-px w-full sm:hidden" style={{ background: "var(--border)" }} />
+                <span className="mx-2 hidden h-6 w-px sm:inline-block" style={{ background: "var(--border)" }} />
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[11px] font-extrabold text-[var(--muted)]">Quick PAX:</span>
+                  <QuickBtn onClick={() => bump("adults", 1)} icon={UserPlus}>+1 Adult</QuickBtn>
+                  <QuickBtn onClick={() => bump("children", 1)} icon={Baby}>+1 Child</QuickBtn>
+                  <QuickBtn onClick={() => bump("infants", 1)} icon={Baby}>+1 Infant</QuickBtn>
+                  <QuickBtn onClick={resetPax} icon={RotateCcw}>Reset</QuickBtn>
+                </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[11px] font-extrabold text-[var(--muted)]">Cabin:</span>
-                <Chip active={tc.cabin === "Economy"} onClick={() => setCabin("Economy")} icon={Armchair}>
-                  Economy
-                </Chip>
-                <Chip active={tc.cabin === "Premium Economy"} onClick={() => setCabin("Premium Economy")}>
-                  Premium
-                </Chip>
-                <Chip active={tc.cabin === "Business"} onClick={() => setCabin("Business")}>
-                  Business
-                </Chip>
-                <Chip active={tc.cabin === "First"} onClick={() => setCabin("First")}>
-                  First
-                </Chip>
+              <div className="shrink-0">
+                <DirectSwitch checked={directOnly} onChange={setDirectOnly} />
               </div>
             </div>
 
@@ -1196,11 +1319,11 @@ export default function FromToBar({ onSearch }) {
               {/* ===== Right side plane image (FULL opacity) ===== */}
               <div
                 className="
-      pointer-events-none
-      absolute inset-y-0 right-0
-      w-[46%] hidden md:block
-      bg-no-repeat bg-right bg-contain
-    "
+                  pointer-events-none
+                  absolute inset-y-0 right-0
+                  w-[46%] hidden md:block
+                  bg-no-repeat bg-right bg-contain
+                "
                 style={{
                   backgroundImage: `url(${searchbg})`,
                   backgroundSize: "cover",
@@ -1210,14 +1333,14 @@ export default function FromToBar({ onSearch }) {
               {/* ===== Fade mask (this makes it look PART of card) ===== */}
               <div
                 className="
-      pointer-events-none
-      absolute inset-y-0 right-0
-      w-[46%] hidden md:block
-      bg-gradient-to-l
-      from-transparent
-      via-[var(--surface)]
-      to-[var(--surface)]
-    "
+                  pointer-events-none
+                  absolute inset-y-0 right-0
+                  w-[46%] hidden md:block
+                  bg-gradient-to-l
+                  from-transparent
+                  via-[var(--surface)]
+                  to-[var(--surface)]
+                "
               />
 
               {/* ===== Content ===== */}
@@ -1272,44 +1395,38 @@ export default function FromToBar({ onSearch }) {
                     )}
                   </div>
                 </div>
-
-                {/* <div className="flex justify-start lg:justify-end">
-      <button
-        type="button"
-        className={[
-          "inline-flex items-center gap-2 rounded-md border bg-[var(--surface)] px-4 py-2 text-sm font-extrabold transition",
-          "border-[var(--border)] text-[var(--text)] hover:bg-[var(--surface2)]",
-          focusRing,
-        ].join(" ")}
-      >
-        <Radar className="h-4 w-4" style={{ color: "var(--primary)" }} />
-        Flight Tracker
-      </button>
-    </div> */}
               </div>
             </div>
 
-
             <div className="absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-[98%] z-20">
               <button
-                type="button"
-                onClick={handleSearch}
-                className={[
-                  "group relative h-9 sm:h-10 min-w-[160px] sm:min-w-[210px] rounded-full text-sm font-bold tracking-wide",
-                  "hover:brightness-95 active:scale-[0.98] transition",
-                  "focus:outline-none focus:ring-4 focus:ring-[color:var(--primarySoft)]",
-                ].join(" ")}
-                style={{ ...gradientStyle, color: "var(--surface)", boxShadow: shadowHard }}
-              >
-                <span className="relative z-10 inline-flex items-center gap-2 mt-2">
-                  <SearchIcon className="h-4 w-4" />
-                  SEARCH
-                </span>
-                <span
-                  className="pointer-events-none absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition"
-                  style={{ background: "color-mix(in srgb, var(--surface) 10%, transparent)" }}
-                />
-              </button>
+  type="button"
+  onClick={handleSearch}
+  className={[
+    "group relative h-9 sm:h-10 min-w-[160px] sm:min-w-[210px] rounded-full text-sm font-bold tracking-wide",
+    "hover:brightness-95 active:scale-[0.98] transition",
+    "focus:outline-none focus:ring-4 focus:ring-[color:var(--primarySoft)]",
+  ].join(" ")}
+  style={{
+    background: "var(--primary)",          // ✅ dynamic solid (no gradient)
+    color: "var(--onPrimary, var(--surface))", // ✅ dynamic text (fallback surface)
+    boxShadow: shadowHard,
+  }}
+>
+  <span className="relative z-10 inline-flex items-center gap-2 mt-2">
+    <SearchIcon className="h-4 w-4" />
+    SEARCH
+  </span>
+
+  {/* hover overlay (still dynamic) */}
+  <span
+    className="pointer-events-none absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition"
+    style={{
+      background: "color-mix(in srgb, var(--surface) 14%, transparent)",
+    }}
+  />
+</button>
+
             </div>
           </div>
         )}

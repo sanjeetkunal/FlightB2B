@@ -1,4 +1,10 @@
 // src/components/flightlist/RoundTripResultList.tsx
+// ✅ COMPLETE DROP-IN
+// ✅ Roundtrip top-bar matches your Oneway screenshot: "Flight Results" + Sell/Net/Comm/Both + Share (right)
+// ✅ Tabs control price shown in fare list/cards (Sell/Net/Comm/Both)
+// ✅ BUT bottom "Selected / Summary" bar restored EXACTLY like your original (Departure + Return + Total + Flight Details)
+// ✅ No hard Tailwind colors; uses CSS vars only
+
 import React, { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -66,31 +72,28 @@ type Props = {
   emptyReturnNode?: ReactNode;
 
   showCommission?: boolean;
-
   paxConfig: PaxConfig;
 
-  // ✅ from FilterPanel (f.fareView)
+  // from FilterPanel (f.fareView)
   fareView?: "SINGLE" | "FULL";
 };
 
 /* ================= THEME VARS (no hard colors) ================= */
 
 const VAR = {
-  surface: "var(--surface, rgba(255,255,255,0.92))",
-  surface2: "var(--surface2, rgba(248,250,252,0.92))",
+  surface: "var(--surface, rgba(255,255,255,1))",
+  surface2: "var(--surface2, rgba(248,250,252,1))",
   border: "var(--border, rgba(15,23,42,0.12))",
   text: "var(--text, rgba(15,23,42,0.92))",
   muted: "var(--muted, rgba(71,85,105,0.9))",
   subtle: "var(--subtle, rgba(100,116,139,0.85))",
   primary: "var(--primary, rgb(37,99,235))",
-  onPrimary: "var(--onPrimary, #fff)",
+  onPrimary: "var(--onPrimary, rgba(255,255,255,1))",
   primarySoft: "var(--primarySoft, rgba(37,99,235,0.14))",
   accent: "var(--accent, rgb(16,182,217))",
   accentSoft: "var(--accentSoft, rgba(16,182,217,0.12))",
-  success: "var(--success, rgb(34,197,94))",
-  danger: "var(--danger, rgb(244,63,94))",
 
-  // dark summary bar tones (still themeable)
+  // bottom summary
   darkBg: "var(--darkBg, rgba(15,23,42,0.96))",
   onDark: "var(--onDark, rgba(255,255,255,1))",
   onDarkMuted: "var(--onDarkMuted, rgba(255,255,255,0.82))",
@@ -110,7 +113,7 @@ const VAR = {
 /* ================= HELPERS ================= */
 
 const SS_KEY = "BOOKING_CTX_V1";
-const SEARCH_KEYS = ["SEARCH_CTX_V1", "FLIGHT_SEARCH_CTX_V1", "BOOKING_CTX_V1"]; // fallback only
+const SEARCH_KEYS = ["SEARCH_CTX_V1", "FLIGHT_SEARCH_CTX_V1"]; // fallback only
 
 function cn(...classes: Array<string | undefined | null | false>) {
   return classes.filter(Boolean).join(" ");
@@ -121,8 +124,8 @@ const nfIN = new Intl.NumberFormat("en-IN", {
   currency: "INR",
   maximumFractionDigits: 0,
 });
-const Money = ({ v }: { v: number }) => <>{nfIN.format(Number.isFinite(v) ? v : 0)}</>;
 
+const Money = ({ v }: { v: number }) => <>{nfIN.format(Number.isFinite(v) ? v : 0)}</>;
 const hhmm = (min: number) => `${Math.floor(min / 60)}h ${min % 60}m`;
 
 function toInt(n: any) {
@@ -133,21 +136,20 @@ function toInt(n: any) {
 
 function normalizePax(input?: any): PaxConfig {
   const src = input ?? {};
-
   const adults = toInt(src.adults ?? src.adult ?? src.ADT ?? src.adt ?? src.noOfAdults ?? src.adultCount ?? src.Adults);
-  const children = toInt(src.children ?? src.child ?? src.CHD ?? src.chd ?? src.noOfChildren ?? src.childCount ?? src.Children);
+  const children = toInt(
+    src.children ?? src.child ?? src.CHD ?? src.chd ?? src.noOfChildren ?? src.childCount ?? src.Children
+  );
   const infants = toInt(src.infants ?? src.infant ?? src.INF ?? src.inf ?? src.noOfInfants ?? src.infantCount ?? src.Infants);
 
   if (adults + children + infants <= 0) return { adults: 1, children: 0, infants: 0 };
   return { adults, children, infants };
 }
 
-/** ✅ seats are only Adults+Children (infants usually not charged same) */
+/** seats are only Adults+Children */
 function seatPaxCount(p: PaxConfig) {
   return Math.max(1, (p?.adults || 0) + (p?.children || 0));
 }
-
-/** only for display */
 function totalPaxCount(p: PaxConfig) {
   return Math.max(1, (p?.adults || 0) + (p?.children || 0) + (p?.infants || 0));
 }
@@ -178,6 +180,35 @@ function getAgentInfo(fare?: FareRT | null) {
   if (agentNet == null && commission != null) agentNet = fare.price - commission;
 
   return { agentNet, commission };
+}
+
+function shownPrice(perPax: number, seats: number, fareView: "SINGLE" | "FULL") {
+  const s = Math.max(1, seats);
+  return fareView === "FULL" ? perPax * s : perPax;
+}
+
+type PriceMode = "SELL" | "NET" | "COMM" | "BOTH";
+
+function resolveDisplayedPrice({
+  mode,
+  fare,
+  seats,
+  fareView,
+}: {
+  mode: PriceMode;
+  fare: FareRT;
+  seats: number;
+  fareView: "SINGLE" | "FULL";
+}) {
+  const sell = shownPrice(Number(fare.price || 0), seats, fareView);
+  const ai = getAgentInfo(fare);
+  const net = ai.agentNet != null ? shownPrice(Number(ai.agentNet || 0), seats, fareView) : undefined;
+  const comm = ai.commission != null ? shownPrice(Number(ai.commission || 0), seats, fareView) : undefined;
+
+  if (mode === "NET") return { main: net ?? sell, sell, net, comm };
+  if (mode === "COMM") return { main: comm ?? 0, sell, net, comm };
+  if (mode === "BOTH") return { main: sell, sell, net, comm };
+  return { main: sell, sell, net, comm };
 }
 
 /** Passenger page expects these keys */
@@ -212,7 +243,7 @@ function adaptRowToSelectedFlight(row: RowRT, fare?: FareRT | null) {
   };
 }
 
-/* ================= SELECTION SYNC (IMPORTANT) ================= */
+/* ================= SELECTION SYNC ================= */
 
 function syncSelection(rows: RowRT[], selected: Selected, onSelect: (rowId: string, fare: FareRT) => void) {
   if (!rows?.length) return;
@@ -253,16 +284,12 @@ function syncSelection(rows: RowRT[], selected: Selected, onSelect: (rowId: stri
 
 /* ================= UI ATOMS ================= */
 
-function Pill({ children, tone = "default" }: { children: ReactNode; tone?: "default" | "ok" | "warn" }) {
-  const style =
-    tone === "ok"
-      ? { background: "var(--successSoft, rgba(34,197,94,0.12))", border: `1px solid ${VAR.border}`, color: VAR.text }
-      : tone === "warn"
-      ? { background: "var(--warnSoft, rgba(245,158,11,0.12))", border: `1px solid ${VAR.border}`, color: VAR.text }
-      : { background: VAR.surface2, border: `1px solid ${VAR.border}`, color: VAR.muted };
-
+function Pill({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex items-center rounded-full px-2 py-[2px] text-[10px] font-semibold uppercase tracking-wide" style={style}>
+    <span
+      className="inline-flex items-center rounded-full px-2 py-[2px] text-[10px] font-semibold uppercase tracking-wide"
+      style={{ background: VAR.surface2, border: `1px solid ${VAR.border}`, color: VAR.muted }}
+    >
       {children}
     </span>
   );
@@ -291,6 +318,7 @@ function fareTooltip(row: RowRT, fare?: FareRT | null) {
     .filter(Boolean)
     .join(" • ");
 
+  const ai = getAgentInfo(fare);
   return [
     `Fare: ${fare.label} (${fare.code})`,
     `Refundable: ${fare.refundable}`,
@@ -298,6 +326,8 @@ function fareTooltip(row: RowRT, fare?: FareRT | null) {
     `Meal: ${fare.meal}`,
     `Baggage: ${bagText}`,
     `Seat: ${fare.seat ?? "—"}`,
+    ai.agentNet != null ? `Net: ${nfIN.format(ai.agentNet)}` : `Net: —`,
+    ai.commission != null ? `Comm: ${nfIN.format(ai.commission)}` : `Comm: —`,
   ].join("\n");
 }
 
@@ -326,21 +356,12 @@ function TimelineRow({ row }: { row: RowRT }) {
 
           <div className="mt-1 flex items-center gap-2">
             <div className="h-px flex-1 border-t border-dashed" style={{ borderColor: VAR.border }} />
-            {row.stops > 0 ? (
-              <span
-                className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                style={{ background: VAR.surface2, border: `1px solid ${VAR.border}`, color: VAR.muted }}
-              >
-                {row.stops}
-              </span>
-            ) : (
-              <span
-                className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                style={{ background: VAR.accentSoft, border: `1px solid ${VAR.border}`, color: VAR.text }}
-              >
-                Direct
-              </span>
-            )}
+            <span
+              className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+              style={{ background: VAR.surface2, border: `1px solid ${VAR.border}`, color: VAR.muted }}
+            >
+              {row.stops > 0 ? row.stops : "Direct"}
+            </span>
             <div className="h-px flex-1 border-t border-dashed" style={{ borderColor: VAR.border }} />
           </div>
 
@@ -367,7 +388,97 @@ function TimelineRow({ row }: { row: RowRT }) {
   );
 }
 
-/* ================= FARE LIST (FULL MODE SUPPORT) ================= */
+/* ================= ONEWAY-LIKE TOP BAR ================= */
+
+function SegTab({
+  active,
+  disabled,
+  children,
+  onClick,
+}: {
+  active: boolean;
+  disabled?: boolean;
+  children: ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className="px-3 py-1.5 text-[12px] font-semibold"
+      style={{
+        border: `1px solid ${VAR.border}`,
+        background: active ? VAR.primary : VAR.surface,
+        color: active ? VAR.onPrimary : VAR.text,
+        opacity: disabled ? 0.55 : 1,
+        cursor: disabled ? "not-allowed" : "pointer",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function OnewayTopBar({
+  priceMode,
+  setPriceMode,
+  canUseB2B,
+  shareMode,
+  onToggleShareMode,
+}: {
+  priceMode: PriceMode;
+  setPriceMode: (m: PriceMode) => void;
+  canUseB2B: boolean;
+  shareMode: boolean;
+  onToggleShareMode: () => void;
+}) {
+  return (
+    <div
+      className="flex items-center justify-between gap-3 rounded-md px-3 py-2"
+      style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}
+    >
+      <div className="flex items-center gap-2 min-w-0">
+        <div
+          className="rounded-md px-3 py-1.5 text-[12px] font-extrabold"
+          style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2, color: VAR.text }}
+        >
+          Flight Results
+        </div>
+
+        <div className="flex overflow-hidden rounded-md" style={{ border: `1px solid ${VAR.border}` }}>
+          <SegTab active={priceMode === "SELL"} onClick={() => setPriceMode("SELL")}>
+            Sell
+          </SegTab>
+          <SegTab active={priceMode === "NET"} disabled={!canUseB2B} onClick={() => setPriceMode("NET")}>
+            Net
+          </SegTab>
+          <SegTab active={priceMode === "COMM"} disabled={!canUseB2B} onClick={() => setPriceMode("COMM")}>
+            Comm
+          </SegTab>
+          <SegTab active={priceMode === "BOTH"} disabled={!canUseB2B} onClick={() => setPriceMode("BOTH")}>
+            Both
+          </SegTab>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onToggleShareMode}
+        className="rounded-md px-3 py-1.5 text-[12px] font-semibold"
+        style={{
+          border: `1px solid ${VAR.border}`,
+          background: shareMode ? VAR.primary : VAR.surface,
+          color: shareMode ? VAR.onPrimary : VAR.text,
+        }}
+      >
+        Share
+      </button>
+    </div>
+  );
+}
+
+/* ================= FARE LIST ================= */
 
 function FareRadioList({
   row,
@@ -377,6 +488,8 @@ function FareRadioList({
   groupName,
   seats,
   fareView,
+  priceMode,
+  showCommission,
 }: {
   row: RowRT;
   currentFare?: FareRT | null;
@@ -385,6 +498,8 @@ function FareRadioList({
   groupName: string;
   seats: number;
   fareView: "SINGLE" | "FULL";
+  priceMode: PriceMode;
+  showCommission: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const fares = row.fares ?? [];
@@ -397,19 +512,19 @@ function FareRadioList({
         {visible.map((f) => {
           const checked = currentFare?.code === f.code;
 
-          const shown = fareView === "FULL" ? Number(f.price || 0) * seatCount : Number(f.price || 0);
+          const calc = resolveDisplayedPrice({ mode: priceMode, fare: f, seats: seatCount, fareView });
           const subLabel = fareView === "FULL" ? `total • ${seatCount} seat${seatCount > 1 ? "s" : ""}` : "per pax";
 
           return (
             <label
               key={f.code}
-              className="flex cursor-pointer items-center justify-between gap-3 rounded-md px-1 transition"
+              className="flex cursor-pointer items-center justify-between gap-3 rounded-md px-2 py-2 transition"
               style={{
                 border: `1px solid ${checked ? VAR.primary : VAR.border}`,
                 background: checked ? VAR.primarySoft : VAR.surface,
               }}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 min-w-0">
                 <input
                   type="radio"
                   name={groupName}
@@ -417,20 +532,37 @@ function FareRadioList({
                   onChange={() => onPickFare(f)}
                   style={{ accentColor: "var(--primary, rgb(37,99,235))" }}
                 />
-                <div className="flex items-center gap-2">
-                  <div>
+
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
                     <div className="text-[14px] font-extrabold leading-none" style={{ color: VAR.text }}>
-                      {nfIN.format(shown)}
+                      {nfIN.format(calc.main)}
                     </div>
-                    <div className="mt-1 text-[10px] font-semibold" style={{ color: VAR.subtle }}>
-                      {subLabel}
-                    </div>
+                    <InfoDot title={fareTooltip(row, f)} />
                   </div>
-                  <InfoDot title={fareTooltip(row, f)} />
+
+                  <div className="mt-1 text-[10px] font-semibold" style={{ color: VAR.subtle }}>
+                    {priceMode === "NET"
+                      ? `net • ${subLabel}`
+                      : priceMode === "COMM"
+                      ? `commission • ${subLabel}`
+                      : `sell • ${subLabel}`}
+                  </div>
+
+                  {/* BOTH mode mini line */}
+                  {showCommission && priceMode === "BOTH" && (
+                    <div className="mt-1 text-[11px] font-semibold" style={{ color: VAR.muted }}>
+                      <span style={{ color: VAR.subtle }}>Net:</span>{" "}
+                      <span style={{ color: VAR.text }}>{calc.net != null ? nfIN.format(calc.net) : "—"}</span>
+                      <span style={{ color: VAR.subtle }}>{"  •  "}</span>
+                      <span style={{ color: VAR.subtle }}>Comm:</span>{" "}
+                      <span style={{ color: VAR.text }}>{calc.comm != null ? nfIN.format(calc.comm) : "—"}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 <span
                   className="rounded-md px-2 py-0.5 text-[11px] font-semibold"
                   style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2, color: VAR.muted }}
@@ -492,6 +624,7 @@ function LegCard({
   onToggleSelect,
   seats,
   fareView,
+  priceMode,
 }: {
   row: RowRT;
   selected: Selected;
@@ -505,11 +638,12 @@ function LegCard({
 
   seats: number;
   fareView: "SINGLE" | "FULL";
+  priceMode: PriceMode;
 }) {
   const [open, setOpen] = useState(false);
 
   const currentFare = pickCurrentFare(row, selected);
-  const { agentNet, commission } = getAgentInfo(currentFare);
+  const ai = getAgentInfo(currentFare);
   const refundable = (currentFare?.refundable ?? row.refundable) === "Refundable";
 
   const bag = mergeBaggage(row, currentFare);
@@ -524,7 +658,7 @@ function LegCard({
   const seatCount = Math.max(1, seats);
 
   return (
-    <div className="relative overflow-hidden rounded-md shadow-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
+    <div className="relative overflow-hidden rounded-md" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
       {shareMode && (
         <button
           type="button"
@@ -565,7 +699,7 @@ function LegCard({
         </div>
 
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <Pill tone={refundable ? "ok" : "warn"}>{refundable ? "Refundable" : "Non-Refundable"}</Pill>
+          <Pill>{refundable ? "Refundable" : "Non-Refundable"}</Pill>
           {row.extras?.map((x) => (
             <Pill key={x}>{x}</Pill>
           ))}
@@ -589,6 +723,8 @@ function LegCard({
               groupName={groupName}
               seats={seats}
               fareView={fareView}
+              priceMode={priceMode}
+              showCommission={showCommission}
             />
           </div>
 
@@ -607,22 +743,21 @@ function LegCard({
               </div>
             </div>
 
-            {showCommission && (agentNet != null || commission != null) && (
+            {showCommission && (ai.agentNet != null || ai.commission != null) && (
               <div className="mt-3 w-full rounded-md px-3 py-2.5" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2 }}>
                 <div className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: VAR.subtle }}>
                   B2B
                 </div>
                 <div className="mt-1 flex flex-col gap-1 text-[12px]">
-                  {agentNet != null && (
-                    <span className="font-semibold" style={{ color: VAR.text }}>
-                      Net: <Money v={fareView === "FULL" ? agentNet * seatCount : agentNet} />
-                    </span>
-                  )}
-                  {commission != null && (
-                    <span className="font-semibold" style={{ color: VAR.text }}>
-                      Comm: <Money v={fareView === "FULL" ? commission * seatCount : commission} />
-                    </span>
-                  )}
+                  <span className="font-semibold" style={{ color: VAR.text }}>
+                    Net: <Money v={ai.agentNet != null ? shownPrice(ai.agentNet, seatCount, fareView) : 0} />
+                  </span>
+                  <span className="font-semibold" style={{ color: VAR.text }}>
+                    Comm: <Money v={ai.commission != null ? shownPrice(ai.commission, seatCount, fareView) : 0} />
+                  </span>
+                  <div className="mt-1 text-[11px]" style={{ color: VAR.subtle }}>
+                    View: <span style={{ color: VAR.text, fontWeight: 800 }}>{priceMode}</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -657,23 +792,17 @@ function LegCard({
                 <KV k="Meal" v={currentFare?.meal ?? "—"} />
                 <KV k="Baggage" v={baggageText} />
                 <KV k="Seat" v={currentFare?.seat ?? "—"} />
+                {showCommission && <KV k="Net" v={ai.agentNet != null ? nfIN.format(ai.agentNet) : "—"} />}
+                {showCommission && <KV k="Comm" v={ai.commission != null ? nfIN.format(ai.commission) : "—"} />}
               </div>
-
-              {currentFare?.price != null && (
-                <div className="mt-3 rounded-md p-3 text-[12px] font-semibold" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2, color: VAR.text }}>
-                  <div className="flex items-center justify-between">
-                    <span style={{ color: VAR.subtle }}>{fareView === "FULL" ? `Price (total • ${seatCount} seats)` : "Price (per pax)"}</span>
-                    <span style={{ color: VAR.text, fontWeight: 900 }}>
-                      {nfIN.format(fareView === "FULL" ? currentFare.price * seatCount : currentFare.price)}
-                    </span>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 
           {row.sector === "INTL" && (
-            <div className="mt-3 rounded-md p-4 text-[12px] font-medium" style={{ border: `1px solid ${VAR.border}`, background: VAR.accentSoft, color: VAR.text }}>
+            <div
+              className="mt-3 rounded-md p-4 text-[12px] font-medium"
+              style={{ border: `1px solid ${VAR.border}`, background: VAR.accentSoft, color: VAR.text }}
+            >
               Passport & visa may be required. International baggage rules can differ by carrier/sector.
             </div>
           )}
@@ -683,7 +812,7 @@ function LegCard({
   );
 }
 
-/* ================= BOTTOM SUMMARY ================= */
+/* ================= BOTTOM SUMMARY (RESTORED ORIGINAL) ================= */
 
 type SummaryBarProps = {
   out?: { row: RowRT; fare: FareRT };
@@ -936,7 +1065,10 @@ export function SummaryBar({
               )}
 
               {tab === "fare" && (
-                <div className="rounded-md p-4 text-[13px]" style={{ border: `1px solid ${VAR.onDarkCardBorder}`, background: VAR.onDarkCardBg }}>
+                <div
+                  className="rounded-md p-4 text-[13px]"
+                  style={{ border: `1px solid ${VAR.onDarkCardBorder}`, background: VAR.onDarkCardBg }}
+                >
                   <div className="font-semibold">Fare Summary</div>
 
                   <div className="mt-2 flex items-center justify-between" style={{ color: VAR.onDarkMuted }}>
@@ -1000,7 +1132,10 @@ export function SummaryBar({
               )}
 
               {tab === "cancel" && (
-                <div className="rounded-md p-4 text-[13px]" style={{ border: `1px solid ${VAR.onDarkCardBorder}`, background: VAR.onDarkCardBg }}>
+                <div
+                  className="rounded-md p-4 text-[13px]"
+                  style={{ border: `1px solid ${VAR.onDarkCardBorder}`, background: VAR.onDarkCardBg }}
+                >
                   <div className="font-semibold">Cancellation</div>
                   <div className="mt-2" style={{ color: VAR.onDarkMuted }}>
                     API cancellation rules yaha plug kar do.
@@ -1009,7 +1144,10 @@ export function SummaryBar({
               )}
 
               {tab === "date" && (
-                <div className="rounded-md p-4 text-[13px]" style={{ border: `1px solid ${VAR.onDarkCardBorder}`, background: VAR.onDarkCardBg }}>
+                <div
+                  className="rounded-md p-4 text-[13px]"
+                  style={{ border: `1px solid ${VAR.onDarkCardBorder}`, background: VAR.onDarkCardBg }}
+                >
                   <div className="font-semibold">Date Change</div>
                   <div className="mt-2" style={{ color: VAR.onDarkMuted }}>
                     API date-change rules yaha plug kar do.
@@ -1235,20 +1373,25 @@ function readPaxFromQuery(search: string): PaxConfig | null {
   }
 }
 
-/* ================= MAIN ================= */
-
 function readPaxFromSession(): PaxConfig | null {
   try {
     for (const key of SEARCH_KEYS) {
       const raw = sessionStorage.getItem(key);
       if (!raw) continue;
       const parsed = JSON.parse(raw);
+
+      // 👇 if it looks like booking ctx, skip
+      if (parsed?.tripType && (parsed?.selectedFlightOnward || parsed?.selectedFlightReturn)) continue;
+
       const p = parsed?.paxConfig ?? parsed?.pax ?? parsed?.pricing?.pax;
       if (p) return normalizePax(p);
     }
   } catch {}
   return null;
 }
+
+
+/* ================= MAIN ================= */
 
 export default function RoundTripResultList({
   outboundRows,
@@ -1269,7 +1412,6 @@ export default function RoundTripResultList({
   // ✅ robust pax source
   const pax = useMemo(() => {
     const fromProps = normalizePax(paxConfig);
-
     const looksDefault = fromProps.adults === 1 && fromProps.children === 0 && fromProps.infants === 0;
 
     const fromStateRaw = (loc.state as any)?.paxConfig ?? (loc.state as any)?.pax ?? (loc.state as any)?.pricing?.pax;
@@ -1284,6 +1426,14 @@ export default function RoundTripResultList({
   }, [paxConfig, loc.state, loc.search]);
 
   const seats = useMemo(() => seatPaxCount(pax), [pax]);
+
+  // ✅ ONEWAY-like price tabs
+  const [priceMode, setPriceMode] = useState<PriceMode>("SELL");
+
+  // If B2B off, force SELL
+  useEffect(() => {
+    if (!showCommission && priceMode !== "SELL") setPriceMode("SELL");
+  }, [showCommission, priceMode]);
 
   // ✅ selection sync (rows refresh safe)
   useEffect(() => {
@@ -1405,7 +1555,9 @@ export default function RoundTripResultList({
     }
   };
 
-  /* ================= ✅ BOOK NOW (ROUNDTRIP) ================= */
+  const canUseB2B = Boolean(showCommission);
+
+  /* ================= BOOK NOW ================= */
 
   const onBookNow = () => {
     if (!pickedOut?.row || !pickedOut?.fare || !pickedIn?.row || !pickedIn?.fare) {
@@ -1447,8 +1599,6 @@ export default function RoundTripResultList({
     const pricing = {
       currency: "INR",
       perTraveller: perPaxSell,
-
-      // ✅ totals by seats only
       totalFare: perPaxSell * seatCount,
 
       pax: paxFixed,
@@ -1490,87 +1640,79 @@ export default function RoundTripResultList({
 
   return (
     <div className="space-y-5">
-      {/* ✅ Share top bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-md px-3 py-2" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}>
-        <div className="text-sm font-semibold" style={{ color: VAR.text }}>
-          Round Trip Results
-        </div>
+      {/* ✅ ONEWAY STYLE TOP BAR */}
+      <OnewayTopBar
+        priceMode={priceMode}
+        setPriceMode={setPriceMode}
+        canUseB2B={canUseB2B}
+        shareMode={shareMode}
+        onToggleShareMode={() => {
+          setShareMode((s) => !s);
+          clearShareSelection();
+        }}
+      />
 
-        <div className="flex items-center gap-2">
+      {/* share controls row (only when shareMode) */}
+      {shareMode && (
+        <div
+          className="flex flex-wrap items-center gap-2 rounded-md px-3 py-2"
+          style={{ border: `1px solid ${VAR.border}`, background: VAR.surface }}
+        >
           <button
             type="button"
-            onClick={() => {
-              setShareMode((s) => !s);
-              clearShareSelection();
-            }}
+            onClick={selectAll}
             className="rounded-md px-3 py-1.5 text-xs font-semibold"
-            style={{
-              border: `1px solid ${VAR.border}`,
-              background: shareMode ? VAR.primary : VAR.surface,
-              color: shareMode ? VAR.onPrimary : VAR.text,
-            }}
+            style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2, color: VAR.text }}
           >
-            {shareMode ? "Exit Share Mode" : "Share"}
+            Select All
           </button>
 
-          {shareMode && (
-            <>
-              <button
-                type="button"
-                onClick={selectAll}
-                className="rounded-md px-3 py-1.5 text-xs font-semibold"
-                style={{ border: `1px solid ${VAR.border}`, background: VAR.surface, color: VAR.text }}
-              >
-                Select All
-              </button>
+          <button
+            type="button"
+            onClick={clearShareSelection}
+            className="rounded-md px-3 py-1.5 text-xs font-semibold"
+            style={{ border: `1px solid ${VAR.border}`, background: VAR.surface2, color: VAR.text }}
+          >
+            Clear
+          </button>
 
-              <button
-                type="button"
-                onClick={clearShareSelection}
-                className="rounded-md px-3 py-1.5 text-xs font-semibold"
-                style={{ border: `1px solid ${VAR.border}`, background: VAR.surface, color: VAR.text }}
-              >
-                Clear
-              </button>
+          <div className="text-xs" style={{ color: VAR.muted }}>
+            Selected: <span style={{ color: VAR.text, fontWeight: 800 }}>{selectedCount}</span>
+          </div>
 
-              <div className="text-xs" style={{ color: VAR.muted }}>
-                Selected: <span style={{ color: VAR.text, fontWeight: 800 }}>{selectedCount}</span>
-              </div>
+          {selectedCount > 0 && (
+            <div className="ml-auto flex items-center gap-2">
+              <IconButton title="Share via WhatsApp" onClick={onShareWhatsApp}>
+                <WhatsAppIcon />
+              </IconButton>
 
-              {selectedCount > 0 && (
-                <div className="ml-2 flex items-center gap-2">
-                  <IconButton title="Share via WhatsApp" onClick={onShareWhatsApp}>
-                    <WhatsAppIcon />
-                  </IconButton>
+              <IconButton title="Share via Email" onClick={onShareEmail}>
+                <MailIcon />
+              </IconButton>
 
-                  <IconButton title="Share via Email" onClick={onShareEmail}>
-                    <MailIcon />
-                  </IconButton>
+              <IconButton title={copyDone ? "Copied!" : "Copy"} onClick={onCopy}>
+                <CopyIcon />
+              </IconButton>
 
-                  <IconButton title={copyDone ? "Copied!" : "Copy"} onClick={onCopy}>
-                    <CopyIcon />
-                  </IconButton>
-
-                  {copyDone && (
-                    <span className="text-[12px] font-semibold" style={{ color: VAR.text }}>
-                      Copied!
-                    </span>
-                  )}
-                </div>
+              {copyDone && (
+                <span className="text-[12px] font-semibold" style={{ color: VAR.text }}>
+                  Copied!
+                </span>
               )}
-            </>
+            </div>
           )}
         </div>
-      </div>
+      )}
 
       <div className="grid grid-cols-12 gap-6">
         {/* OUTBOUND */}
         <div className="col-span-12 md:col-span-6 space-y-3">
-       
-
           {outboundRows.length === 0 &&
             (emptyOutboundNode ?? (
-              <div className="rounded-md p-4 text-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface, color: VAR.muted }}>
+              <div
+                className="rounded-md p-4 text-sm"
+                style={{ border: `1px solid ${VAR.border}`, background: VAR.surface, color: VAR.muted }}
+              >
                 No outbound flights found.
               </div>
             ))}
@@ -1588,22 +1730,23 @@ export default function RoundTripResultList({
               onToggleSelect={toggleOut}
               seats={seats}
               fareView={fareView}
+              priceMode={priceMode}
             />
           ))}
         </div>
 
         {/* RETURN */}
         <div className="col-span-12 md:col-span-6 space-y-3">
-
-
           {returnRows.length === 0 &&
             (emptyReturnNode ?? (
-              <div className="rounded-md p-4 text-sm" style={{ border: `1px solid ${VAR.border}`, background: VAR.surface, color: VAR.muted }}>
+              <div
+                className="rounded-md p-4 text-sm"
+                style={{ border: `1px solid ${VAR.border}`, background: VAR.surface, color: VAR.muted }}
+              >
                 No return flights found.
               </div>
             ))}
 
-          {/* ✅ IMPORTANT: return side uses selectedReturn/onSelectReturnFare/toggleIn */}
           {returnRows.map((r) => (
             <LegCard
               key={r.id}
@@ -1617,12 +1760,13 @@ export default function RoundTripResultList({
               onToggleSelect={toggleIn}
               seats={seats}
               fareView={fareView}
+              priceMode={priceMode}
             />
           ))}
         </div>
       </div>
 
-      {/* ✅ Book Now summary */}
+      {/* ✅ Summary (RESTORED ORIGINAL) */}
       <SummaryBar
         out={pickedOut}
         inn={pickedIn}

@@ -1,38 +1,67 @@
 // src/components/offers/MonthlyTargetOfferModal.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import offerImg from "../../assets/offer/offer.png";
 
-const SS_KEY = "OFFER_MODAL_MONTHLY_TARGET_V1";
+const LS_KEY = "OFFER_MODAL_MONTHLY_TARGET_ONCE_V2";
+
+function safeGetSeen() {
+  try {
+    return localStorage.getItem(LS_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function safeSetSeen() {
+  try {
+    localStorage.setItem(LS_KEY, "1");
+  } catch {
+    /* ignore */
+  }
+}
 
 export default function MonthlyTargetOfferModal({
-  open,
+  open, // optional controlled
   onClose,
   autoOpen = false,
-  imageUrl, // optional
+  imageUrl,
   alt = "Monthly Target Offer",
 }) {
-  const [visible, setVisible] = useState(Boolean(open));
+  const [seen, setSeen] = useState(() => safeGetSeen());
+  const [visible, setVisible] = useState(false);
 
-  // Sync controlled open
-  useEffect(() => {
-    setVisible(Boolean(open));
-  }, [open]);
+  // If already seen => NEVER show again (even if parent passes open=true)
+  const blocked = useMemo(() => seen === true, [seen]);
 
-  // Optional auto-open (once/day)
+  // Controlled open sync (but gated by "seen")
   useEffect(() => {
-    if (!autoOpen) return;
-    try {
-      const today = new Date();
-      const key = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-      const last = sessionStorage.getItem(SS_KEY);
-      if (last === key) return;
-      sessionStorage.setItem(SS_KEY, key);
-      setVisible(true);
-    } catch {
-      setVisible(true);
+    if (blocked) return;
+
+    if (typeof open === "boolean") {
+      setVisible(open);
     }
-  }, [autoOpen]);
+  }, [open, blocked]);
+
+  // Auto-open once (gated by "seen")
+  useEffect(() => {
+    if (blocked) return;
+    if (!autoOpen) return;
+
+    // only auto-open if parent isn't explicitly controlling open=false
+    if (typeof open === "boolean" && open === false) return;
+
+    setVisible(true);
+  }, [autoOpen, open, blocked]);
+
+  // Mark as seen the moment it becomes visible
+  useEffect(() => {
+    if (!visible) return;
+    if (blocked) return;
+
+    safeSetSeen();
+    setSeen(true);
+  }, [visible, blocked]);
 
   const handleClose = () => {
     setVisible(false);
@@ -49,7 +78,7 @@ export default function MonthlyTargetOfferModal({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [visible]);
 
-  if (!visible) return null;
+  if (blocked || !visible) return null;
 
   const src = imageUrl || offerImg;
 

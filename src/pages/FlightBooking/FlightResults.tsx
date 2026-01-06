@@ -1,11 +1,11 @@
 // src/pages/FlightResults.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 
 import FromToBar from "../../pages/FlightBooking/flightsearch/FromToBar";
 
-import { searchFlights, FLIGHTS, type FlightRow, type FlightFare } from "../../data/flights";
+import { searchFlights, type FlightRow, type FlightFare } from "../../data/flights";
 
 import FilterPanel, { type Filters } from "./flightlist/FiltersPanel";
 
@@ -41,11 +41,22 @@ const formatDateLabel = (iso?: string) => {
 };
 
 const timeOfDay = (hhmm?: string): TimeSlot => {
-  const h = Number((hhmm ?? "00:00").split(":")[0]);
+  const h = Number(String(hhmm ?? "00:00").split(":")[0]);
+  if (!Number.isFinite(h)) return "0-6";
   if (h < 6) return "0-6";
   if (h < 12) return "6-12";
   if (h < 18) return "12-18";
   return "18-24";
+};
+
+const toMinSafe = (t?: string) => {
+  const [h, m] = String(t ?? "00:00").split(":").map((x) => Number(x));
+  return Number.isFinite(h) && Number.isFinite(m) ? h * 60 + m : 0;
+};
+
+const toInt = (v: string | null | undefined, def: number) => {
+  const n = Number(v);
+  return Number.isFinite(n) && n >= 0 ? Math.floor(n) : def;
 };
 
 type RouteFilter = { from?: string; to?: string; oneWay?: boolean; cabin?: string; pax?: number };
@@ -59,6 +70,16 @@ function normalizeRefundable(v: unknown): "Refundable" | "Non-Refundable" {
 const normRefStr = (s: string) => s.toLowerCase().replace(/[-_]/g, " ").replace(/\s+/g, " ").trim();
 const eqRefund = (rowVal: string, filterVal: "any" | "Refundable" | "Non-Refundable") =>
   filterVal === "any" || normRefStr(rowVal) === normRefStr(filterVal);
+
+function clampPriceRange(prevMin: number, prevMax: number, nextMin: number, nextMax: number) {
+  const lo = nextMin;
+  const hi = Math.max(nextMax, nextMin);
+  const min = Math.min(Math.max(prevMin, lo), hi);
+  const max = Math.min(Math.max(prevMax, lo), hi);
+  return { min, max: Math.max(max, min) };
+}
+
+const maxSafe = (vals: number[], fallback = 0) => (vals.length ? Math.max(...vals) : fallback);
 
 /* ====== Layout animation variants ====== */
 const layoutContainerVariants: any = {
@@ -103,6 +124,9 @@ function adaptRowsOW(rows: FlightRow[]): OW_Row[] {
     const fares = r.fares ?? [];
     const minFare = fares.length ? Math.min(...fares.map((f) => f.totalINR)) : 0;
 
+    const carrier = r.flightNos.split(" ")[0];
+    const flightNo = r.flightNos.split(" ").pop() || "";
+
     return {
       id: r.id,
       airline: r.airline,
@@ -134,8 +158,8 @@ function adaptRowsOW(rows: FlightRow[]): OW_Row[] {
           toIata: r.toIata,
           arriveTime: r.arriveTime,
           arriveDate: arriveDateLbl,
-          carrier: r.flightNos.split(" ")[0],
-          flightNo: r.flightNos.split(" ").pop() || "",
+          carrier,
+          flightNo,
           durationMin: r.durationMin,
           layout: "3-3 Layout",
           beverage: true,
@@ -291,6 +315,9 @@ const toLegSummary = (r: FlightRow): LegSummary => {
   const handKg = fares.length ? Math.max(...fares.map((f) => f.cabinBagKg ?? 0)) : undefined;
   const checkKg = fares.length ? Math.max(...fares.map((f) => f.baggageKg ?? 0)) : undefined;
 
+  const carrier = r.flightNos.split(" ")[0];
+  const flightNo = r.flightNos.split(" ").pop() || "";
+
   return {
     fromCity: r.fromCity,
     fromIata: r.fromIata,
@@ -312,8 +339,8 @@ const toLegSummary = (r: FlightRow): LegSummary => {
         departDate: departDateLbl,
         arriveTime: r.arriveTime,
         arriveDate: arriveDateLbl,
-        carrier: r.flightNos.split(" ")[0],
-        flightNo: r.flightNos.split(" ").pop() || "",
+        carrier,
+        flightNo,
         durationMin: r.durationMin,
         layout: "3-3 Layout",
         beverage: true,
@@ -335,6 +362,11 @@ const buildRTFares = (out: FlightRow, back: FlightRow): { total: number; fares: 
 
   const specialPrice = Math.round(baseRT * 0.95);
 
+  const outHand = (out.fares ?? []).map((f) => f.cabinBagKg ?? 0);
+  const backHand = (back.fares ?? []).map((f) => f.cabinBagKg ?? 0);
+  const outChk = (out.fares ?? []).map((f) => f.baggageKg ?? 0);
+  const backChk = (back.fares ?? []).map((f) => f.baggageKg ?? 0);
+
   const saver: SpecialFare = {
     code: `${out.id}-${back.id}-RT-SAVER`,
     label: "Special Saver RT",
@@ -343,8 +375,8 @@ const buildRTFares = (out: FlightRow, back: FlightRow): { total: number; fares: 
     cabin: out.fares?.[0]?.cabin ?? "Economy",
     meal: "Free Meal",
     baggage: {
-      handKg: Math.max(...(out.fares ?? []).map((f) => f.cabinBagKg ?? 0), ...(back.fares ?? []).map((f) => f.cabinBagKg ?? 0)),
-      checkKg: Math.max(...(out.fares ?? []).map((f) => f.baggageKg ?? 0), ...(back.fares ?? []).map((f) => f.baggageKg ?? 0)),
+      handKg: maxSafe([...outHand, ...backHand], 0),
+      checkKg: maxSafe([...outChk, ...backChk], 0),
     },
     seat: "Standard seat selection",
     commissionINR: 1500,
@@ -352,14 +384,16 @@ const buildRTFares = (out: FlightRow, back: FlightRow): { total: number; fares: 
     perks: ["Special B2B round-trip fare"],
   };
 
+  const flexPrice = Math.round(baseRT * 1.02);
+
   const flex: SpecialFare = {
     ...saver,
     code: `${out.id}-${back.id}-RT-FLEX`,
     label: "Special Flex RT",
-    price: Math.round(baseRT * 1.02),
+    price: flexPrice,
     refundable: "Refundable",
     commissionINR: 2000,
-    agentFareINR: Math.round(baseRT * 1.02) - 2000,
+    agentFareINR: flexPrice - 2000,
     perks: ["Date change allowed", "Higher baggage"],
   };
 
@@ -376,16 +410,18 @@ const defaultPolicy: { refund: PolicyRule[]; change: PolicyRule[]; noShowUSD?: n
   noShowUSD: 5000,
 };
 
-const buildSpecialRTRows = (fromIata: string, toIata: string, departDate: string, returnDate: string, cabin?: string): SpecialRTRow[] => {
-  const outbound = FLIGHTS.filter(
-    (f) => f.fromIata === fromIata && f.toIata === toIata && f.departDate === departDate && (!cabin || f.fares?.some((x) => x.cabin === cabin))
-  );
-  const inbound = FLIGHTS.filter(
-    (f) => f.fromIata === toIata && f.toIata === fromIata && f.departDate === returnDate && (!cabin || f.fares?.some((x) => x.cabin === cabin))
-  );
+const buildSpecialRTRows = (
+  fromIata: string,
+  toIata: string,
+  departDate: string,
+  returnDate: string,
+  cabin?: string
+): SpecialRTRow[] => {
+  // ✅ keep rules consistent with OW/RT
+  const outbound = searchFlights({ fromIata, toIata, departDate, cabin });
+  const inbound = searchFlights({ fromIata: toIata, toIata: fromIata, departDate: returnDate, cabin });
 
   const rows: SpecialRTRow[] = [];
-
   outbound.forEach((out) => {
     inbound.forEach((back) => {
       const { total, fares } = buildRTFares(out, back);
@@ -493,9 +529,9 @@ export default function FlightResults() {
 
   const cabin = (qp.get("cabin") || "Economy") as any;
 
-  const adt = Number(qp.get("adt") || qp.get("adults") || "1");
-  const chd = Number(qp.get("chd") || qp.get("children") || "0");
-  const inf = Number(qp.get("inf") || qp.get("infants") || "0");
+  const adt = toInt(qp.get("adt") ?? qp.get("adults"), 1);
+  const chd = toInt(qp.get("chd") ?? qp.get("children"), 0);
+  const inf = toInt(qp.get("inf") ?? qp.get("infants"), 0);
 
   const paxCalc = [adt, chd, inf].reduce((sum, v) => (Number.isFinite(v) && v > 0 ? sum + v : sum), 0);
   const pax = paxCalc || 1;
@@ -505,11 +541,19 @@ export default function FlightResults() {
   const isIntlRoundTrip = isRound && isInternational;
   const isSpecialIntlRT = isIntlRoundTrip && isSpecialFare;
 
-  const paxConfigIntl: SpecialPaxConfig = {
-    adults: adt || 1,
-    children: chd || 0,
-    infants: inf || 0,
-  };
+  const paxConfigIntl: SpecialPaxConfig = useMemo(
+    () => ({
+      adults: adt || 1,
+      children: chd || 0,
+      infants: inf || 0,
+    }),
+    [adt, chd, inf]
+  );
+
+  // keys (used for safe resets on new search)
+  const owKey = `${fromIata}|${toIata}|${String(dateISO).slice(0, 10)}|${String(cabin)}|OW`;
+  const rtKey = `${fromIata}|${toIata}|${String(dateISO).slice(0, 10)}|${String(retISO).slice(0, 10)}|${String(cabin)}|RT`;
+  const intlKey = `${fromIata}|${toIata}|${String(dateISO).slice(0, 10)}|${String(retISO).slice(0, 10)}|${String(cabin)}|INTL|${isSpecialIntlRT ? "S" : "N"}`;
 
   /* === RAW datasets === */
   const rawOutbound = useMemo(() => {
@@ -524,7 +568,7 @@ export default function FlightResults() {
 
   const intlRaw: SpecialRTRow[] = useMemo(() => {
     if (!isSpecialIntlRT || !fromIata || !toIata || !dateISO || !retISO) return [];
-    return buildSpecialRTRows(fromIata, toIata, dateISO.slice(0, 10), retISO.slice(0, 10), cabin);
+    return buildSpecialRTRows(fromIata, toIata, String(dateISO).slice(0, 10), String(retISO).slice(0, 10), cabin);
   }, [isSpecialIntlRT, fromIata, toIata, dateISO, retISO, cabin]);
 
   /* ========================== ONEWAY PIPE ========================== */
@@ -532,8 +576,19 @@ export default function FlightResults() {
   const metaOW = useDatasetMetaOW(OW_DATA);
 
   const [fOW, setFOW] = useState<BaseFilters>(() => makeDefaultFilters(metaOW.minPrice, Math.max(metaOW.maxPrice, metaOW.minPrice)));
+
+  // dataset change -> reset filters + selection safely
   useEffect(() => {
-    setFOW((f) => ({ ...f, priceMin: metaOW.minPrice, priceMax: Math.max(metaOW.maxPrice, metaOW.minPrice) }));
+    setFOW(makeDefaultFilters(metaOW.minPrice, Math.max(metaOW.maxPrice, metaOW.minPrice)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [owKey]);
+
+  // min/max change -> clamp (don't overwrite user choices)
+  useEffect(() => {
+    setFOW((f) => {
+      const { min, max } = clampPriceRange(f.priceMin, f.priceMax, metaOW.minPrice, metaOW.maxPrice);
+      return { ...f, priceMin: min, priceMax: max };
+    });
   }, [metaOW.minPrice, metaOW.maxPrice]);
 
   const routeOW: RouteFilter = useMemo(
@@ -541,45 +596,71 @@ export default function FlightResults() {
     [fromIata, toIata, cabin, pax]
   );
 
-  const applyOW = (rows: OW_Row[]) =>
-    rows.filter((r) => {
-      const inAirline = fOW.airlines.size === 0 || fOW.airlines.has(r.airline);
-      const inStops = fOW.stops === "any" || r.stops === fOW.stops;
-      const inRefund = eqRefund(r.refundable, fOW.refundable);
-      const inPayments = fOW.payments.size === 0 || r.extras?.some((x) => Array.from(fOW.payments).includes(x));
-      const inPrice = r.totalFareINR >= fOW.priceMin && r.totalFareINR <= fOW.priceMax;
-      const inFrom = fOW.fromAirports.size === 0 || fOW.fromAirports.has(r.fromIata.toUpperCase());
-      const inTo = fOW.toAirports.size === 0 || fOW.toAirports.has(r.toIata.toUpperCase());
-      const inDepSlot = fOW.depSlots.size === 0 || fOW.depSlots.has(timeOfDay(r.departTime));
-      const inArrSlot = fOW.arrSlots.size === 0 || fOW.arrSlots.has(timeOfDay(r.arriveTime));
-      const routeOk = (!routeOW.from || r.fromIata.toUpperCase() === routeOW.from) && (!routeOW.to || r.toIata.toUpperCase() === routeOW.to);
+  const applyOW = useCallback(
+    (rows: OW_Row[]) =>
+      rows.filter((r) => {
+        const inAirline = fOW.airlines.size === 0 || fOW.airlines.has(r.airline);
+        const inStops = fOW.stops === "any" || r.stops === fOW.stops;
+        const inRefund = eqRefund(r.refundable, fOW.refundable);
 
-      return routeOk && inAirline && (fOW.nonstopOnly ? r.stops === 0 : inStops) && inRefund && inPayments && inPrice && inFrom && inTo && inDepSlot && inArrSlot;
-    });
+        const paySet = fOW.payments;
+        const inPayments = paySet.size === 0 || (r.extras ?? []).some((x) => paySet.has(x));
+
+        const inPrice = r.totalFareINR >= fOW.priceMin && r.totalFareINR <= fOW.priceMax;
+        const inFrom = fOW.fromAirports.size === 0 || fOW.fromAirports.has(r.fromIata.toUpperCase());
+        const inTo = fOW.toAirports.size === 0 || fOW.toAirports.has(r.toIata.toUpperCase());
+        const inDepSlot = fOW.depSlots.size === 0 || fOW.depSlots.has(timeOfDay(r.departTime));
+        const inArrSlot = fOW.arrSlots.size === 0 || fOW.arrSlots.has(timeOfDay(r.arriveTime));
+
+        const routeOk =
+          (!routeOW.from || r.fromIata.toUpperCase() === routeOW.from) &&
+          (!routeOW.to || r.toIata.toUpperCase() === routeOW.to);
+
+        return (
+          routeOk &&
+          inAirline &&
+          (fOW.nonstopOnly ? r.stops === 0 : inStops) &&
+          inRefund &&
+          inPayments &&
+          inPrice &&
+          inFrom &&
+          inTo &&
+          inDepSlot &&
+          inArrSlot
+        );
+      }),
+    [fOW, routeOW]
+  );
 
   const [sortOW, setSortOW] = useState<SortKey>("price_low");
-  const toMin = (t: string) => {
-    const [h, m] = t.split(":").map(Number);
-    return h * 60 + m;
-  };
 
-  const sortRowsOW = (rows: OW_Row[]) => {
-    const cp = [...rows];
-    cp.sort((a, b) => {
-      if (sortOW === "price_low") return a.totalFareINR - b.totalFareINR || a.durationMin - b.durationMin;
-      if (sortOW === "price_high") return b.totalFareINR - a.totalFareINR || a.durationMin - b.durationMin;
-      if (sortOW === "duration") return a.durationMin - b.durationMin || a.totalFareINR - b.totalFareINR;
-      if (sortOW === "depart_early") return toMin(a.departTime) - toMin(b.departTime);
-      if (sortOW === "arrive_late") return toMin(b.arriveTime) - toMin(a.arriveTime);
-      return 0;
-    });
-    return cp;
-  };
+  const sortRowsOW = useCallback(
+    (rows: OW_Row[]) => {
+      const cp = [...rows];
+      cp.sort((a, b) => {
+        if (sortOW === "price_low") return a.totalFareINR - b.totalFareINR || a.durationMin - b.durationMin;
+        if (sortOW === "price_high") return b.totalFareINR - a.totalFareINR || a.durationMin - b.durationMin;
+        if (sortOW === "duration") return a.durationMin - b.durationMin || a.totalFareINR - b.totalFareINR;
+        if (sortOW === "depart_early") return toMinSafe(a.departTime) - toMinSafe(b.departTime);
+        if (sortOW === "arrive_late") return toMinSafe(b.arriveTime) - toMinSafe(a.arriveTime);
+        return 0;
+      });
+      return cp;
+    },
+    [sortOW]
+  );
 
-  const rowsOW = useMemo(() => sortRowsOW(applyOW(OW_DATA)), [OW_DATA, fOW, sortOW]);
-  const metaOWForPanel = useDatasetMetaOW(rowsOW.length ? rowsOW : OW_DATA);
+  const rowsOW = useMemo(() => sortRowsOW(applyOW(OW_DATA)), [OW_DATA, applyOW, sortRowsOW]);
+
+  const panelOWRows = rowsOW.length ? rowsOW : OW_DATA;
+  const metaOWForPanel = useDatasetMetaOW(panelOWRows);
 
   const [selOW, setSelOW] = useState<{ flightId: string; fare: OW_Fare } | null>(null);
+  useEffect(() => {
+    // new dataset -> clear selection
+    setSelOW(null);
+  }, [owKey]);
+
   useEffect(() => {
     if (selOW && !rowsOW.some((r) => r.id === selOW.flightId)) setSelOW(null);
   }, [rowsOW, selOW]);
@@ -594,10 +675,26 @@ export default function FlightResults() {
   const [fIn, setFIn] = useState<BaseFilters>(() => makeDefaultFilters(metaRTAll.minPrice, Math.max(metaRTAll.maxPrice, metaRTAll.minPrice)));
 
   useEffect(() => {
-    const min = metaRTAll.minPrice;
-    const max = Math.max(metaRTAll.maxPrice, metaRTAll.minPrice);
-    setFOut((f) => ({ ...f, priceMin: min, priceMax: Math.min(f.priceMax, max) }));
-    setFIn((f) => ({ ...f, priceMin: min, priceMax: Math.min(f.priceMax, max) }));
+    // dataset change -> reset
+    const base = makeDefaultFilters(metaRTAll.minPrice, Math.max(metaRTAll.maxPrice, metaRTAll.minPrice));
+    setApplyTo("both");
+    setFOut(base);
+    setFIn(base);
+  }, [rtKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    // clamp, do not override
+    const nextMin = metaRTAll.minPrice;
+    const nextMax = metaRTAll.maxPrice;
+
+    setFOut((f) => {
+      const { min, max } = clampPriceRange(f.priceMin, f.priceMax, nextMin, nextMax);
+      return { ...f, priceMin: min, priceMax: max };
+    });
+    setFIn((f) => {
+      const { min, max } = clampPriceRange(f.priceMin, f.priceMax, nextMin, nextMax);
+      return { ...f, priceMin: min, priceMax: max };
+    });
   }, [metaRTAll.minPrice, metaRTAll.maxPrice]);
 
   const activeForPanelRT: Filters = useMemo(() => {
@@ -624,12 +721,14 @@ export default function FlightResults() {
     else setFIn(payload);
   };
 
-  const applyOneRT = (rows: RT_Row[], f: BaseFilters) =>
-    rows.filter((r) => {
+  const applyOneRT = useCallback((rows: RT_Row[], f: BaseFilters) => {
+    const paySet = f.payments;
+
+    return rows.filter((r) => {
       const inAirline = f.airlines.size === 0 || f.airlines.has(r.airline);
       const inStops = f.stops === "any" || r.stops === f.stops;
       const inRefund = eqRefund(r.refundable, f.refundable);
-      const inPayments = f.payments.size === 0 || r.extras?.some((x) => Array.from(f.payments).includes(x));
+      const inPayments = paySet.size === 0 || (r.extras ?? []).some((x) => paySet.has(x));
       const inPrice = r.totalFareINR >= f.priceMin && r.totalFareINR <= f.priceMax;
       const inFrom = f.fromAirports.size === 0 || f.fromAirports.has(r.fromIata.toUpperCase());
       const inTo = f.toAirports.size === 0 || f.toAirports.has(r.toIata.toUpperCase());
@@ -637,40 +736,48 @@ export default function FlightResults() {
       const inArrSlot = f.arrSlots.size === 0 || f.arrSlots.has(timeOfDay(r.arriveTime));
       return inAirline && (f.nonstopOnly ? r.stops === 0 : inStops) && inRefund && inPayments && inPrice && inFrom && inTo && inDepSlot && inArrSlot;
     });
+  }, []);
 
   const [sortRT, setSortRT] = useState<SortKey>("price_low");
-  const sortRowsRT = (rows: RT_Row[]) => {
-    const cp = [...rows];
-    const toMinRT = (t: string) => {
-      const [h, m] = t.split(":").map(Number);
-      return h * 60 + m;
-    };
-    cp.sort((a, b) => {
-      if (sortRT === "price_low") return a.totalFareINR - b.totalFareINR || a.durationMin - b.durationMin;
-      if (sortRT === "price_high") return b.totalFareINR - a.totalFareINR || a.durationMin - b.durationMin;
-      if (sortRT === "duration") return a.durationMin - b.durationMin || a.totalFareINR - b.totalFareINR;
-      if (sortRT === "depart_early") return toMinRT(a.departTime) - toMinRT(b.departTime);
-      if (sortRT === "arrive_late") return toMinRT(b.arriveTime) - toMinRT(a.arriveTime);
-      return 0;
-    });
-    return cp;
-  };
 
-  const rowsOutRT = useMemo(() => sortRowsRT(applyOneRT(RT_OUT, fOut)), [RT_OUT, fOut, sortRT]);
-  const rowsInRT = useMemo(() => sortRowsRT(applyOneRT(RT_IN, fIn)), [RT_IN, fIn, sortRT]);
+  const sortRowsRT = useCallback(
+    (rows: RT_Row[]) => {
+      const cp = [...rows];
+      cp.sort((a, b) => {
+        if (sortRT === "price_low") return a.totalFareINR - b.totalFareINR || a.durationMin - b.durationMin;
+        if (sortRT === "price_high") return b.totalFareINR - a.totalFareINR || a.durationMin - b.durationMin;
+        if (sortRT === "duration") return a.durationMin - b.durationMin || a.totalFareINR - b.totalFareINR;
+        if (sortRT === "depart_early") return toMinSafe(a.departTime) - toMinSafe(b.departTime);
+        if (sortRT === "arrive_late") return toMinSafe(b.arriveTime) - toMinSafe(a.arriveTime);
+        return 0;
+      });
+      return cp;
+    },
+    [sortRT]
+  );
 
-  const metaForPanelRT = useDatasetMetaRT(
+  const rowsOutRT = useMemo(() => sortRowsRT(applyOneRT(RT_OUT, fOut)), [RT_OUT, fOut, sortRowsRT, applyOneRT]);
+  const rowsInRT = useMemo(() => sortRowsRT(applyOneRT(RT_IN, fIn)), [RT_IN, fIn, sortRowsRT, applyOneRT]);
+
+  const panelRTRows =
     (applyTo === "out" ? rowsOutRT : applyTo === "in" ? rowsInRT : [...rowsOutRT, ...rowsInRT]).length
       ? applyTo === "out"
         ? rowsOutRT
         : applyTo === "in"
           ? rowsInRT
           : [...rowsOutRT, ...rowsInRT]
-      : [...RT_OUT, ...RT_IN]
-  );
+      : [...RT_OUT, ...RT_IN];
+
+  const metaForPanelRT = useDatasetMetaRT(panelRTRows);
 
   const [selOutRT, setSelOutRT] = useState<{ flightId: string; fare: RT_Fare } | null>(null);
   const [selInRT, setSelInRT] = useState<{ flightId: string; fare: RT_Fare } | null>(null);
+
+  useEffect(() => {
+    // dataset change -> clear selection
+    setSelOutRT(null);
+    setSelInRT(null);
+  }, [rtKey]);
 
   useEffect(() => {
     if (selOutRT && !rowsOutRT.some((r) => r.id === selOutRT.flightId)) setSelOutRT(null);
@@ -711,11 +818,32 @@ export default function FlightResults() {
   }));
 
   useEffect(() => {
-    setFiltersIntl((f) => ({
-      ...f,
+    // dataset change -> reset
+    setFiltersIntl({
+      airlines: new Set<string>(),
+      stops: "any",
+      refundable: "any",
+      payments: new Set<string>(),
       priceMin: metaIntlBase.minPrice,
       priceMax: Math.max(metaIntlBase.maxPrice, metaIntlBase.minPrice),
-    }));
+      nonstopOnly: false,
+      hideNearby: false,
+      fromAirports: new Set<string>(),
+      toAirports: new Set<string>(),
+      depSlots: new Set<TimeSlot>(),
+      arrSlots: new Set<TimeSlot>(),
+      applyTo: "both",
+      fareView: "SINGLE",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [intlKey]);
+
+  useEffect(() => {
+    // clamp, do not override
+    setFiltersIntl((f) => {
+      const { min, max } = clampPriceRange(f.priceMin, f.priceMax, metaIntlBase.minPrice, metaIntlBase.maxPrice);
+      return { ...f, priceMin: min, priceMax: max };
+    });
   }, [metaIntlBase.minPrice, metaIntlBase.maxPrice]);
 
   const filteredIntl = useMemo(() => {
@@ -731,7 +859,8 @@ export default function FlightResults() {
 
     const inRefund = (r: SpecialRTRow) => f.refundable === "any" || r.refundable === f.refundable;
 
-    const inPayments = (r: SpecialRTRow) => f.payments.size === 0 || r.extras?.some((x) => Array.from(f.payments).includes(x));
+    const paySet = f.payments;
+    const inPayments = (r: SpecialRTRow) => paySet.size === 0 || (r.extras ?? []).some((x) => paySet.has(x));
 
     const inPrice = (r: SpecialRTRow) => r.totalFareINR >= f.priceMin && r.totalFareINR <= f.priceMax;
 
@@ -787,24 +916,29 @@ export default function FlightResults() {
 
   const rowsIntl = useMemo(() => {
     const cp = [...filteredIntl];
-    const toMinIntl = (t: string) => {
-      const [h, m] = t.split(":").map(Number);
-      return h * 60 + m;
-    };
     cp.sort((a, b) => {
-      if (sortIntl === "price_low") return a.totalFareINR - b.totalFareINR || a.outbound.durationMin + a.inbound.durationMin - (b.outbound.durationMin + b.inbound.durationMin);
-      if (sortIntl === "price_high") return b.totalFareINR - a.totalFareINR || a.outbound.durationMin + a.inbound.durationMin - (b.outbound.durationMin + b.inbound.durationMin);
-      if (sortIntl === "duration") return a.outbound.durationMin + a.inbound.durationMin - (b.outbound.durationMin + b.inbound.durationMin);
-      if (sortIntl === "depart_early") return toMinIntl(a.outbound.departTime) - toMinIntl(b.outbound.departTime);
-      if (sortIntl === "arrive_late") return toMinIntl(b.inbound.arriveTime) - toMinIntl(a.inbound.arriveTime);
+      const aDur = a.outbound.durationMin + a.inbound.durationMin;
+      const bDur = b.outbound.durationMin + b.inbound.durationMin;
+
+      if (sortIntl === "price_low") return a.totalFareINR - b.totalFareINR || aDur - bDur;
+      if (sortIntl === "price_high") return b.totalFareINR - a.totalFareINR || aDur - bDur;
+      if (sortIntl === "duration") return aDur - bDur;
+      if (sortIntl === "depart_early") return toMinSafe(a.outbound.departTime) - toMinSafe(b.outbound.departTime);
+      if (sortIntl === "arrive_late") return toMinSafe(b.inbound.arriveTime) - toMinSafe(a.inbound.arriveTime);
       return 0;
     });
     return cp;
   }, [filteredIntl, sortIntl]);
 
-  const metaIntlForPanel = useDatasetMetaIntlRT(rowsIntl.length ? rowsIntl : intlRaw);
+  const panelIntlRows = rowsIntl.length ? rowsIntl : intlRaw;
+  const metaIntlForPanel = useDatasetMetaIntlRT(panelIntlRows);
 
   const [selectedIntl, setSelectedIntl] = useState<{ flightId: string; fare: SpecialFare } | null>(null);
+
+  useEffect(() => {
+    // dataset change -> clear selection
+    setSelectedIntl(null);
+  }, [intlKey]);
 
   useEffect(() => {
     if (selectedIntl && !rowsIntl.some((r) => r.id === selectedIntl.flightId)) setSelectedIntl(null);
@@ -862,24 +996,27 @@ export default function FlightResults() {
   const returnLbl = retISO ? formatDateLabel(retISO) : "";
   const totalPaxLabel = `${pax} Traveller${pax > 1 ? "s" : ""}`;
 
-  const nfIN = new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  });
+  const nfIN = useMemo(
+    () =>
+      new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0,
+      }),
+    []
+  );
 
   // theme-based overlay (no static black)
   const overlayBg = "color-mix(in srgb, var(--text) 38%, transparent)";
 
+  // (left as-is, in case you use share later)
   const baseUrl = window.location.origin;
-
   const buildDeepLink = (extra: Record<string, string>) => {
     const next = new URLSearchParams(qp.toString());
     Object.entries(extra).forEach(([k, v]) => next.set(k, v));
     return `${baseUrl}/flight-results?${next.toString()}`;
   };
 
-  // For header share (selected / current view)
   const buildHeaderSharePayload = () => {
     const msg = [
       "✈️ Flight Search",
@@ -898,7 +1035,6 @@ export default function FlightResults() {
     };
   };
 
-  // ✅ Use your existing types for rows/fares
   type ShareLeg = {
     airline: string;
     flightNos: string;
@@ -1046,7 +1182,7 @@ export default function FlightResults() {
                       : "border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface2)]",
                   ].join(" ")}
                 >
-                  <span>{showCommission ? "Net Fare" : "Agent Commission"}</span>
+                  <span>{showCommission ? "Net Fare" : "Commission"}</span>
 
                   <span
                     className={[
@@ -1265,7 +1401,5 @@ export default function FlightResults() {
         )}
       </div>
     </div>
-
-
   );
 }

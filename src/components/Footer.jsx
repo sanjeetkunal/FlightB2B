@@ -126,7 +126,7 @@ export default function B2BFooter() {
 
   return (
     <footer className="relative border-t border-[color:var(--border)] bg-[var(--surface2)] text-[var(--text)]">
-      <Backdrop />
+     
 
       {/* ===== Top CTA (Enterprise band) ===== */}
       <section className="relative border-b border-[color:var(--border)]">
@@ -140,18 +140,7 @@ export default function B2BFooter() {
                   "radial-gradient(circle at 18% 0%, color-mix(in srgb, var(--primarySoft) 92%, transparent), transparent 56%)",
               }}
             />
-            <div
-              className="pointer-events-none absolute inset-0 opacity-[0.55]"
-              style={{
-                backgroundImage: `
-                  linear-gradient(to right, color-mix(in srgb, var(--border) 70%, transparent) 1px, transparent 1px),
-                  linear-gradient(to bottom, color-mix(in srgb, var(--border) 70%, transparent) 1px, transparent 1px)
-                `,
-                backgroundSize: "56px 56px",
-                maskImage: "radial-gradient(circle at 22% 0%, black 0%, transparent 58%)",
-              }}
-            />
-
+           
             {/* content */}
             <div className="relative p-6">
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_420px] lg:items-stretch">
